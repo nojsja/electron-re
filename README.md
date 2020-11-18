@@ -1,21 +1,25 @@
 ###  electron-re
 ---------------
 
-Using `electron-re` to generate service process and send data from main process to service, from render process to service, and service to service.
+Using `electron-re` to generate some service processs and communicate between `main process`,`render process`,`service`. In some `Best Practices` of electron tutorials, it's used to 
 
-#### Instruction
-The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:  
+#### I ) Instruction
+
+The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
+
 * path -- the absolute path to a js file
 * options -- the same as `new BrowserWindow()` options
 
 In order to send data from main or other process to a service you need use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
-#### Usage
 
-1. service
+#### II ) Usage
+
+##### 1. Service
 
 The service is a customized `BrowserWindow` instance, it has only method `connected()` which return a resolved `Promise` when service is ready, suggest to put some business-related code into a service.
+
 ```js
-/* main.js */
+/* --- main.js --- */
 
 const { BrowserService  } = require('electron-re');
 ...
@@ -32,7 +36,7 @@ app.whenReady().then(() => {
 ```
 
 ```js
-/* app.service.js */
+/* --- app.service.js --- */
 
 const { ipcRenderer } = require('electron');
 
@@ -42,17 +46,17 @@ ipcRenderer.on('channel1', (event, result) => {
 });
 ```
 
-2. MessageChannel
+##### 2. MessageChannel
 
-A messaging tool expanding some method from electron build-in ipc:
+This is a messaging tool expanding some method from electron build-in ipc:
 ```js
-/* main */
+/* --- main --- */
 
 const { BrowserService, MessageChannel } = require('electron-re');
 ...
 
-app.whenReady().then(() => {
 // after app is ready in main process
+app.whenReady().then(() => {
   const myService = new BrowserService('app', 'path/to/app.service.js');
   myService.connected().then(() => {
 
@@ -79,9 +83,9 @@ app.whenReady().then(() => {
 ```
 
 ```js
-/* service - app */
+/* --- service-app --- */
 const { ipcRenderer } = require('electron');
-const { MessageChannel } = rrequire('electron-re');
+const { MessageChannel } = require('electron-re');
 
 // listen a channel, same as ipcRenderer.on
 MessageChannel.on('channel1', (event, result) => {
@@ -104,7 +108,7 @@ MessageChannel.send('app', 'channel4', { value: 'channel4' });
 
 
 
-/* service app2 */
+/* --- service-app2 --- */
 
 // handle a channel signal, just like ipcMain.handle
 MessageChannel.handle('channel3', (event, result) => {
@@ -125,7 +129,7 @@ MessageChannel.invoke('main', 'channel4', { value: 'channel4' });
 ```
 
 ```js
-/* render process */
+/* --- render process --- */
 const { ipcRenderer } = require('electron');
 const { MessageChannel } = rrequire('electron-re');
 
@@ -137,6 +141,8 @@ MessageChannel.invoke('app', ....);
 MessageChannel.send('main', ....);
 MessageChannel.invoke('main', ....);
 ```
-#### Example
-check the `index.test.js` and `test` dir in root, there are some cases, you can run `npm run test` to see the test result of the library.
+
+#### III ) Example
+
+[electronux](https://github.com/NoJsJa/electronux) - this is a project of mine that uses `electron-re`, also you can check the `index.test.js` and `test` dir in root, there are some cases, then run `npm run test` to see test result of the library.
 

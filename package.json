@@ -1,7 +1,7 @@
 {
   "name": "electron-re",
   "version": "1.0.0",
-  "description": "",
+  "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
     "compile": "babel src --out-dir lib",
@@ -12,6 +12,11 @@
   ],
   "author": "NoJsJa",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NoJsJa/electron-re"
+  },
+  "homepage": "https://github.com/NoJsJa/electron-re#readme",
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
