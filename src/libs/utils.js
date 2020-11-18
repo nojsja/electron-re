@@ -53,7 +53,7 @@ const fs = require('fs');
 /* 开发环境 */
 exports.isEnvDev = (
   global.nodeEnv === 'development' ||
-  global.nodeEnv === 'development' ||
+  global.nodeEnv === 'dev' ||
   process.env.NODE_ENV === 'development' ||
   process.env.NODE_ENV === 'dev'
 );

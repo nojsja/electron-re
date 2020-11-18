@@ -41,13 +41,22 @@ class BrowserService {
 
     /* watch file change */
     this.watchService(isEnvDev);
-    
-    if (isEnvDev) this._super.webContents.openDevTools();
 
     this._super.connected = this.connected.bind(this);
+    this._super.openDevTools = this.openDevTools.bind(this);
 
     return this._super;
   }
+
+  /* --- function extends --- */
+
+  openDevTools() {
+    this._super.webContents.openDevTools({
+      mode: 'undocked'
+    });
+  }
+
+  /* --- function expands --- */
 
   /* state listeners */
   didFinishLoad = () => {
@@ -64,10 +73,36 @@ class BrowserService {
     });
   }
 
-  /* function extends */
+  /* auto reload */
+  watchService(isEnvDev) {
+    if (isEnvDev) {
+      fs.watch(this.exec, (eventType, filename) => {
+        debouncer(this.webContents.reload.bind(this.webContents), 1e3, false, null);
+      });
+    }
+  }
 
+  /**
+    * connected [service加载完成后触发回调监听者]
+    * @param  {[windowId]} param [desc]
+    * @param  {[Function]} callback [回调]
+    */
+  connected(callback) {
+    if ((callback && !(callback instanceof Function))) throw new Error('Param - callback must be function type!');
 
-  /* function rewriten */
+    if (this.serviceReady) {
+      callback && callback(this.id)
+      return Promise.resolve(this.id);
+    } else {
+      callback && this.callbacks.push(callback);
+      return new Promise((resolve, reject) => {
+        this.callbacks.push(resolve);
+        this.fails.push(reject);
+      });
+    }
+  }
+
+  /* --- function rewritten --- */
 
   /* loadURL */
   loadURL(_path, options={}) {
@@ -131,35 +166,6 @@ class BrowserService {
       this.didFailLoad(err);
       console.error(err);
     });
-  }
-
-  /* auto reload */
-  watchService(isEnvDev) {
-    if (isEnvDev) {
-      fs.watch(this.exec, (eventType, filename) => {
-        debouncer(this.webContents.reload.bind(this.webContents), 1e3, false, null);
-      });
-    }
-  }
-
-  /**
-    * connected [service加载完成后触发回调监听者]
-    * @param  {[windowId]} param [desc]
-    * @param  {[Function]} callback [回调]
-    */
-  connected(callback) {
-    if ((callback && !(callback instanceof Function))) throw new Error('Param - callback must be function type!');
-
-    if (this.serviceReady) {
-      callback && callback(this.id)
-      return Promise.resolve(this.id);
-    } else {
-      callback && this.callbacks.push(callback);
-      return new Promise((resolve, reject) => {
-        this.callbacks.push(resolve);
-        this.fails.push(reject);
-      });
-    }
   }
 }
 

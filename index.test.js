@@ -25,7 +25,7 @@ function createWindow() {
 
 /* prepare to test */
 describe('app ready => ', function() {
-  this.timeout(2e3);
+  this.timeout(5e3);
   before(async () => {
     await app.whenReady().then(() => ipcMain.on('console', (event, info)  => console.log('console => ', info)));
     global.appService = new BrowserService('app',
@@ -39,9 +39,11 @@ describe('app ready => ', function() {
     await global.appService.connected();
     await global.otherService.connected();
 
+    if (process.env.NODE_ENV === 'dev') global.appService.openDevTools();
+
     createWindow();
     await new Promise(resolve => {
-      global.mainWindow.webContents.on('did-finish-load', resolve);
+      global.mainWindow.webContents.on('did-finish-load', () => setTimeout(resolve, 3e3));
     });
   });
 

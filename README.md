@@ -1,14 +1,45 @@
 ###  electron-re
 ---------------
 
-Using `electron-re` to generate some service processs and communicate between `main process`,`render process`,`service`. In some `Best Practices` of electron tutorials, it's used to 
+Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggest to put your code that occupy the CPU into rendering process instead of in main process, exactly `electron-re` means to do.
 
 #### I ) Instruction
 
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
 
 * path -- the absolute path to a js file
+```js
+const { BrowserService } = require('electron');
+const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
+```
+
 * options -- the same as `new BrowserWindow()` options
+```js
+
+/* --- package.json --- */
+{
+  ...
+  scripts: {
+    // method1: declare dev env
+    start: 'cross-env NODE_ENV=dev electron index.js',
+    // method2: declare development env
+    start: 'cross-env NODE_ENV=development electron index.js',
+  }
+  ...
+}
+
+/* --- main.js --- */
+
+// can also set nodeEnv directly instead of declaring it in package.json
+global.nodeEnv = 'dev';
+const myService = new BrowserService('app', 'path/to/app.service.js', {
+  ...
+  // when webSecurity closed and in dev mode
+  // the service will reload after code changed
+  webPreferences: { webSecurity: false }
+});
+```
+
 
 In order to send data from main or other process to a service you need use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
 
@@ -27,11 +58,13 @@ const { BrowserService  } = require('electron-re');
 app.whenReady().then(() => {
 // after app is ready in main process
   const myService = new BrowserService('app', 'path/to/app.service.js');
-  myService.connected().then(() => {
-    // use the electron build-in method to send data
-    mhyService.webContents.send('channel1', { value: 'test1' });
-    ...
-  })
+  myService.connected()
+    .then(() => {
+      // use the electron build-in method to send data
+      mhyService.webContents.send('channel1', { value: 'test1' });
+      ...
+    })
+    .catch((err) => console.log(`Error in service-app : ${err}`));
 });
 ```
 
@@ -59,7 +92,8 @@ const { BrowserService, MessageChannel } = require('electron-re');
 app.whenReady().then(() => {
   const myService = new BrowserService('app', 'path/to/app.service.js');
   myService.connected().then(() => {
-
+    // open devtools in dev mode for debugging
+    if (isInDev) myService.openDevTools();
     // send data to a service - like the build-in ipcMain.send
     MessageChannel.send('app', 'channel1', { value: 'test1' });
     // send data to a service and return a Promise - extension method
