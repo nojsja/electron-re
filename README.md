@@ -1,7 +1,7 @@
 ###  electron-re
 ---------------
 
-> can only be used in electron project and test in electron@8.2.0
+> can only be used in electron project and test on electron@8.2.0
 
 Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupy the CPU into rendering process instead of in main process, exactly `electron-re` means to do.
 #### I ) Instruction
@@ -42,7 +42,7 @@ const myService = new BrowserService('app', 'path/to/app.service.js', {
 ```
 
 
-In order to send data from main/other process to a service you need use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
+In order to send data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
 
 #### II ) Usage
 
