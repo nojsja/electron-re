@@ -1,8 +1,9 @@
 ###  electron-re
 ---------------
 
-Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggest to put your code that occupy the CPU into rendering process instead of in main process, exactly `electron-re` means to do.
+> can only be used in electron project and test in electron@8.2.0
 
+Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupy the CPU into rendering process instead of in main process, exactly `electron-re` means to do.
 #### I ) Instruction
 
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
@@ -41,18 +42,27 @@ const myService = new BrowserService('app', 'path/to/app.service.js', {
 ```
 
 
-In order to send data from main or other process to a service you need use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
+In order to send data from main/other process to a service you need use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
 
 #### II ) Usage
 
 ##### 1. Service
 
-The service is a customized `BrowserWindow` instance, it has only method `connected()` which return a resolved `Promise` when service is ready, suggest to put some business-related code into a service.
+The service is a customized `BrowserWindow` instance, it has two extension methods:
+
+* `connected()` - return a resolved `Promise` when service is ready.
+
+* `openDevTools` - open an undocked window for debugging.
+
+suggest to put some business-related code into a service.
 
 ```js
 /* --- main.js --- */
-
-const { BrowserService  } = require('electron-re');
+  
+const { 
+  BrowserService,
+  MessageChannel // must required in main.js even if you don't use it
+} = require('electron-re');
 ...
 
 app.whenReady().then(() => {
@@ -80,12 +90,17 @@ ipcRenderer.on('channel1', (event, result) => {
 ```
 
 ##### 2. MessageChannel
+> confirm to require it in main.js(main process entry) first
 
-This is a messaging tool expanding some method from electron build-in ipc:
+This is a messaging tool expanding some methods from electron build-in ipc:
 ```js
 /* --- main --- */
 
-const { BrowserService, MessageChannel } = require('electron-re');
+const {
+  BrowserService,
+  MessageChannel // must required in main.js even if you don't use it
+} = require('electron-re');
+const isInDev = process.env.NODE_ENV === 'dev';
 ...
 
 // after app is ready in main process
@@ -133,7 +148,7 @@ MessageChannel.handle('channel2', (event, result) => {
 });
 
 // send data to another service and return a promise , just like ipcRenderer.invoke
-MessageChannel.invoke('app2', 'channel3' (event, result) => {
+MessageChannel.invoke('app2', 'channel3', { value: 'channel3' }).then((event, result) => {
   console.log(result);
 });
 
@@ -165,7 +180,7 @@ MessageChannel.invoke('main', 'channel4', { value: 'channel4' });
 ```js
 /* --- render process --- */
 const { ipcRenderer } = require('electron');
-const { MessageChannel } = rrequire('electron-re');
+const { MessageChannel } = require('electron-re');
 
 // send data to a service
 MessageChannel.send('app', ....);
@@ -178,5 +193,5 @@ MessageChannel.invoke('main', ....);
 
 #### III ) Example
 
-[electronux](https://github.com/NoJsJa/electronux) - this is a project of mine that uses `electron-re`, also you can check the `index.test.js` and `test` dir in root, there are some cases, then run `npm run test` to see test result of the library.
+[electronux](https://github.com/NoJsJa/electronux) - A project of mine that uses `electron-re`, also you can check the `index.test.js` and `test` dir in root, there are some cases, then run `npm run test` to see test result of the library.
 
