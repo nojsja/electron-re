@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
@@ -11,7 +11,7 @@
     "electron"
   ],
   "author": "NoJsJa",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/NoJsJa/electron-re"

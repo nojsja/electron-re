@@ -48,7 +48,7 @@ In order to send data from main/other process to a service you need to use `Mess
 
 ##### 1. Service
 
-The service is a customized `BrowserWindow` instance, it has two extension methods:
+The service is a customized `BrowserWindow` instance, initialized by a file worked with `commonJs` module, so you can use `require('name')` and can't use `import some from 'name'` syntax. It has two extension methods:
 
 * `connected()` - return a resolved `Promise` when service is ready.
 
