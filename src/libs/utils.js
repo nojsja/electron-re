@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 /**
   * loadView [生成可以供直接读取显示到BrowserWindow的html content]
@@ -18,10 +19,13 @@ const fs = require('fs');
       </head>
       <body>
         <script>
+          global._depends = [];
           global.require = require = (function(require) {
             const _require = require;
           
             return function(_path) {
+              let result;
+              const path = _require('path');
               if (_path === 'electron') return {
                 ..._require('electron').remote.require('electron'),
                 remote: _require('electron').remote,
@@ -30,19 +34,35 @@ const fs = require('fs');
                 ipcRenderer: _require('electron').ipcRenderer
               };
               try {
-                return _require(_path);
+                result = _require(_path);
               } catch(error) {
-                return _require(
-                  _require('path').join(
-                    document.querySelector('base').href,
-                    _path
-                  ).replace('file:', '')
-                )
+                result = _require(path.join(document.querySelector('base').href, _path).replace('file:', ''));
               }
+              return result;
             }
           })(require);
         </script>
+
         ${ webSecurity ? ("<script>" + script + "</script>") : "<script src="+ src + "></script>" }
+
+        <script>
+          (function() {
+            const fs = require('fs');
+            const { ipcRenderer }= require('electron');
+            ipcRenderer.once('get-watching-files', (event, { pid }) => {
+              ipcRenderer.send(pid, {
+                depends: (function(_module) {
+                  const paths = [];
+                  const getPaths = (modu) => {
+                    if (fs.existsSync(modu.filename) && !paths.includes(modu.filename)) paths.push(modu.filename);
+                    modu.children.forEach(getPaths);
+                  };
+                  getPaths(_module);
+                  return paths;
+                })(module) });
+            });
+          })();
+        </script>
       </body>
     </html>
   `);
@@ -99,3 +119,31 @@ exports.isRenderer = (
 
 /* random string */
 exports.getRandomString = () => Math.random().toString(36).substr(2);
+
+/* getRequiredFilePath */
+exports.getRequiredFilePath = (p) => {
+  if (fs.statSync(p).isDirectory()) {
+    p = `${p}/index`;
+  }
+  if (fs.existsSync(p)) return p;
+  if (fs.existsSync(`${p}.js`)) return `${p}.js`;
+  if (fs.existsSync(`${p}.json`)) return `${p}.json`;
+  if (fs.existsSync(`${p}.node`)) return `${p}.node`;
+}
+
+
+/* getModuleFilePath */
+exports.getModuleFilePath = function (_module) {
+  const paths = [];
+
+  const getPaths = (modu) => {
+    if (fs.existsSync(modu.filename)) {
+      paths.push(modu.filename);
+    }
+    modu.children.forEach(getPaths);
+  };
+
+  getPaths(_module);
+
+  return paths;
+};

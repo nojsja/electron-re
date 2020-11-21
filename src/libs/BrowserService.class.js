@@ -1,8 +1,8 @@
-const { BrowserWindow, WebContents } = require('electron');
+const { BrowserWindow, WebContents, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
-const { isEnvDev, loadView, fnDebounce } = require('./utils');
+const { isEnvDev, loadView, fnDebounce, getRandomString, getModuleFilePath } = require('./utils');
 const MessageChannel = require('./MessageChannel.class');
 
 const debouncer = fnDebounce();
@@ -76,6 +76,19 @@ class BrowserService {
   /* auto reload */
   watchService(isEnvDev) {
     if (isEnvDev) {
+      const reloadWindow = (id) => {
+        console.log(this.id);
+        this._super.webContents.reload();
+      };
+      const pid = getRandomString();
+      this.callbacks.push(() => this._super.webContents.send('get-watching-files', { pid }));
+      ipcMain.once(pid, (event, result) => {
+        result.depends.forEach(depend => {
+          fs.watch((depend), () => {
+            debouncer(reloadWindow, 1e3, false, null);
+          });
+        });
+      });
       fs.watch(this.exec, (eventType, filename) => {
         debouncer(this.webContents.reload.bind(this.webContents), 1e3, false, null);
       });
