@@ -36,7 +36,7 @@ global.nodeEnv = 'dev';
 const myService = new BrowserService('app', 'path/to/app.service.js', {
   ...
   // when webSecurity closed and in dev mode
-  // the service will reload after code changed
+  // service will reload after the code of required dependencies and service changed
   webPreferences: { webSecurity: false }
 });
 ```

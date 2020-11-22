@@ -5,7 +5,7 @@
   "main": "./lib/index",
   "scripts": {
     "compile": "babel src --out-dir lib",
-    "start": "cross-env NODE_ENV=dev electron index.dev.js",
+    "start": "cross-env NODE_ENV=dev electron index.dev.js --inspect=5858",
     "test": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js"
   },
   "keywords": [

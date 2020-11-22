@@ -4,8 +4,7 @@ const fs = require('fs');
 const url = require('url');
 const { isEnvDev, loadView, fnDebounce, getRandomString, getModuleFilePath } = require('./utils');
 const MessageChannel = require('./MessageChannel.class');
-
-const debouncer = fnDebounce();
+const FileWatcher = require('./FileWatcher.class');
 
 class BrowserService {
   /**
@@ -26,6 +25,7 @@ class BrowserService {
     this.name = name;
     this.listeners = [];
     this.callbacks = [];
+
     this.fails = [];
     this.id = this._super.id;
     MessageChannel.registry(name, this.id, this);
@@ -76,21 +76,26 @@ class BrowserService {
   /* auto reload */
   watchService(isEnvDev) {
     if (isEnvDev) {
-      const reloadWindow = (id) => {
-        console.log(this.id);
+      const debouncer = fnDebounce();
+      const reloadWindow = function() {
         this._super.webContents.reload();
-      };
+      }.bind(this);
       const pid = getRandomString();
+
+      // watch service depends
       this.callbacks.push(() => this._super.webContents.send('get-watching-files', { pid }));
       ipcMain.once(pid, (event, result) => {
         result.depends.forEach(depend => {
-          fs.watch((depend), () => {
+          FileWatcher.watch(depend, () => {
             debouncer(reloadWindow, 1e3, false, null);
           });
         });
       });
-      fs.watch(this.exec, (eventType, filename) => {
-        debouncer(this.webContents.reload.bind(this.webContents), 1e3, false, null);
+
+      // watch service
+      FileWatcher.watch(this.exec, () => {
+        console.log(this.id);
+        debouncer(this._super.webContents.reload.bind(this._super.webContents), 1e3, false, null);
       });
     }
   }
