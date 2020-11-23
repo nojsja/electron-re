@@ -31,6 +31,6 @@ class FileWatcher {
   }
 }
 
-global.FileWatcher = global.FileWatcher ? global.FileWatcher : new FileWatcher();
+global.FileWatcher = global.FileWatcher || new FileWatcher();
 
 module.exports = global.FileWatcher;

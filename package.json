@@ -1,12 +1,12 @@
 {
   "name": "electron-re",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
-    "compile": "babel src --out-dir lib",
     "start": "cross-env NODE_ENV=dev electron index.dev.js --inspect=5858",
-    "test": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js"
+    "test": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "compile": "babel src --out-dir lib"
   },
   "keywords": [
     "electron"
@@ -15,9 +15,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NoJsJa/electron-re"
+    "url": "https://github.com/nojsja/electron-re"
   },
-  "homepage": "https://github.com/NoJsJa/electron-re#readme",
+  "homepage": "https://github.com/nojsja/electron-re#readme",
   "dependencies": {
     "electron": "8.2.0"
   },

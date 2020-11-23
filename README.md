@@ -4,9 +4,24 @@
 > can only be used in electron project and test on electron@8.2.0
 
 Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupy the CPU into rendering process instead of in main process, exactly `electron-re` means to do.
-#### I ) Instruction
+
+#### I ) Install
+```bash
+# 01 - for github-package depository user
+$: npm install @nojsja/electron-re --save
+# or
+$: yarn add @nojsja/electron-re
+
+# 02 - for npm-package depository user
+$: npm install electron-re --save
+# or
+$: yarn add electron-re
+```
+#### II ) Instruction
 
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
+
+##### 1. arguments to create a service
 
 * path -- the absolute path to a js file
 ```js
@@ -14,7 +29,14 @@ const { BrowserService } = require('electron');
 const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
 ```
 
-* options -- the same as `new BrowserWindow()` options
+* options -- the same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions)
+```js
+/* --- main.js --- */
+const myService = new BrowserService('app', 'path/to/app.service.js', options);
+```
+
+##### 2. enable service auto reload after code changed
+The `auto-reload` feature is based on nodejs - `fs.watch` api, When webSecurity closed and in `dev` mode, service will reload after the code of `required dependencies and service itself` changed.
 ```js
 
 /* --- package.json --- */
@@ -31,20 +53,18 @@ const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.se
 
 /* --- main.js --- */
 
-// can also set nodeEnv directly instead of declaring it in package.json
+// method3: set nodeEnv directly instead of declaring it in package.json
 global.nodeEnv = 'dev';
 const myService = new BrowserService('app', 'path/to/app.service.js', {
-  ...
-  // when webSecurity closed and in dev mode
-  // service will reload after the code of required dependencies and service changed
+  ...options,
+  // with webSecurity closed
   webPreferences: { webSecurity: false }
 });
 ```
 
-
 In order to send data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`
 
-#### II ) Usage
+#### III ) Usage
 
 ##### 1. Service
 
@@ -93,6 +113,9 @@ ipcRenderer.on('channel1', (event, result) => {
 > confirm to require it in main.js(main process entry) first
 
 This is a messaging tool expanding some methods from electron build-in ipc:
+
+* in main process
+
 ```js
 /* --- main --- */
 
@@ -131,6 +154,8 @@ app.whenReady().then(() => {
 });
 ```
 
+* in a service process named app
+
 ```js
 /* --- service-app --- */
 const { ipcRenderer } = require('electron');
@@ -156,6 +181,11 @@ MessageChannel.invoke('app2', 'channel3', { value: 'channel3' }).then((event, re
 MessageChannel.send('app', 'channel4', { value: 'channel4' });
 
 
+```
+
+* in an another service process named app2
+
+```js
 
 /* --- service-app2 --- */
 
@@ -177,6 +207,8 @@ MessageChannel.invoke('main', 'channel4', { value: 'channel4' });
 
 ```
 
+* in a render process window
+
 ```js
 /* --- render process --- */
 const { ipcRenderer } = require('electron');
@@ -191,7 +223,6 @@ MessageChannel.send('main', ....);
 MessageChannel.invoke('main', ....);
 ```
 
-#### III ) Example
+#### IV ) Example
 
-[electronux](https://github.com/NoJsJa/electronux) - A project of mine that uses `electron-re`, also you can check the `index.test.js` and `test` dir in root, there are some cases, then run `npm run test` to see test result of the library.
-
+[electronux](https://github.com/nojsja/electronux) - A project of mine that uses `electron-re`, also you can check the `index.dev.js` and `test` dir in root, there are some cases.
