@@ -1,5 +1,5 @@
 const { ipcMain, ipcRenderer } = require('electron');
-const { MessageChannel, ChildProcessPool } = require('../src');
+const { MessageChannel, ChildProcessPool } = require('../lib');
 const path = require('path');
 
 /* -------------- main <-> renderer -------------- */
@@ -326,14 +326,14 @@ const childProcessPoll = () => {
   const maxProcessCount = 2;
   const processPool = new ChildProcessPool({
     path: path.join(__dirname, 'child_process/child1.js'),
-    max: maxProcessCount
+    max: maxProcessCount,
+    env: {
+      cwd: path.basename(path.join(__dirname, 'child_process/child1.js'))
+    }
   });
-  describe('ChildProcessPool test', () => {
-    it('send to processPool and get response data', (callback) => {
-      processPool.send({
-        action: 'test1',
-        params: { value: "test1" }
-      }).then((rsp) => {
+  describe('ChildProcessPool/ProcessHost test', () => {
+    it('send request to a process in processPool and get response data', (callback) => {
+      processPool.send('test1', { value: "test1" }).then((rsp) => {
         if (rsp.result.value === 'test1') {
           callback();
         } else {
@@ -342,11 +342,8 @@ const childProcessPoll = () => {
       });
     });
 
-    it('send to processPool and get response data2', (callback) => {
-      processPool.send({
-        action: 'test2',
-        params: { value: "test2" }
-      }).then((rsp) => {
+    it('send request to a process in processPool and get response data2', (callback) => {
+      processPool.send('test2', { value: "test2" }).then((rsp) => {
         if (rsp.result.value === 'test2') {
           callback();
         } else {
@@ -355,12 +352,10 @@ const childProcessPoll = () => {
       });
     });
 
-    it(`the count of child processes should be equal to params-max ${maxProcessCount}`, (callback) => {
-      processPool.send({
-        action: 'test3',
-        params: { value: "test3" }
-      }).then((rsp) => {
+    it(`the count of child processes should be equal to ${maxProcessCount}`, (callback) => {
+      processPool.send('test3', { value: "test3" }).then((rsp) => {
         if (
+          !rsp.error &&
           rsp.result.value === 'test3' &&
           processPool.forked.length === 2 &&
           processPool.forkIndex === 1
@@ -370,7 +365,20 @@ const childProcessPoll = () => {
           callback('test3 failed!');
         }
       });
-    })
+    });
+
+    it('send request to all process in processPool and get all response', (callback) => {
+      processPool.sendToAll('test4', { value: "test4" }).then((rsp) => {
+        if (
+          rsp.length === maxProcessCount &&
+          rsp.every(info => (!info.error && info.result.value === "test4"))
+        ) {
+          callback();
+        } else {
+          callback('test4 failed!');
+        }
+      });
+    });
   });
 }
 

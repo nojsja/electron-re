@@ -1,6 +1,14 @@
-const { isRenderer } = require('./libs/utils');
+const { isRenderer, isMain } = require('./libs/utils');
 
-exports.MessageChannel = require('./libs/MessageChannel.class');
+if (isRenderer) {
+  exports.MessageChannel = require('./libs/MessageChannel.class');
+}
+
+if (isMain) {
+  exports.BrowserService = require('./libs/BrowserService.class')
+  exports.MessageChannel = require('./libs/MessageChannel.class');
+}
+
 exports.ChildProcessPool = require('./libs/ChildProcessPool.class');
 
-(!isRenderer) && (exports.BrowserService = require('./libs/BrowserService.class'));
+exports.ProcessHost = require('./libs/ProcessHost.class');

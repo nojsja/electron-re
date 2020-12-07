@@ -1,18 +1,14 @@
-
-  process.on('message', ({ action, params, id }) => {
-     
-    switch(action) {
-      case 'test1':
-        process.send({ result: params, id });
-        break;
-      case 'test2':
-        process.send({ result: params, id });
-        break;
-      case 'test3':
-        process.send({ result: params, id });
-        break;
-      default:
-        break;
-    }
-
-  });
+  const ProcessHost = require('../../src/libs/ProcessHost.class');
+  ProcessHost
+    .registry('test1', (params) => {
+      return params;
+    })
+    .registry('test2', (params) => {
+      return params;
+    })
+    .registry('test3', (params) => {
+      return params;
+    })
+    .registry('test4', (params) => {
+      return params;
+    });

@@ -1,9 +1,11 @@
 const { fork } = require('child_process');
+const _path = require('path');
+
 const { getRandomString } = require('./utils');
 
-class ChildProcess {
+class ChildProcessPool {
   constructor({ path, max=6, cwd, env }) {
-    this.cwd = cwd || process.cwd();
+    this.cwd = cwd || _path.dirname(path);
     this.env = env || process.env;
     this.inspectStartIndex = 5858;
     this.callbacks = {};
@@ -44,6 +46,7 @@ class ChildProcess {
   getForkedFromPool(id="default") {
     let forked;
     if (!this.pidMap.get(id)) {
+      // create new process
       if (this.forked.length < this.forkMaxIndex) {
         this.inspectStartIndex ++;
         forked = fork(
@@ -55,17 +58,25 @@ class ChildProcess {
           }
         );
         this.forked.push(forked);
-        this.forkIndex += 1;
         forked.on('message', (data) => {
-          this.onMessage({ data, id: data.id });
+          const id = data.id;
+          delete data.id;
+          delete data.action;
+          this.onMessage({ data, id });
         });
-        this.pidMap.set(id, forked.pid);
       } else {
         this.forkIndex = this.forkIndex % this.forkMaxIndex;
         forked = this.forked[this.forkIndex];
-        this.forkIndex += 1;
       }
+      
+      if(id !== 'default')
+        this.pidMap.set(id, forked.pid);
+      if(this.pidMap.values.length === 1000)
+        console.warn('ChildProcessPool: The count of pidMap is over than 1000, suggest to use unique id!');
+        
+      this.forkIndex += 1;
     } else {
+      // use existing processes
       forked = this.forked.filter(f => f.pid === this.pidMap.get(id))[0];
       if (!forked) throw new Error(`Get forked process from pool failed! the process pid: ${this.pidMap.get(id)}.`);
     }
@@ -86,18 +97,31 @@ class ChildProcess {
     }
   }
 
-  /* Send request to a process */
-  send(params, givenId) {
-    const id = givenId || getRandomString();
-    const forked = this.getForkedFromPool(id);
+  /**
+  * send [Send request to a process]
+  * @param  {[String]} taskName [task name - necessary]
+  * @param  {[Any]} params [data passed to process - necessary]
+  * @param  {[String]} id [the unique id bound to a process instance - not necessary]
+  * @return {[Promise]} [return a Promise instance]
+  */
+  send(taskName, params, givenId) {
+    if (givenId === 'default') throw new Error('ChildProcessPool: Prohibit the use of this id value: [default] !')
+
+    const id = getRandomString();
+    const forked = this.getForkedFromPool(givenId);
     return new Promise(resolve => {
       this.callbacks[id] = resolve;
-      forked.send({...params, id});
+      forked.send({action: taskName, params, id });
     });
   }
 
-  /* Send requests to all processes */
-  sendToAll(params) {
+  /**
+  * sendToAll [Send requests to all processes]
+  * @param  {[String]} taskName [task name - necessary]
+  * @param  {[Any]} params [data passed to process - necessary]
+  * @return {[Promise]} [return a Promise instance]
+  */
+  sendToAll(taskName, params) {
     const id = getRandomString(); 
     return new Promise(resolve => {
       this.callbacks[id] = resolve;
@@ -105,14 +129,14 @@ class ChildProcess {
       if (this.forked.length) {
         // use process in pool
         this.forked.forEach((forked) => {
-          forked.send({...params, id});
+          forked.send({ action: taskName, params, id });
         })
       } else {
         // use default process
-        this.getForkedFromPool().send({...params, id});
+        this.getForkedFromPool().send({ action: taskName, params, id });
       }
     });
   }
 }
 
-module.exports = ChildProcess;
+module.exports = ChildProcessPool;

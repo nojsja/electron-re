@@ -85,6 +85,12 @@ exports.isRenderer = (
   process.type === 'renderer'
 );
 
+/* render process check */
+exports.isMain = (
+  typeof process !== 'undefined' &&
+  process.type === 'browser'
+);
+
 /**
    * @param  {Function} fn         [回调函数]
    * @param  {[Time]}   delayTime  [延迟时间(ms)]
