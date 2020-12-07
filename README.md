@@ -237,7 +237,7 @@ MessageChannel.invoke('main', ....);
 
 #### V ) Instruction 3: ChildProcessPool
 -----
-> working with ProcessHost, remember to check usage `Instruction 4`.
+> working with ProcessHost, remember to check usage "Instruction 4".
 
 Multi-process helps to make full use of multi-core CPU, let's see some differences between multi-process and multi-thread:
 
