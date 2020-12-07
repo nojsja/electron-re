@@ -1,7 +1,7 @@
 const { fork } = require('child_process');
 const _path = require('path');
 
-const { getRandomString } = require('./utils');
+const { getRandomString, removeForkedFromPool } = require('./utils');
 
 class ChildProcessPool {
   constructor({ path, max=6, cwd, env }) {
@@ -52,10 +52,7 @@ class ChildProcessPool {
         forked = fork(
           this.forkedPath,
           this.env.NODE_ENV === "development" ? [`--inspect=${this.inspectStartIndex}`] : [],
-          {
-            cwd: this.cwd,
-            env: { ...this.env, id },
-          }
+          { cwd: this.cwd, env: { ...this.env, id } }
         );
         this.forked.push(forked);
         forked.on('message', (data) => {
@@ -64,6 +61,9 @@ class ChildProcessPool {
           delete data.action;
           this.onMessage({ data, id });
         });
+        forked.on('exit', () => { this.onProcessDisconnect(forked.pid) });
+        forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
+        forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
       } else {
         this.forkIndex = this.forkIndex % this.forkMaxIndex;
         forked = this.forked[this.forkIndex];
@@ -71,17 +71,35 @@ class ChildProcessPool {
       
       if(id !== 'default')
         this.pidMap.set(id, forked.pid);
-      if(this.pidMap.values.length === 1000)
+      if(this.pidMap.keys.length === 1000)
         console.warn('ChildProcessPool: The count of pidMap is over than 1000, suggest to use unique id!');
         
       this.forkIndex += 1;
     } else {
       // use existing processes
-      forked = this.forked.filter(f => f.pid === this.pidMap.get(id))[0];
+      forked = this.forked.find(f => f.pid === this.pidMap.get(id));
       if (!forked) throw new Error(`Get forked process from pool failed! the process pid: ${this.pidMap.get(id)}.`);
     }
 
     return forked;
+  }
+
+  /**
+    * onProcessDisconnect [triggered when a process instance disconnect]
+    * @param  {[String]} pid [process pid]
+    */
+  onProcessDisconnect(pid){
+    removeForkedFromPool(this.forked, pid, this.pidMap);
+  }
+
+  /**
+    * onProcessError [triggered when a process instance break]
+    * @param  {[Error]} err [error]
+    * @param  {[String]} pid [process pid]
+    */
+  onProcessError(err, pid) {
+    console.error("ChildProcessPool: ", err);
+    removeForkedFromPool(this.forked, pid, this.pidMap);
   }
 
   /**

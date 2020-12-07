@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { 
   MessageChannel, /* must required in index.js even if you don't use it */
   BrowserService
-} = require('./lib/index');
+} = require(`./${process.env.TEST ? 'lib' : 'src'}/index`);
 const test = require('./test/test.js');
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');

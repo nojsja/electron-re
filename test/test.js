@@ -1,5 +1,5 @@
 const { ipcMain, ipcRenderer } = require('electron');
-const { MessageChannel, ChildProcessPool } = require('../lib');
+const { MessageChannel, ChildProcessPool } = require(`../${process.env.TEST ? 'lib' : 'src'}`);
 const path = require('path');
 
 /* -------------- main <-> renderer -------------- */
