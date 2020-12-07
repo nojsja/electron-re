@@ -245,9 +245,9 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 2. Processes consume more computer resources than threads.
 3. The processes will not affect each other, a thread hanging up will cause the whole process to hang up.
 
-The `ChildProcessPool` is degisned for those nodejs application with multi-process architecture. E.g. in the demo [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload), I use `ChildProcessPool` to manage thousands of uploading tasks, file reading and writing.
+The `ChildProcessPool` is degisned for those nodejs applications with multi-process architecture. E.g. in the demo [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload), I use `ChildProcessPool` to manage thousands of uploading tasks and handle file reading and writing.
 
-##### 1. create a childprocess pool
+##### 1. Create a childprocess pool
 * path - the absolute path to a js file
 * max - the max count of instance created by pool
 * env - env variable
@@ -262,7 +262,7 @@ global.ipcUploadProcess = new ChildProcessPool({
 });
 ```
 
-##### 2. send request to a process instance
+##### 2. Send request to a process instance
 
 * 1）params - `taskName`  
   A task registried with `ProcessHost`, it's neccessary.
@@ -286,7 +286,7 @@ global.ipcUploadProcess.send(
 });
 ```
 
-##### 3. send request to all process instances
+##### 3. Send request to all process instances
 
 * 1）params - `taskName`  
   A task registried with `ProcessHost`(check usage below), it's neccessary.
@@ -309,7 +309,7 @@ global.ipcUploadProcess.sendToAll(
 
 In `Instruction 3`, we already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
 
-With `ProcessHost` we will no longer pay attention to the message sending/receiving between main process and sub processes. Just declaring a task with a unique service-name and put your processing code into a function. And remember that if the processing code is async, return a Promise instance instead.
+Using `ProcessHost` we will no longer pay attention to the message sending/receiving between main process and sub processes. Just declaring a task with a unique service-name and put your processing code into a function. And remember that if the code is async, return a Promise instance instead.
 
 ##### 1. Require it in a sub process
 ```js
@@ -364,4 +364,4 @@ global.ipcUploadProcess.send(
 
 3. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
 
-3. also you can check the `index.dev.js` and `test` dir in root, there are some cases.
+3. Also you can check the `index.dev.js` and `test` dir in root, there are some cases for a full usage.
