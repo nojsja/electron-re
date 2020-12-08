@@ -1,8 +1,8 @@
-const { BrowserWindow, WebContents, ipcMain } = require('electron');
+const { BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
-const { isEnvDev, loadView, fnDebounce, getRandomString, getModuleFilePath } = require('./utils');
+const { isEnvDev, loadView, fnDebounce, getRandomString } = require('./utils');
 const MessageChannel = require('./MessageChannel.class');
 const FileWatcher = require('./FileWatcher.class');
 
@@ -94,7 +94,6 @@ class BrowserService {
 
       // watch service
       FileWatcher.watch(this.exec, () => {
-        console.log(this.id);
         debouncer(this._super.webContents.reload.bind(this._super.webContents), 1e3, false, null);
       });
     }
@@ -133,6 +132,12 @@ class BrowserService {
 
   /* loadURL - safe function with script injection */
   loadURL_SAFE = (_path) => {
+    const baseUrl = url.format({
+      pathname: (_path),
+      protocol: 'file:',
+      slashes: true
+    });
+
     return new Promise((resolve, reject) => {
       fs.readFile(_path, { encoding: 'utf-8' }, (err, buffer) => {
         if (err) {
@@ -145,14 +150,10 @@ class BrowserService {
               webSecurity: true,
               script: buffer.toString(),
               title: `${this.name} service`,
-              base: url.format({
-                  pathname: path.dirname(this.exec),
-                  protocol: 'file:',
-                  slashes: true
-              })
+              base: baseUrl
           }),
           {
-            baseURLForDataURL: path.dirname(_path)
+            // baseURLForDataURL: path.dirname(baseUrl)
           }
         ).then(resolve)
         .catch(err => {
@@ -166,19 +167,21 @@ class BrowserService {
 
   /* loadURL - unsafe function to external script and options.webSecurity closed */
   loadURL_UNSAFE = (_path) => {
+    const baseUrl = url.format({
+      pathname: (_path),
+      protocol: 'file:',
+      slashes: true
+    });
+    
     return this._super.loadURL(
       loadView({
           webSecurity: false,
           src: this.exec,
           title: `${this.name} service`,
-          base: url.format({
-              pathname: path.dirname(this.exec),
-              protocol: 'file:',
-              slashes: true
-          })
+          base: baseUrl
       }),
       {
-        baseURLForDataURL: path.dirname(_path)
+        // baseURLForDataURL: path.dirname(baseUrl)
       }
     ).catch(err => {
       this.didFailLoad(err);

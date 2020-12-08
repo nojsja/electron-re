@@ -14,7 +14,7 @@ const path = require('path');
     <html>
       <head>
         <title>${title}</title>
-        <base href="${base}"></base>
+        <base href="${base}">
         <meta charset="UTF-8">
       </head>
       <body>
@@ -36,7 +36,10 @@ const path = require('path');
               try {
                 result = _require(_path);
               } catch(error) {
-                result = _require(path.join(document.querySelector('base').href, _path).replace('file:', ''));
+                result =
+                  _require(path.join(
+                    path.dirname(document.querySelector('base').href),
+                    _path).replace('file:', ''));
               }
               return result;
             }
