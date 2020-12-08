@@ -3,19 +3,22 @@ const _path = require('path');
 
 const { getRandomString, removeForkedFromPool } = require('./utils');
 
+let inspectStartIndex = 5858;
+
 class ChildProcessPool {
   constructor({ path, max=6, cwd, env }) {
     this.cwd = cwd || _path.dirname(path);
     this.env = env || process.env;
-    this.inspectStartIndex = 5858;
     this.callbacks = {};
     this.pidMap = new Map();
     this.collaborationMap = new Map();
     this.forked = [];
     this.forkedPath = path;
     this.forkIndex = 0;
-    this.forkMaxIndex = max;
+    this.maxInstance = max;
   }
+
+  /* -------------- internal -------------- */
   
   /* Received data from a child process */
   dataRespond = (data, id) => {
@@ -47,11 +50,11 @@ class ChildProcessPool {
     let forked;
     if (!this.pidMap.get(id)) {
       // create new process
-      if (this.forked.length < this.forkMaxIndex) {
-        this.inspectStartIndex ++;
+      if (this.forked.length < this.maxInstance) {
+        inspectStartIndex ++;
         forked = fork(
           this.forkedPath,
-          this.env.NODE_ENV === "development" ? [`--inspect=${this.inspectStartIndex}`] : [],
+          this.env.NODE_ENV === "development" ? [`--inspect=${inspectStartIndex}`] : [],
           { cwd: this.cwd, env: { ...this.env, id } }
         );
         this.forked.push(forked);
@@ -65,7 +68,7 @@ class ChildProcessPool {
         forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
       } else {
-        this.forkIndex = this.forkIndex % this.forkMaxIndex;
+        this.forkIndex = this.forkIndex % this.maxInstance;
         forked = this.forked[this.forkIndex];
       }
       
@@ -99,7 +102,7 @@ class ChildProcessPool {
     */
   onProcessError(err, pid) {
     console.error("ChildProcessPool: ", err);
-    removeForkedFromPool(this.forked, pid, this.pidMap);
+    this.onProcessDisconnect(pid);
   }
 
   /**
@@ -114,6 +117,8 @@ class ChildProcessPool {
       this.dataRespond(data, id);
     }
   }
+
+  /* -------------- caller -------------- */
 
   /**
   * send [Send request to a process]
@@ -154,6 +159,36 @@ class ChildProcessPool {
         this.getForkedFromPool().send({ action: taskName, params, id });
       }
     });
+  }
+
+  /**
+  * disconnect [shutdown a sub process or all sub processes]
+  * @param  {[String]} id [id bound with a sub process. If none is given, all sub processes will be killed.]
+  */
+  disconnect(id) {
+    if (id !== undefined) {
+      const pid = this.pidMap.get(id);
+      const fork = this.forked.find(p => p.pid === pid);
+      if (fork) fork.disconnect();
+    } else {
+      console.warn('ChildProcessPool: The all sub processes will be shutdown!');
+      this.forked.forEach(fork => {
+        fork.disconnect();
+      });
+    }
+  }
+
+  /**
+  * setMaxInstanceLimit [set the max count of sub process instances created by pool]
+  * @param  {[Number]} count [the max count instances]
+  */
+  setMaxInstanceLimit(count) {
+    if (!Number.isInteger(count) || count <= 0)
+      return console.warn('ChildProcessPool: setMaxInstanceLimit - the param count must be an positive integer!');
+    if (count < this.maxInstance)
+      console.warn(`ChildProcesspool: setMaxInstanceLimit - the param count is less than old value ${this.maxInstance} !`);
+
+    this.maxInstance = count;
   }
 }
 

@@ -322,8 +322,9 @@ const serviceAndService = () => {
 }
 
 /* -------------- ChildProcessPool -------------- */
-const childProcessPoll = () => {
-  const maxProcessCount = 2;
+const childProcessPool = () => {
+  const maxProcessCount = 6;
+  const idForTest5 = 'test5id';
   const processPool = new ChildProcessPool({
     path: path.join(__dirname, 'child_process/child1.js'),
     max: maxProcessCount,
@@ -352,13 +353,12 @@ const childProcessPoll = () => {
       });
     });
 
-    it(`the count of child processes should be equal to ${maxProcessCount}`, (callback) => {
+    it(`the count of child processes should be equal to ${3}`, (callback) => {
       processPool.send('test3', { value: "test3" }).then((rsp) => {
         if (
           !rsp.error &&
           rsp.result.value === 'test3' &&
-          processPool.forked.length === 2 &&
-          processPool.forkIndex === 1
+          processPool.forked.length === 3
         ) {
           callback();
         } else {
@@ -370,7 +370,8 @@ const childProcessPoll = () => {
     it('send request to all process in processPool and get all response', (callback) => {
       processPool.sendToAll('test4', { value: "test4" }).then((rsp) => {
         if (
-          rsp.length === maxProcessCount &&
+          rsp.length === 3 &&
+          processPool.forked.length === 3 &&
           rsp.every(info => (!info.error && info.result.value === "test4"))
         ) {
           callback();
@@ -378,6 +379,32 @@ const childProcessPoll = () => {
           callback('test4 failed!');
         }
       });
+    });
+
+    it('disconnect a process in processPool and get sub processes count', (callback) => {
+      processPool.send('test5', { value: "test5" }, idForTest5).then(async(rsp) => {
+        console.log(rsp, processPool.forked.length, processPool.pidMap);
+        if (rsp.result.value === "test5") {
+          processPool.disconnect(idForTest5);
+          setTimeout(() => {
+            if (processPool.forked.length === (4 - 1))
+              callback();
+            else
+              callback("test5 failed!")
+          }, 1e3);
+        } else {
+          callback("test5 failed!");
+        }
+      });
+    });
+
+    it('set max instance count limit of processPool', (callback) => {
+      processPool.setMaxInstanceLimit(10);
+      if (processPool.maxInstance === 10) {
+        callback();
+      } else {
+        callback('test6 failed!');
+      }
     });
   });
 }
@@ -388,6 +415,6 @@ module.exports = {
     mainAndService();
     rendererAndService();
     serviceAndService();
-    childProcessPoll();
+    childProcessPool();
   }
 };

@@ -11,4 +11,10 @@
     })
     .registry('test4', (params) => {
       return params;
+    })
+    .registry('test5', (params) => {
+      return params;
+    })
+    .registry('test6', (params) => {
+      return params;
     });
