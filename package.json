@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
