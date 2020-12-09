@@ -2,14 +2,48 @@
 ---------------
 > Test on electron@8.2.0 / 9.3.5
 
-#### I. What can be used for
+#### Contents
+```sh
+├── Contents (you are here!)
+├── * What can be used for?
+|   ├── In Electron Project
+|   └── In Nodejs/Electron Project
+├── * Install
+├── * Instruction1: Service
+│   ├── The arguments to create a service
+│   ├── Enable service auto reload after code changed
+│   └── The methods of a Service instance
+├── * Instruction2: MessageChannel
+│   ├── The methods of MessageChannel
+│   └── A full usage
+├── * Instruction3: ChildProcessPool
+│   ├── Create a childprocess pool
+│   ├── Send request to a process instance
+│   ├── Send request to all process instances
+│   ├── Destroy the child processes of the process pool
+│   └── Set the max instance limit of pool
+├── * Instruction4: ProcessHost
+│   ├── Require it in a sub process
+│   ├── Registry a task with unique name
+│   ├── Working with ChildProcessPool
+│   └── Unregistry a task with unique name
+├── Examples
+|
+```
+
+#### I. What can be used for?
 -----
 
 1. In Electron Project
+- 1）Servcie
+- 2）MessageChannel
 
 Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupying cpu into rendering process instead of in main process, exactly you can use it for. Check usage of `Servcie` and `MessageChannel` below.
 
 2. In Nodejs/Electron Project
+
+- 1）ChildProcessPool
+- 2）ProcessHost
 
 Besides, If you want to create some sub processes (see nodejs `child_process`) that not depends on `electron runtime`, there is a process-pool written for pure `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
 
@@ -29,7 +63,7 @@ $: yarn add electron-re
 
 #### III. Instruction 1: Service
 -----
-> Working with MessageChannel, remember to check "Instruction 2".
+>Used in Electron project, working with MessageChannel, remember to check "Instruction 2".
 
 ##### 1. The arguments to create a service
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
@@ -107,7 +141,7 @@ ipcRenderer.on('channel1', (event, result) => {
 
 #### IV. Instruction 2: MessageChannel
 -----
-> Working with Service
+>Used in Electron project, working with Service.
 
 When sending data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`, And also it can be used to replace other build-in `ipc` methods, more flexible.
 
@@ -239,7 +273,7 @@ MessageChannel.invoke('main', 'channel4', { value: 'test4' });
 
 #### V. Instruction 3: ChildProcessPool
 -----
-> Working with ProcessHost, remember to check "Instruction 4".
+>Used in Nodejs/Electron project, working with ProcessHost, remember to check "Instruction 4".
 
 Multi-process helps to make full use of multi-core CPU, let's see some differences between multi-process and multi-thread:
 
@@ -316,7 +350,7 @@ global.ipcUploadProcess.sendToAll(
 ```js
 global.ipcUploadProcess.disconnect(id);
 ```
-##### 5. processPool.setMaxInstanceLimit(number)
+##### 5. Set the max instance limit of pool
 
 In addition to using the `max` parameter to specify the maximum number of child process instances created by the process pool, you can also call this method to dynamically set the number of child process instances that need to be created.
 
@@ -326,7 +360,7 @@ global.ipcUploadProcess.setMaxInstanceLimit(number);
 
 #### VI. Instruction 4: ProcessHost
 -----
-> working with ChildProcessPool
+> Used in Nodejs/Electron project, working with ChildProcessPool.
 
 In `Instruction 3`, We already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
 
