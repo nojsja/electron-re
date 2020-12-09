@@ -29,7 +29,7 @@ $: yarn add electron-re
 
 #### III ) Instruction 1: Service
 -----
-> working with MessageChannel, remember to check usage "Instruction 2".
+> working with MessageChannel, remember to check "Instruction 2".
 
 ##### 1. The arguments to create a service
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
@@ -48,32 +48,22 @@ const myService = new BrowserService('app', 'path/to/app.service.js', options);
 
 ##### 2. Enable service auto reload after code changed
 The `auto-reload` feature is based on nodejs - `fs.watch` api, When webSecurity closed and in `dev` mode, service will reload after the code of service changed.
+
+1.Set dev mode in `new BrowserService()` options  
+2.Set webSecurity closed
 ```js
-/* --- package.json --- */
-{
-  ...
-  scripts: {
-    // method1: declare dev env
-    start: 'cross-env NODE_ENV=dev electron index.js',
-    // method2: declare development env
-    start: 'cross-env NODE_ENV=development electron index.js',
-  }
-  ...
-}
-
 /* --- main.js --- */
-
-// method3: set nodeEnv directly instead of declaring it in package.json
-global.nodeEnv = 'dev';
 const myService = new BrowserService('app', 'path/to/app.service.js', {
   ...options,
+  // set dev mode
+  dev: true,
   // with webSecurity closed
   webPreferences: { webSecurity: false }
 });
 
 ```
 
-##### 3. The methods of a service instance
+##### 3. The methods of a Service instance
 
 The service instance is a customized `BrowserWindow` instance too, initialized by a file worked with `commonJs` module, so you can use `require('name')` and can't use `import some from 'name'` syntax. It has two extension methods:
 
@@ -121,13 +111,49 @@ ipcRenderer.on('channel1', (event, result) => {
 
 When sending data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`, And also it can be used to replace other build-in `ipc` methods, more flexible.
 
-##### 1. Confirm to require it in main process entry first
+##### The methods of MessageChannel
 
-in main process：
-
+1.Public methods，used in Main-process/Renderer-process/Service
 ```js
-/* --- main --- */
+/* send data to a service - like the build-in ipcMain.send */
+MessageChannel.send('service-name', channel, params);
+/* send data to a service and return a Promise - extension method */
+MessageChannel.invoke('service-name', channel, params);
+/*
+  send data to a renderer/servcie which id is same as the given windowId/webContentsId,
+  same as ipcRenderer.sendTo,
+  recommend to use it when we want to send data from main/service to a renderer window
+*/
+MessageChannel.sendTo('windowId/webContentsId', channel, params);
+/* listen a channel, same as ipcMain.on/ipcRenderer.on */
+MessageChannel.on(channel, func);
+/* listen a channel once, same as ipcMain.once/ipcRenderer.once */
+MessageChannel.once(channel, func);
 
+```
+
+2.Only used in Renderer-process/Service
+```js
+/* send data to main process - like the build-in ipcRender.send */
+MessageChannel.send('main', channel, params);
+/* send data to main process and return a Promise - extension method */
+MessageChannel.invoke('main', channel, params);
+
+```
+
+3.Only used in Main-process/Service
+```js
+/*
+  handle a channel signal, extension method,
+  and you can return data directly or return a Promise instance
+*/
+MessageChannel.handle(channel, processorFunc);
+```
+
+##### A full usage
+
+- 1）In main process
+```js
 const {
   BrowserService,
   // must required in main.js even if you don't use it
@@ -142,19 +168,15 @@ app.whenReady().then(() => {
   myService.connected().then(() => {
     // open devtools in dev mode for debugging
     if (isInDev) myService.openDevTools();
-    // send data to a service - like the build-in ipcMain.send
     MessageChannel.send('app', 'channel1', { value: 'test1' });
-    // send data to a service and return a Promise - extension method
     MessageChannel.invoke('app', 'channel2', { value: 'test1' }).then((response) => {
       console.log(response);
     });
-    // listen a channel, same as ipcMain.on
+
     MessageChannel.on('channel3', (event, response) => {
       console.log(response);
     });
 
-    // handle a channel signal, same as ipcMain.handle
-    // you can return data directly or return a Promise instance
     MessageChannel.handle('channel4', (event, response) => {
       console.log(response);
       return { res: 'channel4-res' };
@@ -164,80 +186,60 @@ app.whenReady().then(() => {
 });
 ```
 
-##### 2. Use it to send/receive data in a service named app
-
-in a service process named app：
-
+- 2）Send or receive data in a service named app
 ```js
-/* --- service-app --- */
 const { ipcRenderer } = require('electron');
 const { MessageChannel } = require('electron-re');
 
-// listen a channel, same as ipcRenderer.on
 MessageChannel.on('channel1', (event, result) => {
   console.log(result);
 });
 
-// handle a channel signal, just like ipcMain.handle
 MessageChannel.handle('channel2', (event, result) => {
   console.log(result);
   return { response: 'channel2-response' }
 });
 
-// send data to another service and return a promise , just like ipcRenderer.invoke
 MessageChannel.invoke('app2', 'channel3', { value: 'channel3' }).then((event, result) => {
   console.log(result);
 });
 
-// send data to a service - like the build-in ipcRenderer.send
 MessageChannel.send('app', 'channel4', { value: 'channel4' });
 
 
 ```
-
-##### 3. Use it to send/receive data in an another service named app2
-
+- 3）Send or receive data in a service named app2
 ```js
-
-/* --- service-app2 --- */
-
-// handle a channel signal, just like ipcMain.handle
 MessageChannel.handle('channel3', (event, result) => {
   console.log(result);
   return { response: 'channel3-response' }
 });
 
-// listen a channel, same as ipcRenderer.once
 MessageChannel.once('channel4', (event, result) => {
   console.log(result);
 });
 
-// send data to main process, just like ipcRenderer.send
 MessageChannel.send('main', 'channel3', { value: 'channel3' });
-// send data to main process and return a Promise, just like ipcRenderer.invoke
+MessageChannel.send('main', 'channel3', { value: 'channel3' });
 MessageChannel.invoke('main', 'channel4', { value: 'channel4' });
 
 ```
 
-##### 4. Use it to send/receive data in a render process window
+- 3）Send or receive data in a renderer window
 
 ```js
-/* --- render process --- */
 const { ipcRenderer } = require('electron');
 const { MessageChannel } = require('electron-re');
 
-// send data to a service
-MessageChannel.send('app', ....);
-MessageChannel.invoke('app', ....);
-
-// send data to main process
-MessageChannel.send('main', ....);
-MessageChannel.invoke('main', ....);
+MessageChannel.send('app', 'channel1', { value: 'test1'});
+MessageChannel.invoke('app2', 'channel3', { value: 'test2' });
+MessageChannel.send('main', 'channel3', { value: 'test3' });
+MessageChannel.invoke('main', 'channel4', { value: 'test4' });
 ```
 
 #### V ) Instruction 3: ChildProcessPool
 -----
-> working with ProcessHost, remember to check usage "Instruction 4".
+> working with ProcessHost, remember to check "Instruction 4".
 
 Multi-process helps to make full use of multi-core CPU, let's see some differences between multi-process and multi-thread:
 
@@ -269,7 +271,7 @@ global.ipcUploadProcess = new ChildProcessPool({
 * 2）params - `data`  
   The data passed to process, it's neccessary.
 * 3）params - `id`  
-  The unique id bound to a process instance. Sometime you send request to a process with special data, then expect to get callback data from that, you can give a unique id in `send` function. Each time `ChildProcessPool` will send a request to the process bound with this id, OR if give a empty/undefined/null id, pool will select a process random.
+  The unique id bound to a process instance(id will be automatically bound after call `send()`). Sometime you send request to a process with special data, then expect to get callback data from that, you can give a unique id in `send` function, each time pool will send a request to the process bound with this id. If you give an empty/undefined/null id, pool will select a process random.
 
 ```js
 global.ipcUploadProcess.send(
@@ -303,11 +305,30 @@ global.ipcUploadProcess.sendToAll(
 });
 ```
 
+##### 4. Destroy the child processes of the process pool
+
+- If you do not specify `id`, all child processes will be destroyed. Specifying the `id` parameter can separately destroy a child process bound to this `id` value.
+
+- After the destruction, using the process pool to send a new request, a new child process will be created automatically.
+
+- It should be noted that the `id` binding operation is automatically performed after the `processPool.send('task-name', params, id)` method is called.
+
+```js
+global.ipcUploadProcess.disconnect(id);
+```
+##### 5. processPool.setMaxInstanceLimit(number)
+
+In addition to using the `max` parameter to specify the maximum number of child process instances created by the process pool, you can also call this method to dynamically set the number of child process instances that need to be created.
+
+```js
+global.ipcUploadProcess.setMaxInstanceLimit(number);
+```
+
 #### VI ) Instruction 4: ProcessHost
 -----
 > working with ChildProcessPool
 
-In `Instruction 3`, we already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
+In `Instruction 3`, We already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
 
 Using `ProcessHost` we will no longer pay attention to the message sending/receiving between main process and sub processes. Just declaring a task with a unique service-name and put your processing code into a function. And remember that if the code is async, return a Promise instance instead.
 
@@ -316,6 +337,7 @@ Using `ProcessHost` we will no longer pay attention to the message sending/recei
 const { ProcessHost } = require('electron-re');
 ```
 ##### 2. Registry a task with unique name
+> Support chain call
 ```js
 ProcessHost
   .registry('init-works', (params) => {
@@ -355,6 +377,16 @@ global.ipcUploadProcess.send(
 /* 2. handle this request in sub process */
 ...
 
+```
+
+##### 4. Unregistry a task with unique name(if necessary)
+> Support chain call
+
+```js
+ProcessHost
+  .unregistry('init-works')
+  .unregistry('async-works')
+  ...
 ```
 
 #### VII ) Examples

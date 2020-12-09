@@ -13,7 +13,7 @@ class BrowserService {
     * @param  {[String]} _path [path to service file]
     * @param  {[Object]} options [options to create BrowserWindow]
     */
-  constructor(name, _path, options={}) {
+  constructor(name, _path, options={ dev: false }) {
     options.webPreferences = options.webPreferences || {};
     options.webPreferences.nodeIntegration = true;
     options.webPreferences.enableRemoteModule = true;
@@ -40,7 +40,7 @@ class BrowserService {
     });
 
     /* watch file change */
-    this.watchService(isEnvDev);
+    this.watchService(!!options.dev);
 
     this._super.connected = this.connected.bind(this);
     this._super.openDevTools = this.openDevTools.bind(this);

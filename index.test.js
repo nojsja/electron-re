@@ -9,6 +9,8 @@ const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
 const otherService = path.join(__dirname, 'test/services/other.service.js');
 
+const isInDev = process.env.NODE_ENV === 'dev';
+
 /* 创建窗口 */
 function createWindow() {
   global.mainWindow = new BrowserWindow({
@@ -30,16 +32,16 @@ describe('app ready => ', function() {
     await app.whenReady().then(() => ipcMain.on('console', (event, info)  => console.log('console => ', info)));
     global.appService = new BrowserService('app',
         entryService,
-        { webPreferences: { webSecurity: false } }
+        { dev: isInDev, webPreferences: { webSecurity: false } }
       );
     global.otherService = new BrowserService('other',
         otherService,
-        { webPreferences: { webSecurity: false } }
+        { dev: isInDev, webPreferences: { webSecurity: false } }
     );
     await global.appService.connected();
     await global.otherService.connected();
 
-    if (process.env.NODE_ENV === 'dev') global.appService.openDevTools();
+    if (isInDev) global.appService.openDevTools();
 
     createWindow();
     await new Promise(resolve => {

@@ -1,9 +1,6 @@
 /* depends */
 const { ipcRenderer, remote, ipcMain, BrowserWindow } = require('electron');
-const { isRenderer, getRandomString } = require('./utils');
-
-/* env set */
-const isMainProcess = !isRenderer;
+const { isRenderer, isMain, getRandomString } = require('./utils');
 
 /**
   * MessageChannel [消息对象]
@@ -277,9 +274,11 @@ class MessageChannelMain extends MessageChannel {
 }
 
 
-if (isMainProcess) {
+if (isMain) {
   global['globalMessage'] = global['globalMessage'] || new MessageChannelMain();
-} else {
+}
+
+if (isRenderer) {
   global['globalMessage'] = global['globalMessage'] || new MessageChannelRender();
 }
 
