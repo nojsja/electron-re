@@ -2,7 +2,7 @@
 ---------------
 > Test on electron@8.2.0 / 9.3.5
 
-#### I ) What can be used for
+#### I. What can be used for
 -----
 
 1. In Electron Project
@@ -13,7 +13,7 @@ Using `electron-re` to generate some service processs and communicate between `m
 
 Besides, If you want to create some sub processes (see nodejs `child_process`) that not depends on `electron runtime`, there is a process-pool written for pure `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
 
-#### II ) Install
+#### II. Install
 -----
 ```bash
 # 01 - for github-package depository user
@@ -27,30 +27,30 @@ $: npm install electron-re --save
 $: yarn add electron-re
 ```
 
-#### III ) Instruction 1: Service
+#### III. Instruction 1: Service
 -----
-> working with MessageChannel, remember to check "Instruction 2".
+> Working with MessageChannel, remember to check "Instruction 2".
 
 ##### 1. The arguments to create a service
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
 
-* path -- the absolute path to a js file
+* path -- The absolute path to a js file
 ```js
 const { BrowserService } = require('electron');
 const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
 ```
 
-* options -- the same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions)
+* options -- The same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions)
 ```js
 /* --- main.js --- */
 const myService = new BrowserService('app', 'path/to/app.service.js', options);
 ```
 
 ##### 2. Enable service auto reload after code changed
-The `auto-reload` feature is based on nodejs - `fs.watch` api, When webSecurity closed and in `dev` mode, service will reload after the code of service changed.
+The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity closed and in `dev` mode, service will reload after service code changed.
 
 1.Set dev mode in `new BrowserService()` options  
-2.Set webSecurity closed
+2.Get webSecurity closed
 ```js
 /* --- main.js --- */
 const myService = new BrowserService('app', 'path/to/app.service.js', {
@@ -88,7 +88,7 @@ app.whenReady().then(async() => {
   // async
   await myService.connected();
   mhyService.openDevTools();
-  /* work with webContents method, also you can use MessageChannel below */
+  /* work with webContents method, also you can use MessageChannel instead */
   mhyService.webContents.send('channel1', { value: 'test1' });
 });
 ...
@@ -98,22 +98,22 @@ app.whenReady().then(async() => {
 
 /* --- app.service.js --- */
 const { ipcRenderer } = require('electron');
-/* work with ipc method, also you can use MessageChannel instead */
+/* working with ipc method, also you can use MessageChannel instead */
 ipcRenderer.on('channel1', (event, result) => {
   // works
   ...
 });
 ```
 
-#### IV ) Instruction 2: MessageChannel
+#### IV. Instruction 2: MessageChannel
 -----
-> working with Service
+> Working with Service
 
 When sending data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`, And also it can be used to replace other build-in `ipc` methods, more flexible.
 
 ##### The methods of MessageChannel
 
-1.Public methods，used in Main-process/Renderer-process/Service
+1.Public methods，used in Main-Pocess/Renderer-Process/Service
 ```js
 /* send data to a service - like the build-in ipcMain.send */
 MessageChannel.send('service-name', channel, params);
@@ -122,7 +122,7 @@ MessageChannel.invoke('service-name', channel, params);
 /*
   send data to a renderer/servcie which id is same as the given windowId/webContentsId,
   same as ipcRenderer.sendTo,
-  recommend to use it when we want to send data from main/service to a renderer window
+  recommend to use it when you want to send data from main/service to a renderer window
 */
 MessageChannel.sendTo('windowId/webContentsId', channel, params);
 /* listen a channel, same as ipcMain.on/ipcRenderer.on */
@@ -169,7 +169,7 @@ app.whenReady().then(() => {
     // open devtools in dev mode for debugging
     if (isInDev) myService.openDevTools();
     MessageChannel.send('app', 'channel1', { value: 'test1' });
-    MessageChannel.invoke('app', 'channel2', { value: 'test1' }).then((response) => {
+    MessageChannel.invoke('app', 'channel2', { value: 'test2' }).then((response) => {
       console.log(response);
     });
 
@@ -237,9 +237,9 @@ MessageChannel.send('main', 'channel3', { value: 'test3' });
 MessageChannel.invoke('main', 'channel4', { value: 'test4' });
 ```
 
-#### V ) Instruction 3: ChildProcessPool
+#### V. Instruction 3: ChildProcessPool
 -----
-> working with ProcessHost, remember to check "Instruction 4".
+> Working with ProcessHost, remember to check "Instruction 4".
 
 Multi-process helps to make full use of multi-core CPU, let's see some differences between multi-process and multi-thread:
 
@@ -324,7 +324,7 @@ In addition to using the `max` parameter to specify the maximum number of child 
 global.ipcUploadProcess.setMaxInstanceLimit(number);
 ```
 
-#### VI ) Instruction 4: ProcessHost
+#### VI. Instruction 4: ProcessHost
 -----
 > working with ChildProcessPool
 
@@ -389,7 +389,7 @@ ProcessHost
   ...
 ```
 
-#### VII ) Examples
+#### VII. Examples
 -----
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
