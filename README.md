@@ -6,8 +6,8 @@
 ```sh
 ├── Contents (you are here!)
 ├── * What can be used for?
-|   ├── In Electron Project
-|   └── In Nodejs/Electron Project
+│   ├── In Electron Project
+│   └── In Nodejs/Electron Project
 ├── * Install
 ├── * Instruction1: Service
 │   ├── The arguments to create a service
@@ -190,8 +190,7 @@ MessageChannel.handle(channel, processorFunc);
 ```js
 const {
   BrowserService,
-  // must required in main.js even if you don't use it
-  MessageChannel 
+  MessageChannel // must required in main.js even if you don't use it
 } = require('electron-re');
 const isInDev = process.env.NODE_ENV === 'dev';
 ...
@@ -238,10 +237,9 @@ MessageChannel.invoke('app2', 'channel3', { value: 'channel3' }).then((event, re
   console.log(result);
 });
 
-MessageChannel.send('app', 'channel4', { value: 'channel4' });
-
-
+MessageChannel.send('app2', 'channel4', { value: 'channel4' });
 ```
+
 - 3）Send or receive data in a service named app2
 ```js
 MessageChannel.handle('channel3', (event, result) => {
@@ -281,7 +279,7 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 2. Processes consume more computer resources than threads.
 3. The processes will not affect each other, a thread hanging up will cause the whole process to hang up.
 
-The `ChildProcessPool` is degisned for those nodejs applications with multi-process architecture. E.g. in the demo [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload), I use `ChildProcessPool` to manage thousands of uploading tasks and handle file reading and writing.
+The `ChildProcessPool` is degisned for those nodejs applications with multi-process architecture. e.g In the demo [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload), I use `ChildProcessPool` to manage thousands of uploading tasks and handle file reading and writing.
 
 ##### 1. Create a childprocess pool
 * path - the absolute path to a js file
@@ -303,7 +301,7 @@ global.ipcUploadProcess = new ChildProcessPool({
 * 1）params - `taskName`  
   A task registried with `ProcessHost`, it's neccessary.
 * 2）params - `data`  
-  The data passed to process, it's neccessary.
+  The data passed to process, neccessary.
 * 3）params - `id`  
   The unique id bound to a process instance(id will be automatically bound after call `send()`). Sometime you send request to a process with special data, then expect to get callback data from that, you can give a unique id in `send` function, each time pool will send a request to the process bound with this id. If you give an empty/undefined/null id, pool will select a process random.
 
@@ -327,7 +325,7 @@ global.ipcUploadProcess.send(
 * 1）params - `taskName`  
   A task registried with `ProcessHost`(check usage below), it's neccessary.
 * 2）params - `data`  
-  The data passed to process, it's neccessary.
+  The data passed to process, neccessary.
 
 ```js
 global.ipcUploadProcess.sendToAll(
@@ -350,6 +348,7 @@ global.ipcUploadProcess.sendToAll(
 ```js
 global.ipcUploadProcess.disconnect(id);
 ```
+
 ##### 5. Set the max instance limit of pool
 
 In addition to using the `max` parameter to specify the maximum number of child process instances created by the process pool, you can also call this method to dynamically set the number of child process instances that need to be created.
@@ -386,7 +385,7 @@ function initWorks(params) {
   return params;
 }
 
-function AsyncWorks(params) {
+function asyncWorks(params) {
   console.log(params);
   return fetch(url);
 }
@@ -428,6 +427,6 @@ ProcessHost
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
 
-3. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
+2. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
 
 3. Also you can check the `index.dev.js` and `test` dir in root, there are some cases for a full usage.
