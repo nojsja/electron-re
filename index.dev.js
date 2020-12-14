@@ -26,7 +26,7 @@ function createWindow() {
     },
   });
 
-  processManager.openProcessManager('dev');
+  processManager.openWindow('dev');
   global.mainWindow.loadFile(entryHtml);
 }
 

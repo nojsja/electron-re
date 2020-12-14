@@ -1,11 +1,7 @@
 {
-  "name": "react-mobx-template",
+  "name": "process-manager",
   "description": "[ react16 + mobx4 + webpack4 + react-router4 + babel7 + eslint + editorconfig ] development template.",
   "version": "1.0.1",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nojsja/react-mobx-template.it"
-  },
   "author": {
     "name": "NoJsJa",
     "email": "yangwei020154@gmail.com"
@@ -26,8 +22,6 @@
     "@ant-design/icons": "^4.0.2",
     "antd": "^4.6.3",
     "history": "^4.7.2",
-    "mobx": "^4.4.1",
-    "mobx-react": "^5.2.8",
     "prop-types": "^15.6.2",
     "react": "^16.5.1",
     "react-dom": "^16.5.1",

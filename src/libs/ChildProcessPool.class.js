@@ -1,5 +1,6 @@
 const { fork } = require('child_process');
 const _path = require('path');
+const EventEmitter = require('events');
 
 const { getRandomString, removeForkedFromPool } = require('./utils');
 
@@ -16,6 +17,7 @@ class ChildProcessPool {
     this.forkedPath = path;
     this.forkIndex = 0;
     this.maxInstance = max;
+    this.event = new EventEmitter();
   }
 
   /* -------------- internal -------------- */

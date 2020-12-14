@@ -266,15 +266,31 @@ class MessageChannelMain extends MessageChannel {
      * registry [注册BrowserWindow和BrowserService]
      * @param  {[String]} name [唯一的名字]
      * @param  {[String]} id [window id]
-     * @param  {[BrowserWIndow]} win [window实例]
+     * @param  {[String]} pid [process id]
      */
   registry(name, id, pid) {
     if (name === 'main') throw new Error(`MessageChannel: you can not registry a service named:${name}, it's reserved for the main process!`)
     if (this.services[name]) console.warn(`MessageChannel: the service - ${name} has been registeried!`)
-    // if (!BrowserWindow.fromId(id)) throw new Error(`MessageChannelMain: can not find a window with id: ${id}`);
     this.services[name] = { name, id, pid };
     this.event.emit('registry', this.services[name]);
   }
+
+  /**
+     * unregistry [注册BrowserWindow和BrowserService]
+     * @param  {[String]} name [唯一的名字]
+     * @param  {[String]} id [window id]
+     * @param  {[String]} pid [process id]
+     */
+    unregistry(name) {
+      if (name === 'main') throw new Error(`MessageChannel: you can not unregistry a service named:${name}, it's reserved for the main process!`);
+      if (this.services[name]) console.warn(`MessageChannel: the service - ${name} will be unregisteried!`);
+      if (this.services[name]) {
+        this.event.emit('unregistry', {...this.services[name]});
+        delete this.services[name];
+      } else {
+        console.warn(`MessageChannel: unregistry -> the service - ${name} is not found!`);
+      }
+    }
 }
 
 

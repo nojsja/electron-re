@@ -7,6 +7,7 @@ if (isRenderer) {
 if (isMain) {
   exports.BrowserService = require('./libs/BrowserService.class')
   exports.MessageChannel = require('./libs/MessageChannel.class');
+  exports.ProcessManager = require('./libs/ProcessManager.class');
 }
 
 exports.ChildProcessPool = require('./libs/ChildProcessPool.class');

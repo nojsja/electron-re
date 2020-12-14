@@ -1,59 +1,77 @@
 import React, { Component } from 'react';
-
-import { inject, observer } from 'mobx-react';
 import { Row, Col, Drawer, Table, Input, Progress, Tooltip, Select } from 'antd';
+import { CloseOutlined, ReloadOutlined, SettingOutlined } from '@ant-design/icons';
+import { func } from 'prop-types';
 
+import { formatSizeStr } from 'utils/utils';
+
+const { ipcRenderer } = require('electron');
 
 class index extends Component {
+  constructor() {
+    super();
+    ipcRenderer.on('process:update-list', function(event, args) {
+      this.setState({
+        processes: args
+      });
+    }.bind(this));
+  }
+
+  state = {
+    processes: []
+  }
 
   formatData = () => {
     const columns = [
       {
-        title: 'Name',
-        dataIndex: 'name',
-        sorter: (a, b) => a.name.length - b.name.length,
+        title: 'Pid',
+        dataIndex: 'pid',
+        sorter: (a, b) => a.pid - b.pid,
         sortDirections: ['descend', 'ascend'],
       },
       {
-        title: 'Age',
-        dataIndex: 'age',
-        defaultSortOrder: 'descend',
-        sorter: (a, b) => a.age - b.age,
+        title: 'Parent',
+        dataIndex: 'ppid',
+        sortDirections: ['descend', 'ascend'],
+        sorter: (a, b) => a.ppid - b.ppid,
       },
       {
-        title: 'Address',
-        dataIndex: 'address',
-        sorter: (a, b) => a.address.length - b.address.length,
+        title: 'Memory',
+        dataIndex: 'memory',
+        sorter: (a, b) => a.memory - b.memory,
         sortDirections: ['descend', 'ascend'],
+      },
+      {
+        title: 'CPU(%)',
+        dataIndex: 'cpu',
+        sorter: (a, b) => a.cpu - b.cpu,
+        sortDirections: ['descend', 'ascend'],
+      },
+      {
+        title: 'Actions',
+        dataIndex: 'action',
+        render: () => {
+          return (
+            <span className="process-manager-actions hover-pointer">
+              <SettingOutlined />
+              <ReloadOutlined />
+              <CloseOutlined />
+            </span>
+          );
+        }
       },
     ];
+
+    const { processes } = this.state;
     
-    const data = [
-      {
-        key: '1',
-        name: 'Kohn Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-      },
-      {
-        key: '2',
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-      },
-      {
-        key: '3',
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sidney No. 1 Lake Park',
-      },
-      {
-        key: '4',
-        name: 'Jim Red',
-        age: 32,
-        address: 'London No. 2 Lake Park',
-      },
-    ];
+    const data = Object.keys(processes).map(pid => ({
+      name: pid,
+      cpu: (processes[pid].cpu).toFixed(2),
+      memory: formatSizeStr(processes[pid].memory),
+      pid: pid,
+      ppid: processes[pid].ppid,
+      key: pid
+    }));
 
     return { data, columns };
   }
@@ -65,7 +83,7 @@ class index extends Component {
   render() {
     const { data, columns } = this.formatData();
     return (
-      <div>
+      <div className="process-manager">
         <Table
           columns={columns}
           dataSource={data}
