@@ -1,6 +1,7 @@
 /* depends */
 const { ipcRenderer, remote, ipcMain, BrowserWindow } = require('electron');
 const { isRenderer, isMain, getRandomString } = require('./utils');
+const EventEmitter = require('events');
 
 /**
   * MessageChannel [消息对象]
@@ -11,7 +12,9 @@ const { isRenderer, isMain, getRandomString } = require('./utils');
   * @return {[Object]} {invoke, send, handle} [ipcRender functions rewriten with ipcRenderer.sendTo]
   */
  class MessageChannel {
-   constructor() {}
+   constructor() {
+    this.event = new EventEmitter();
+   }
 };
 
 /**
@@ -134,12 +137,12 @@ class MessageChannelRender extends MessageChannel {
   /**
      * registry [注册BrowserWindow和BrowserService]
      * @param  {[String]} name [唯一的名字]
-     * @param  {[String]} type [类型window/service]
      * @param  {[String]} id [window id]
+     * @param  {[String]} pid [process id]
      */
-  registry(name, id, windowElem) {
+  registry(name, id, pid) {
     if (name === 'main') throw new Error(`MessageChannel: you can not registry a service named:${name}, it's reserved for the main process!`)
-    return ipcRenderer.invoke('MessageChannel.registryService', { name, id, win: windowElem });
+    return ipcRenderer.invoke('MessageChannel.registryService', { name, id, pid });
   }
 
 }
@@ -156,7 +159,7 @@ class MessageChannelMain extends MessageChannel {
     this.services = {};
     /* 根据name获取window id */
     ipcMain.handle('MessageChannel.getIdFromName', (e, args) => {
-      return this.services[args.name];
+      return (this.services[args.name] || {}).id;
     });
     /* 使用name和window id注册一个服务 */
     ipcMain.handle('MessageChannel.registryService', (e, args) => {
@@ -219,7 +222,7 @@ class MessageChannelMain extends MessageChannel {
     * @param  {[Any]} args [携带参数(会被序列化，不会传递对象Proptype信息)]
     */
   send(name, channel, args={}) {
-    const id = this.services[name];
+    const id = (this.services[name] || {}).id;
     
     if (!id) throw new Error(`MessageChannel: can not get the id of the window names ${name}`);
     const win = BrowserWindow.fromId(id);
@@ -265,11 +268,12 @@ class MessageChannelMain extends MessageChannel {
      * @param  {[String]} id [window id]
      * @param  {[BrowserWIndow]} win [window实例]
      */
-  registry(name, id, win) {
+  registry(name, id, pid) {
     if (name === 'main') throw new Error(`MessageChannel: you can not registry a service named:${name}, it's reserved for the main process!`)
     if (this.services[name]) console.warn(`MessageChannel: the service - ${name} has been registeried!`)
     // if (!BrowserWindow.fromId(id)) throw new Error(`MessageChannelMain: can not find a window with id: ${id}`);
-    this.services[name] = id;
+    this.services[name] = { name, id, pid };
+    this.event.emit('registry', this.services[name]);
   }
 }
 

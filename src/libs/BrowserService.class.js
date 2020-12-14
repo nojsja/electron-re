@@ -28,7 +28,10 @@ class BrowserService {
 
     this.fails = [];
     this.id = this._super.id;
-    MessageChannel.registry(name, this.id, this);
+
+    this.callbacks.push(() => {
+      MessageChannel.registry(name, this.id, this._super.webContents.getOSProcessId());
+    });
 
     /* state change */
     this._super.webContents.on('did-finish-load', this.didFinishLoad);

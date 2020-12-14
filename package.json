@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/nojsja/electron-re#readme",
   "dependencies": {
-    "electron": "8.2.0"
+    "electron": "8.2.0",
+    "pidusage": "^2.0.21"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",

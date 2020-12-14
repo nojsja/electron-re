@@ -1,0 +1,73 @@
+{
+  "name": "react-mobx-template",
+  "description": "[ react16 + mobx4 + webpack4 + react-router4 + babel7 + eslint + editorconfig ] development template.",
+  "version": "1.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nojsja/react-mobx-template.it"
+  },
+  "author": {
+    "name": "NoJsJa",
+    "email": "yangwei020154@gmail.com"
+  },
+  "scripts": {
+    "start": "npm run start-dll && cross-env NODE_ENV=development webpack serve",
+    "start-dll": "cross-env NODE_ENV=development webpack --config webpack.dll.config.js",
+    "build": "npm run start-dll && cross-env NODE_ENV=production webpack --config webpack.prod.config.js"
+  },
+  "keywords": [
+    "react",
+    "mobx",
+    "react-router",
+    "webpack4",
+    "template"
+  ],
+  "dependencies": {
+    "@ant-design/icons": "^4.0.2",
+    "antd": "^4.6.3",
+    "history": "^4.7.2",
+    "mobx": "^4.4.1",
+    "mobx-react": "^5.2.8",
+    "prop-types": "^15.6.2",
+    "react": "^16.5.1",
+    "react-dom": "^16.5.1",
+    "react-hot-loader": "^4.13.0",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.7",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-decorators": "^7.7.4",
+    "@babel/plugin-proposal-export-namespace-from": "^7.12.1",
+    "@babel/plugin-proposal-function-sent": "^7.12.1",
+    "@babel/plugin-proposal-numeric-separator": "^7.12.7",
+    "@babel/plugin-proposal-throw-expressions": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/preset-react": "^7.12.7",
+    "@babel/preset-stage-2": "^7.8.3",
+    "babel-loader": "^8.2.1",
+    "clean-webpack-plugin": "^0.1.19",
+    "concurrently": "^3.6.1",
+    "cross-env": "^5.2.0",
+    "css-loader": "^0.28.11",
+    "eslint": "^5.6.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.11.1",
+    "event-stream": "^4.0.1",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "^2.0.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "less": "^3.11.3",
+    "less-loader": "^6.1.3",
+    "source-map-support": "^0.5.9",
+    "style-loader": "^0.21.0",
+    "url-loader": "^1.1.2",
+    "webpack": "^4.19.0",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-cli": "^4.2.0"
+  }
+}
