@@ -7,10 +7,14 @@
     "start": "cross-env NODE_ENV=dev electron index.dev.js --inspect=5858",
     "test": "cross-env NODE_ENV=dev TEST=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "test-src": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "compile": "babel src --out-dir lib"
+    "compile": "npm run build-libs; npm run build-ui",
+    "build-libs": "babel src --out-dir lib --ignore src/ui; ",
+    "build-ui": "mkdir lib/ui -p; cd ./src/ui; npm run build; cp ./dist/* ../../lib/ui -rf; cd -"
   },
   "keywords": [
-    "electron"
+    "electron",
+    "electron-re",
+    "electron-process-manager"
   ],
   "author": "NoJsJa",
   "license": "MIT",
@@ -20,14 +24,23 @@
   },
   "homepage": "https://github.com/nojsja/electron-re#readme",
   "dependencies": {
-    "electron": "8.2.0",
     "pidusage": "^2.0.21"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.7",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-decorators": "^7.7.4",
+    "@babel/plugin-proposal-export-namespace-from": "^7.12.1",
+    "@babel/plugin-proposal-function-sent": "^7.12.1",
+    "@babel/plugin-proposal-numeric-separator": "^7.12.7",
+    "@babel/plugin-proposal-throw-expressions": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",
     "electron-mocha": "^9.3.2"
+  },
+  "peerDependencies": {
+    "electron": "8.2.0"
   }
 }

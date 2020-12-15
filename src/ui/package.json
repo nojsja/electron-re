@@ -1,7 +1,6 @@
 {
   "name": "process-manager",
-  "description": "[ react16 + mobx4 + webpack4 + react-router4 + babel7 + eslint + editorconfig ] development template.",
-  "version": "1.0.1",
+  "description": "process-manager",
   "author": {
     "name": "NoJsJa",
     "email": "yangwei020154@gmail.com"
@@ -12,22 +11,9 @@
     "build": "npm run start-dll && cross-env NODE_ENV=production webpack --config webpack.prod.config.js"
   },
   "keywords": [
-    "react",
-    "mobx",
-    "react-router",
-    "webpack4",
-    "template"
+    "process-manager"
   ],
   "dependencies": {
-    "@ant-design/icons": "^4.0.2",
-    "antd": "^4.6.3",
-    "history": "^4.7.2",
-    "prop-types": "^15.6.2",
-    "react": "^16.5.1",
-    "react-dom": "^16.5.1",
-    "react-hot-loader": "^4.13.0",
-    "react-router": "^4.3.1",
-    "react-router-dom": "^4.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.7",
@@ -39,7 +25,6 @@
     "@babel/plugin-proposal-throw-expressions": "^7.12.1",
     "@babel/preset-env": "^7.12.7",
     "@babel/preset-react": "^7.12.7",
-    "@babel/preset-stage-2": "^7.8.3",
     "babel-loader": "^8.2.1",
     "clean-webpack-plugin": "^0.1.19",
     "concurrently": "^3.6.1",
@@ -62,6 +47,11 @@
     "url-loader": "^1.1.2",
     "webpack": "^4.19.0",
     "webpack-dev-server": "^3.11.0",
+    "@ant-design/icons": "^4.0.2",
+    "prop-types": "^15.6.2",
+    "react": "^16.5.1",
+    "react-dom": "^16.5.1",
+    "react-hot-loader": "^4.13.0",
     "webpack-cli": "^4.2.0"
   }
 }

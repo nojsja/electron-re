@@ -1,0 +1,21 @@
+body {
+  background-color: #ffffff;
+}
+i {
+  cursor: pointer;
+}
+.container-router {
+  padding: 0;
+}
+.container-router .toobar-header .toolbar-actions span[role=img] {
+  margin: 0 3px;
+}
+.container-router .process-table-container {
+  width: 100%;
+}
+.hover-pointer {
+  cursor: pointer;
+}
+.hover-pointer:hover {
+  transition: all 0.2s;
+}

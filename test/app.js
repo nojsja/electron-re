@@ -4,12 +4,7 @@ const { MessageChannel } = require('../lib');
 /* -------------- mainAndRenderer -------------- */
 
 ipcRenderer.once('mainAndRenderer:test1', (event, result) => {
-  console.log('rendererAndService:test1');
-  try {
-    ipcRenderer.send('mainAndRenderer:test1', result);
-  } catch (error) {
-    console.log(error);
-  }
+  ipcRenderer.send('mainAndRenderer:test1', result);
 });
 
 ipcRenderer.once('mainAndRenderer:test2', (event, result) => {

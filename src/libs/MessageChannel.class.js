@@ -37,7 +37,7 @@ class MessageChannelRender extends MessageChannel {
     */
   invoke (name, channel, args) {
     const pid = getRandomString();
-    
+
     if (name === 'main') return ipcRenderer.invoke(channel, args);
 
     return new Promise((resolve, reject) => {
@@ -141,7 +141,8 @@ class MessageChannelRender extends MessageChannel {
      * @param  {[String]} pid [process id]
      */
   registry(name, id, pid) {
-    if (name === 'main') throw new Error(`MessageChannel: you can not registry a service named:${name}, it's reserved for the main process!`)
+    if (name === 'main')
+      throw new Error(`MessageChannel: you can not registry a service named:${name}, it's reserved for the main process!`);
     return ipcRenderer.invoke('MessageChannel.registryService', { name, id, pid });
   }
 
@@ -178,7 +179,7 @@ class MessageChannelMain extends MessageChannel {
     */
   invoke (name, channel, args={}) {
     const pid = getRandomString();
-    const id = this.services[name];
+    const { id } = this.services[name];
 
     return new Promise((resolve, reject) => {
       if (name === 'main') reject(new Error(`MessageChannel: the main process can not send a message to itself!`))
@@ -285,7 +286,7 @@ class MessageChannelMain extends MessageChannel {
       if (name === 'main') throw new Error(`MessageChannel: you can not unregistry a service named:${name}, it's reserved for the main process!`);
       if (this.services[name]) console.warn(`MessageChannel: the service - ${name} will be unregisteried!`);
       if (this.services[name]) {
-        this.event.emit('unregistry', {...this.services[name]});
+        this.event.emit('unregistry', this.services[name]);
         delete this.services[name];
       } else {
         console.warn(`MessageChannel: unregistry -> the service - ${name} is not found!`);

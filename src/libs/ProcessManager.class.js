@@ -2,14 +2,19 @@ const { ipcMain, app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
 const pidusage = require('pidusage');
-const MessageChannel = require('./MessageChannel.class');
 
 class ProcessManager {
   constructor() {
     this.pidList = [process.pid];
+    this.typeMap = {
+      [process.pid]: 'main',
+    };
     this.status = 'pending';
     this.processWindow = null;
+    this.time = 2e3;
   }
+
+  /* -------------- internal -------------- */
 
   /* refresh process list */
   refreshList = () => {
@@ -19,7 +24,7 @@ class ProcessManager {
           if (err) {
             console.log(`ProcessManager: refreshList -> ${err}`);
           } else {
-            this.processWindow.webContents.send('process:update-list', records);
+            this.processWindow.webContents.send('process:update-list', { records, types: this.typeMap });
           }
           resolve();
         });
@@ -30,23 +35,26 @@ class ProcessManager {
   }
   
   /* set timer to refresh */
-  setTimer(time = 1000) {
+  setTimer() {
     if (this.status === 'started') return console.warn('ProcessManager: the timer is already started!');
 
-    const interval = async (time) => {
+    const interval = async () => {
       setTimeout(async () => {
         await this.refreshList()
-        interval(time)
-      }, time)
+        interval(this.time)
+      }, this.time)
     }
 
     this.status = 'started';
-    interval(time)
+    interval()
   }
 
+  /* -------------- function -------------- */
+
   /* listen processes with pids */
-  listen(pids) {
+  listen(pids, mark="renderer") {
     pids = (pids instanceof Array) ? pids : [pids];
+    pids.forEach((pid) => { this.typeMap[pid] = mark });
     this.pidList = Array.from(new Set(this.pidList.concat(pids)));
   }
 
@@ -56,9 +64,40 @@ class ProcessManager {
     this.pidList = this.pidList.filter(pid => !pids.includes(pid));
   }
 
+  /* openDevTools */
+  openDevTools = (pid) => {
+    BrowserWindow.getAllWindows().forEach(win => {
+      if (win.webContents.getOSProcessId() === Number(pid)) {
+        win.webContents.openDevTools({mode: 'undocked'});
+      }
+    });
+  }
+
+  /* openDevTools */
+  killProcess = (pid) => {
+    try {
+      process.kill(pid);
+    } catch (error) {
+      console.error(`ProcessManager: killProcess -> ${pid} error: ${error}`);
+    }
+  }
+
+  /**
+    * setIntervalTime [set interval (ms)]
+    * @param  {[Number]} time [a positive number to set the refresh interval]
+    */
+  setIntervalTime(time) {
+    time = Number(time);
+    if (isNaN(time)) throw new Error('ProcessManager: the time value is invalid!')
+    if (time < 100) console.warn(`ProcessManager: the refresh interval is too small!`);
+
+    this.time = time;
+  }
+
   /* open a process list window */
   openWindow(env = 'prod') {
     app.whenReady().then(async() => {
+
       this.processWindow = new BrowserWindow({
         show: false,
         width: 600,
@@ -69,15 +108,24 @@ class ProcessManager {
           enableRemoteModule: true
         },
       });
-      const loadingUrl = (env === 'dev') ? url.format({
-        pathname: '127.0.0.1:3000',
-        protocol: 'http:',
-        slashes: true,
-      }) : '../ui/index.html';
+
+      const loadingUrl = (env === 'dev') ?
+        url.format({
+          pathname: '127.0.0.1:3000',
+          protocol: 'http:',
+          slashes: true,
+        }) :
+        url.format({
+          pathname: path.join(__dirname, '../ui/index.html'),
+          protocol: 'file:',
+          slashes: true,
+        });
   
       this.processWindow.once('ready-to-show', () => {
         this.processWindow.show();
         this.setTimer(2e3);
+        ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
+        ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))
       });
       
       this.processWindow.loadURL(loadingUrl);
@@ -87,18 +135,5 @@ class ProcessManager {
 }
 
 global.processManager = global.processManager || new ProcessManager();
-
-MessageChannel.event.on('registry', () => {
-  global.processManager.listen(
-    Object
-      .keys(MessageChannel.services)
-      .map(name => (MessageChannel.services[name].pid))
-  );
-});
-MessageChannel.event.on('unregistry', ({pid}) => {
-  global.processManager.unlisten(pid)
-});
-
-MessageChannel.event.emit('registry');
 
 module.exports = global.processManager;

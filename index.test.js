@@ -4,6 +4,7 @@ const {
   MessageChannel, /* must required in index.js even if you don't use it */
   BrowserService
 } = require(`./${process.env.TEST ? 'lib' : 'src'}/index`);
+
 const test = require('./test/test.js');
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
@@ -22,12 +23,13 @@ function createWindow() {
   });
 
   global.mainWindow.loadFile(entryHtml);
+  if (isInDev) global.mainWindow.openDevTools();
 }
 
 
 /* prepare to test */
 describe('app ready => ', function() {
-  this.timeout(5e3);
+  this.timeout(6e3);
   before(async () => {
     await app.whenReady().then(() => ipcMain.on('console', (event, info)  => console.log('console => ', info)));
     global.appService = new BrowserService('app',
@@ -42,6 +44,7 @@ describe('app ready => ', function() {
     await global.otherService.connected();
 
     if (isInDev) global.appService.openDevTools();
+    if (isInDev) global.otherService.openDevTools();
 
     createWindow();
     await new Promise(resolve => {

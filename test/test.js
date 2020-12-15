@@ -332,6 +332,7 @@ const childProcessPool = () => {
       cwd: path.basename(path.join(__dirname, 'child_process/child1.js'))
     }
   });
+  
   describe('ChildProcessPool/ProcessHost test', () => {
     it('send request to a process in processPool and get response data', (callback) => {
       processPool.send('test1', { value: "test1" }).then((rsp) => {

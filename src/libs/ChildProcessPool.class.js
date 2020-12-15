@@ -3,6 +3,7 @@ const _path = require('path');
 const EventEmitter = require('events');
 
 const { getRandomString, removeForkedFromPool } = require('./utils');
+const ProcessManager = require('./ProcessManager.class');
 
 let inspectStartIndex = 5858;
 
@@ -18,6 +19,12 @@ class ChildProcessPool {
     this.forkIndex = 0;
     this.maxInstance = max;
     this.event = new EventEmitter();
+    this.event.on('fork', (pids) => {
+      ProcessManager.listen(pids, 'node');
+    });
+    this.event.on('unfork', (pids) => {
+      ProcessManager.unlisten(pids);
+    });
   }
 
   /* -------------- internal -------------- */
@@ -69,6 +76,7 @@ class ChildProcessPool {
         forked.on('exit', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
+        this.event.emit('fork', this.forked.map(fork => fork.pid));
       } else {
         this.forkIndex = this.forkIndex % this.maxInstance;
         forked = this.forked[this.forkIndex];
@@ -94,6 +102,7 @@ class ChildProcessPool {
     * @param  {[String]} pid [process pid]
     */
   onProcessDisconnect(pid){
+    this.event.emit('unfork', pid);
     removeForkedFromPool(this.forked, pid, this.pidMap);
   }
 

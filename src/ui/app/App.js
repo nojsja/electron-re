@@ -1,19 +1,12 @@
 import React from 'react';
-import { Route, Router } from 'react-router-dom';
-import { Provider } from 'mobx-react';
 
-import { createHashHistory } from 'history';
-import RouteWithSubRoutes from './router/RouteWithSubRoutes';
-import routes from './router/index';
-
-/* ------------------- global history ------------------- */
-export const history = createHashHistory();
+import Home from './views/HomePage';
+import './styles/photon.css';
+import './styles/public.less';
 
 function App() {
   return (
-    <Router history={history}>
-      <RouteWithSubRoutes route={routes} />
-    </Router>
+    <Home />
   );
 }
 

@@ -4,7 +4,8 @@ const url = require('url');
 
 const { 
   MessageChannel, /* must required in index.js even if you don't use it */
-  BrowserService
+  BrowserService,
+  ChildProcessPool
 } = require('./src/index');
 
 const processManager = require('./src/libs/ProcessManager.class');
@@ -48,6 +49,15 @@ app.whenReady().then(async() => {
       // global.appService.openDevTools();
       // global.otherService.openDevTools();
     }
+
+    global.childProcessPool = new ChildProcessPool({
+      path: path.resolve(__dirname, './test/child_process/child1.js'),
+      max: 3
+    });
+
+    global.childProcessPool.send('test1', { value: 'test1' });
+    global.childProcessPool.send('test2', { value: 'test2' });
+    global.childProcessPool.send('test2', { value: 'test3' });
 
     createWindow();
 });
