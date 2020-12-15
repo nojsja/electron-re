@@ -6,7 +6,8 @@ export default class ProcessRow extends React.Component {
     pid: PropTypes.number,
     ppid: PropTypes.number,
     memory: PropTypes.string,
-    cpu: PropTypes.number,
+    mark: PropTypes.string,
+    cpu: PropTypes.string,
     selected: PropTypes.bool,
     onSelect: PropTypes.func
   }

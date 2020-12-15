@@ -81,12 +81,12 @@ export default class ProcessManager extends React.Component {
     const { processes, sorting, types } = this.state;
     const data = Object.keys(processes)
       .map(pid => ({
-        name: pid,
+        name: Number(pid),
         cpu: (processes[pid].cpu).toFixed(2),
         memory: formatSizeStr(processes[pid].memory),
-        pid: pid,
+        pid: Number(pid),
         mark: types[pid] || 'node',
-        ppid: processes[pid].ppid,
+        ppid: Number(processes[pid].ppid),
         key: pid
       }))
       .sort((p1, p2) => {

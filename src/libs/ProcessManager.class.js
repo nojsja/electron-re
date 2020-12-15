@@ -116,7 +116,7 @@ class ProcessManager {
           slashes: true,
         }) :
         url.format({
-          pathname: path.join(__dirname, '../ui/index.html'),
+          pathname: path.join(__dirname, '../../lib/ui/index.html'),
           protocol: 'file:',
           slashes: true,
         });

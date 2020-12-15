@@ -28,6 +28,7 @@ function createWindow() {
   });
 
   processManager.openWindow('dev');
+  // processManager.openWindow('prod');
   global.mainWindow.loadFile(entryHtml);
 }
 
