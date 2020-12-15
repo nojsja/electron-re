@@ -64,7 +64,7 @@ class ChildProcessPool {
         forked = fork(
           this.forkedPath,
           this.env.NODE_ENV === "development" ? [`--inspect=${inspectStartIndex}`] : [],
-          { cwd: this.cwd, env: { ...this.env, id } }
+          { cwd: this.cwd, env: { ...this.env, id }, stdio: 'pipe' }
         );
         this.forked.push(forked);
         forked.on('message', (data) => {
@@ -76,6 +76,7 @@ class ChildProcessPool {
         forked.on('exit', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
+        ProcessManager.pipe(forked);
         this.event.emit('fork', this.forked.map(fork => fork.pid));
       } else {
         this.forkIndex = this.forkIndex % this.maxInstance;

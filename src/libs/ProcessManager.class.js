@@ -51,6 +51,21 @@ class ProcessManager {
 
   /* -------------- function -------------- */
 
+  /* pipe process.stdout */
+  pipe(pinstance) {
+    if (pinstance.stdout) {
+      pinstance.stdout.on(
+        'data',
+        (trunk) => {
+          (this.processWindow) &&
+          this.processWindow.webContents.send('process:stdout', {
+            pid: pinstance.pid,  data: trunk.toString()
+          });
+        }
+      );
+    }
+  }
+
   /* listen processes with pids */
   listen(pids, mark="renderer") {
     pids = (pids instanceof Array) ? pids : [pids];

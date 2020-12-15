@@ -5,6 +5,7 @@ import { formatSizeStr } from 'utils/utils';
 
 import ProcessTable from './ProcessTable';
 import ToolBar from './ToolBar';
+import ProcessConsole from './ProcessConsole'
 
 export default class ProcessManager extends React.Component {
 
@@ -13,7 +14,11 @@ export default class ProcessManager extends React.Component {
     this.state = {
       processData: null,
       selectedPid: null,
+      logVisible: false,
       processes: [],
+      logs: {
+        // [pid]: []
+      },
       types: {},
       sorting: {
         path: null,
@@ -24,12 +29,22 @@ export default class ProcessManager extends React.Component {
 
 
   componentDidMount() {
-    ipcRenderer.on('process:update-list', function(event, { records, types }) {
+    ipcRenderer.on('process:update-list', (event, { records, types }) => {
       this.setState({
         processes: records,
         types
       });
-    }.bind(this));
+    });
+
+    ipcRenderer.on('process:stdout', (event, { pid, data }) => {
+      const { logs } = this.state;
+      logs[pid] = logs[pid] || [];
+      logs[pid].unshift(data);
+      logs[pid].slice(0, 1000);
+      this.setState({
+        logs
+      });
+    });
   }
 
   isPidValid = () => {
@@ -77,6 +92,12 @@ export default class ProcessManager extends React.Component {
     ipcRenderer.send('process:open-devtools', pid);
   }
 
+  handleOpenConsole = (status=true) => {
+    this.setState({
+      logVisible: status
+    });
+  }
+
   formatData = () => {
     const { processes, sorting, types } = this.state;
     const data = Object.keys(processes)
@@ -99,7 +120,7 @@ export default class ProcessManager extends React.Component {
 
   render () {
     const { data } = this.formatData();
-
+    const { logVisible, logs, selectedPid } = this.state;
     return (
       <React.Fragment>
         <header className="toolbar toolbar-header">
@@ -108,7 +129,7 @@ export default class ProcessManager extends React.Component {
             onKillClick={this.handleKillProcess}
             disabelOpenDevTool={!this.canOpenDevTool()}
             onOpenDevToolClick={this.handleOpenDevTool}
-
+            onOpenConsoleClick={this.handleOpenConsole}
           />
         </header>
         <div className="process-table-container">
@@ -120,6 +141,7 @@ export default class ProcessManager extends React.Component {
             onSelectedPidChange={pid => this.setState({ selectedPid: pid })}
             />
         </div>
+        <ProcessConsole handleOpenConsole={this.handleOpenConsole} visible={logVisible} logs={logs[selectedPid]}/>
       </React.Fragment>
     )
   }

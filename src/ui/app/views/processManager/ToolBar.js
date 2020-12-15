@@ -28,6 +28,13 @@ export default class ToolBar extends React.Component {
               >
                 Open DevTools
               </button>
+              <button
+                className="btn btn-default"
+                disabled={false}
+                onClick={this.props.onOpenConsoleClick}
+              >
+                Console
+              </button>
             </div>
           </div>
     )
