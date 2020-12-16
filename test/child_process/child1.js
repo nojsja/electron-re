@@ -1,4 +1,11 @@
   const ProcessHost = require('../../src/libs/ProcessHost.class');
+
+  let count = 0;
+  const timer = setInterval(() => {
+    console.log('test data for child process console');
+    if (count++ > 100) clearInterval(timer);
+  }, 1e3);
+
   ProcessHost
     .registry('test1', (params) => {
       return params;
@@ -18,7 +25,3 @@
     .registry('test6', (params) => {
       return params;
     });
-    i = 1;
-    setInterval(() => {
-      console.log(Math.random().toString(12).slice(6), i++);
-    }, 1e3);

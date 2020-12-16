@@ -21,10 +21,17 @@ if (isMain) {
     exports.ProcessManager.unlisten(pid)
   });
 
+  setInterval(() => console.log(1), 1e3);
+  
+  exports.ProcessManager.pipe(process);
+
   app.on('web-contents-created', (event, webContents) => {
     webContents.once('did-finish-load', () => {
       const pid = webContents.getOSProcessId();
       exports.ProcessManager.listen(pid, 'renderer');
+      // webContents.on('console-message', (e, level, msg, line, sourceid) => {
+      //   exports.ProcessManager.stdout(pid, msg);
+      // });
       webContents.once('closed', function(e) {
         exports.ProcessManager.unlisten(this.pid);
       }.bind({ pid }));

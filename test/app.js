@@ -1,6 +1,12 @@
 const { ipcRenderer } = require('electron');
 const { MessageChannel } = require('../lib');
 
+let count = 0;
+const timer = setInterval(() => {
+  console.log('test data for ipcRenderer console');
+  if (count++ > 100) clearInterval(timer);
+}, 1e3);
+
 /* -------------- mainAndRenderer -------------- */
 
 ipcRenderer.once('mainAndRenderer:test1', (event, result) => {

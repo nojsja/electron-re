@@ -1,8 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { formatSizeStr } from 'utils/utils';
+
 import ProcessRow from './ProcessRow';
 import ProcessTableHeader from './ProcessTableHeader';
+
 
 export default class ProcessTable extends React.Component {
   static propTypes = {
@@ -16,38 +19,60 @@ export default class ProcessTable extends React.Component {
     onSelectedPidChange: PropTypes.func
   }
 
+  formatData = (processes, sorting, types) => {
+    const data = Object.keys(processes)
+      .filter(pid => processes[pid])
+      .map(pid => ({
+        name: Number(pid),
+        cpu: (processes[pid].cpu).toFixed(2),
+        memory: formatSizeStr(processes[pid].memory),
+        pid: Number(pid),
+        mark: types[pid] || 'node',
+        ppid: Number(processes[pid].ppid),
+        key: pid
+      }))
+      .sort((p1, p2) => {
+        if (sorting.how === 'descend') return p2[sorting.path] - p1[sorting.path];
+        return p1[sorting.path] - p2[sorting.path];
+      });
+
+    return { data };
+  }
+
   render() {
+    const { sorting, types } = this.props;
+    const { data } = this.formatData(this.props.data, sorting, types);
     return (
       <table className="process-table table-striped">
         <thead>
           <tr>
             <ProcessTableHeader
               path='pid'
-              sorting={this.props.sorting}
+              sorting={sorting}
               onSortingChange={this.props.onSortingChange}
             >Pid</ProcessTableHeader>
 
             <ProcessTableHeader
               path='mark'
-              sorting={this.props.sorting}
+              sorting={sorting}
               onSortingChange={this.props.onSortingChange}
             >Mark</ProcessTableHeader>
 
             <ProcessTableHeader
               path='ppid'
-              sorting={this.props.sorting}
+              sorting={sorting}
               onSortingChange={this.props.onSortingChange}
             >Parent</ProcessTableHeader>
 
             <ProcessTableHeader
               path='memory'
-              sorting={this.props.sorting}
+              sorting={sorting}
               onSortingChange={this.props.onSortingChange}
             >Memory</ProcessTableHeader>
 
             <ProcessTableHeader
               path='cpu'
-              sorting={this.props.sorting}
+              sorting={sorting}
               onSortingChange={this.props.onSortingChange}
             >CPU(%)</ProcessTableHeader>
 
@@ -55,7 +80,7 @@ export default class ProcessTable extends React.Component {
         </thead>
         <tbody>
         {
-          this.props.data.map(p =>
+          data.map(p =>
             <ProcessRow
               key={p.pid}
               {...p}

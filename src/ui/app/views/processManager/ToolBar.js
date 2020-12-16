@@ -20,14 +20,14 @@ export default class ToolBar extends React.Component {
                 disabled={this.props.disableKill}
                 onClick={this.props.onKillClick}
               >
-                Kill Process
+                Kill
               </button>
               <button
                 className="btn btn-default"
                 disabled={this.props.disabelOpenDevTool}
                 onClick={this.props.onOpenDevToolClick}
               >
-                Open DevTools
+                DevTools
               </button>
               <button
                 className="btn btn-default"
@@ -35,6 +35,13 @@ export default class ToolBar extends React.Component {
                 onClick={this.props.onOpenConsoleClick}
               >
                 Console
+              </button>
+              <button
+                className="btn btn-default"
+                disabled={this.props.disableTrends}
+                onClick={this.props.onOpenTrendsClick}
+              >
+                Trends
               </button>
             </div>
           </div>

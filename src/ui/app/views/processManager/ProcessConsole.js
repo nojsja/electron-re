@@ -15,7 +15,7 @@ export class ProcessConsole extends Component {
           <span className="text-button small" onClick={this.handleOpenConsole}>X</span>
         </header>
         <div className="selectable-text">
-        { logs.map(log => <React.Fragment>[{new Date().toLocaleTimeString()}]: {`${log}`}<br></br></React.Fragment>) }
+        { logs.map(log => <React.Fragment key={log}>{log}<br></br></React.Fragment>) }
         </div>
       </div>)
       : null

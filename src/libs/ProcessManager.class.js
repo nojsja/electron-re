@@ -11,7 +11,7 @@ class ProcessManager {
     };
     this.status = 'pending';
     this.processWindow = null;
-    this.time = 2e3;
+    this.time = 1e3;
   }
 
   /* -------------- internal -------------- */
@@ -51,16 +51,22 @@ class ProcessManager {
 
   /* -------------- function -------------- */
 
+  /* send stdout to ui-processor */
+  stdout(pid, data) {
+    if (this.processWindow) {
+      this.processWindow.webContents.send('process:stdout', {
+        pid: pid,  data: String.prototype.trim.call(data)
+      });
+    }
+  }
+
   /* pipe to process.stdout */
   pipe(pinstance) {
     if (pinstance.stdout) {
       pinstance.stdout.on(
         'data',
         (trunk) => {
-          (this.processWindow) &&
-          this.processWindow.webContents.send('process:stdout', {
-            pid: pinstance.pid,  data: String.prototype.trim.call(trunk)
-          });
+          this.stdout(pinstance.pid, trunk);
         }
       );
     }
@@ -127,6 +133,7 @@ class ProcessManager {
           enableRemoteModule: true
         },
       });
+      // this.processWindow.setMenu(null);
 
       const loadingUrl = (env === 'dev') ?
         url.format({

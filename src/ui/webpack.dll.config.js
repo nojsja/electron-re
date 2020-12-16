@@ -8,10 +8,6 @@ module.exports = {
       'prop-types',
       'react',
       'react-dom',
-      'react-router',
-      'mobx',
-      'mobx-react',
-      'antd'
     ],
   },
   mode: 'development',

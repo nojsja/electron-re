@@ -24,6 +24,10 @@ i {
   cursor: pointer;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 .normal-size {
   width: 1.5rem;
   height: 1.5rem;
@@ -83,6 +87,28 @@ i {
   }
 }
 
+.fixed-window {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.74);
+  color: white;
+  overflow-y: scroll;
+
+  .scroll-style-1;
+  animation: progressive-show;
+  animation-duration: .1s;
+  animation-timing-function: ease-in-out;
+
+  header {
+    position: fixed;
+    right: .5rem;
+    top: .3rem;
+    text-align: right;
+  }
+}
+
 
 /*=============================================
 =                body styles                =
@@ -104,26 +130,24 @@ i {
   }
 
   .process-console-container {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    background-color: rgba(0, 0, 0, 0.74);
-    color: white;
-    overflow-y: scroll;
+    .fixed-window;
+  }
 
-    .scroll-style-1;
-    animation: progressive-show;
-    animation-duration: .1s;
-    animation-timing-function: ease-in-out;
+  .process-trends-container {
+    .fixed-window;
 
-    header {
-      position: fixed;
-      right: .5rem;
-      top: .3rem;
-      text-align: right;
+    .trends-drawer {
+      width: 100%;
+      height: 100%;
+      
+      canvas {
+        width: 100%;
+        height: 100%;
+      }
     }
   }
+
+
 }
 
 .hover-pointer {

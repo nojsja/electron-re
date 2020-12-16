@@ -3,7 +3,6 @@ import React from 'react';
 import { render } from 'react-dom';
 
 import './app/styles/public.less';
-import 'antd/dist/antd.css';
 
 import App from './app/App';
 
