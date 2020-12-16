@@ -10,11 +10,13 @@ export class ProcessConsole extends Component {
     const { logs=[], visible } = this.props;
     return (
       visible ?
-      (<div className="process-console-container scroll-show">
+      (<div className="process-console-container">
         <header>
-          <button className="btn btn-default"  onClick={this.handleOpenConsole}>X</button>
+          <span className="text-button small" onClick={this.handleOpenConsole}>X</span>
         </header>
-        { logs.map(log => <p>{log}</p>) }
+        <div className="selectable-text">
+        { logs.map(log => <React.Fragment>[{new Date().toLocaleTimeString()}]: {`${log}`}<br></br></React.Fragment>) }
+        </div>
       </div>)
       : null
     )

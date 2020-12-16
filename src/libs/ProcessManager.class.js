@@ -51,7 +51,7 @@ class ProcessManager {
 
   /* -------------- function -------------- */
 
-  /* pipe process.stdout */
+  /* pipe to process.stdout */
   pipe(pinstance) {
     if (pinstance.stdout) {
       pinstance.stdout.on(
@@ -59,7 +59,7 @@ class ProcessManager {
         (trunk) => {
           (this.processWindow) &&
           this.processWindow.webContents.send('process:stdout', {
-            pid: pinstance.pid,  data: trunk.toString()
+            pid: pinstance.pid,  data: String.prototype.trim.call(trunk)
           });
         }
       );
@@ -69,8 +69,12 @@ class ProcessManager {
   /* listen processes with pids */
   listen(pids, mark="renderer") {
     pids = (pids instanceof Array) ? pids : [pids];
-    pids.forEach((pid) => { this.typeMap[pid] = mark });
-    this.pidList = Array.from(new Set(this.pidList.concat(pids)));
+    pids.forEach((pid) => {
+      if (!this.pidList.includes(pid)) {
+        this.pidList.push(pid);
+      }
+      this.typeMap[pid] = mark;
+    });
   }
 
   /* unlisten processes with pids */
@@ -88,7 +92,7 @@ class ProcessManager {
     });
   }
 
-  /* openDevTools */
+  /* kill */
   killProcess = (pid) => {
     try {
       process.kill(pid);

@@ -68,6 +68,20 @@ export default class ProcessManager extends React.Component {
     return bool;
   }
 
+  canOpenConsole = () => {
+    const { selectedPid, types } = this.state;
+    let bool;
+
+    if (!selectedPid) return false;
+
+    bool =
+      this.isPidValid() &&
+      ( types[selectedPid] !== 'renderer' &&
+        types[selectedPid] !== 'service' );
+    
+    return bool;
+  }
+
   canOpenDevTool = () => {
     const { selectedPid, types } = this.state;
     let bool;
@@ -76,7 +90,8 @@ export default class ProcessManager extends React.Component {
 
     bool =
       this.isPidValid() &&
-      (types[selectedPid] === 'renderer' );
+      ( types[selectedPid] === 'renderer' ||
+        types[selectedPid] === 'service' );
     
     return bool;
   }
@@ -101,6 +116,7 @@ export default class ProcessManager extends React.Component {
   formatData = () => {
     const { processes, sorting, types } = this.state;
     const data = Object.keys(processes)
+      .filter(pid => processes[pid])
       .map(pid => ({
         name: Number(pid),
         cpu: (processes[pid].cpu).toFixed(2),
@@ -128,6 +144,7 @@ export default class ProcessManager extends React.Component {
             disableKill={!this.canKill()}
             onKillClick={this.handleKillProcess}
             disabelOpenDevTool={!this.canOpenDevTool()}
+            disableConsole={!this.canOpenConsole()}
             onOpenDevToolClick={this.handleOpenDevTool}
             onOpenConsoleClick={this.handleOpenConsole}
           />

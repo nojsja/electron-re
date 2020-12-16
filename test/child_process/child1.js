@@ -18,7 +18,7 @@
     .registry('test6', (params) => {
       return params;
     });
-
+    i = 1;
     setInterval(() => {
-      console.log(Math.random().toString(12).slice(6));
+      console.log(Math.random().toString(12).slice(6), i++);
     }, 1e3);

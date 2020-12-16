@@ -19,7 +19,7 @@ const isInDev = process.env.NODE_ENV === 'dev';
 /* 创建窗口 */
 function createWindow() {
   global.mainWindow = new BrowserWindow({
-    show: true,
+    show: false,
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,

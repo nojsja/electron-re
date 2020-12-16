@@ -382,10 +382,10 @@ const childProcessPool = () => {
       });
     });
 
-    it('disconnect a process in processPool and get sub processes count', (callback) => {
+    it('kill a process in processPool and get sub processes count', (callback) => {
       processPool.send('test5', { value: "test5" }, idForTest5).then(async(rsp) => {
         if (rsp.result.value === "test5") {
-          processPool.disconnect(idForTest5);
+          processPool.kill(idForTest5);
           setTimeout(() => {
             if (processPool.forked.length === (4 - 1))
               callback();

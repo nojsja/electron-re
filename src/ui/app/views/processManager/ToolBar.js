@@ -7,7 +7,8 @@ export default class ToolBar extends React.Component {
     onKillClick: PropTypes.func,
     disableKill: PropTypes.bool,
     onOpenDevToolClick: PropTypes.func,
-    disabelOpenDevTool: PropTypes.bool
+    disabelOpenDevTool: PropTypes.bool,
+    disableConsole: PropTypes.bool
   }
 
   render() {
@@ -30,7 +31,7 @@ export default class ToolBar extends React.Component {
               </button>
               <button
                 className="btn btn-default"
-                disabled={false}
+                disabled={this.props.disableConsole}
                 onClick={this.props.onOpenConsoleClick}
               >
                 Console

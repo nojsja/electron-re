@@ -177,15 +177,24 @@ class ChildProcessPool {
   * disconnect [shutdown a sub process or all sub processes]
   * @param  {[String]} id [id bound with a sub process. If none is given, all sub processes will be killed.]
   */
-  disconnect(id) {
+  kill(id) {
     if (id !== undefined) {
       const pid = this.pidMap.get(id);
       const fork = this.forked.find(p => p.pid === pid);
-      if (fork) fork.disconnect();
+      try {
+        // don't use disconnect, that just close the ipc channel.
+        if (fork) process.kill(pid, "SIGTERM");
+      } catch (error) {
+        console.error(`ChildProcessPool: Failed to kill the child process ${pid}!`);
+      }
     } else {
       console.warn('ChildProcessPool: The all sub processes will be shutdown!');
       this.forked.forEach(fork => {
-        fork.disconnect();
+        try {
+          process.kill(fork.pid, "SIGTERM")
+        } catch (error) {
+          console.error(`ChildProcessPool: Failed to kill the child process ${pid}!`);
+        }
       });
     }
   }
