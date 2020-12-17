@@ -32,8 +32,15 @@ export default class ProcessTable extends React.Component {
         key: pid
       }))
       .sort((p1, p2) => {
-        if (sorting.how === 'descend') return p2[sorting.path] - p1[sorting.path];
-        return p1[sorting.path] - p2[sorting.path];
+        if (sorting.path === 'memory') {
+          return (sorting.how === 'descend') ?
+            processes[p2.pid].memory - processes[p1.pid].memory :
+            processes[p1.pid].memory - processes[p2.pid].memory;
+        } else {
+          return (sorting.how === 'descend') ?
+            p2[sorting.path] - p1[sorting.path] :
+            p1[sorting.path] - p2[sorting.path];
+        }
       });
 
     return { data };
@@ -56,6 +63,7 @@ export default class ProcessTable extends React.Component {
               path='mark'
               sorting={sorting}
               onSortingChange={this.props.onSortingChange}
+              disableSort
             >Mark</ProcessTableHeader>
 
             <ProcessTableHeader

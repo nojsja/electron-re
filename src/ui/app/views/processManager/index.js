@@ -50,15 +50,17 @@ export default class ProcessManager extends React.Component {
       });
     });
 
-    ipcRenderer.on('process:stdout', (event, { pid, data }) => {
+    ipcRenderer.on('process:stdout', (event, dataArray) => {
       console.log('process:stdout');
       const { logs } = this.state;
-      logs[pid] = logs[pid] || [];
-      logs[pid].unshift(`[${new Date().toLocaleTimeString()}]: ${data}`);
-      logs[pid].slice(0, 1000);
-      this.setState({
-        logs
+      dataArray.forEach(({ pid, data })=> {
+        logs[pid] = logs[pid] || [];
+        logs[pid].unshift(`[${new Date().toLocaleTimeString()}]: ${data}`);
       });
+      Object.keys(logs).forEach(pid => {
+        logs[pid].slice(0, 1000);
+      });
+      this.setState({ logs });
     });
   }
 

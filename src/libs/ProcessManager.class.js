@@ -6,12 +6,15 @@ const pidusage = require('pidusage');
 class ProcessManager {
   constructor() {
     this.pidList = [process.pid];
+    this.pid = null;
     this.typeMap = {
       [process.pid]: 'main',
     };
     this.status = 'pending';
     this.processWindow = null;
     this.time = 1e3;
+    this.callSymbol = false;
+    this.logs = []
   }
 
   /* -------------- internal -------------- */
@@ -54,9 +57,16 @@ class ProcessManager {
   /* send stdout to ui-processor */
   stdout(pid, data) {
     if (this.processWindow) {
-      this.processWindow.webContents.send('process:stdout', {
-        pid: pid,  data: String.prototype.trim.call(data)
-      });
+      if (!this.callSymbol) {
+        this.callSymbol = true;
+        setTimeout(() => {
+          this.processWindow.webContents.send('process:stdout', this.logs);
+          this.logs = [];
+          this.callSymbol = false;
+        }, this.time);
+      } else {
+        this.logs.push({ pid: pid, data: String.prototype.trim.call(data) });
+      }
     }
   }
 
@@ -149,6 +159,7 @@ class ProcessManager {
   
       this.processWindow.once('ready-to-show', () => {
         this.processWindow.show();
+        this.pid = this.processWindow.webContents.getOSProcessId();
         this.setTimer(2e3);
         ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
         ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))

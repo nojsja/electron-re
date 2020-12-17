@@ -49,7 +49,7 @@ export default class ProcessTableHeader extends React.Component {
   }
   render() {
     return (
-      <th onClick={this.handleClick}>
+      <th onClick={this.props.disableSort ? undefined : this.handleClick}>
         <span className="hover-pointer">
         {this.props.children}
         </span>
