@@ -39,8 +39,8 @@ export default class ProcessManager extends React.Component {
           if (!records[pid]) continue;
           history[pid].memory.push(records[pid].memory);
           history[pid].cpu.push(records[pid].cpu);
-          history[pid].memory = history[pid].memory.slice(0, 60);
-          history[pid].cpu = history[pid].cpu.slice(0, 60);
+          history[pid].memory = history[pid].memory.slice(-60);
+          history[pid].cpu = history[pid].cpu.slice(-60);
         }
       }
       this.setState({

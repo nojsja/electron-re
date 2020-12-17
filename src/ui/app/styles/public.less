@@ -20,6 +20,11 @@ body {
   }
 }
 
+.progressive-show {
+  transition: all .2s;
+  transition-timing-function: ease-in-out;
+}
+
 i {
   cursor: pointer;
 }
@@ -97,9 +102,11 @@ i {
   overflow-y: scroll;
 
   .scroll-style-1;
-  animation: progressive-show;
-  animation-duration: .1s;
-  animation-timing-function: ease-in-out;
+  // animation: progressive-show;
+  // animation-duration: .1s;
+  // animation-timing-function: ease-in-out;
+
+  .progressive-show;
 
   header {
     position: fixed;
