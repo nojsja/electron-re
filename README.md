@@ -439,23 +439,23 @@ const { MessageChannel, BrowserService, ProcessManager } = require('electron-re'
 ProcessManager.openWindow();
 ```
 
-1. main
-> Main ui
+1. Main
+> The main ui
 
 ![process-manager.main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png)
 
-2. console
+2. Console
 > Show console info of all processes
 
 ![process-manager.console](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.console.png)
 
-3. devtools
+3. DevTools
 > Open devtools for electron renderer window
 
 ![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.devtools.png)
 
 
-4. trends
+4. Trends
 > Show cpu/memory occupancy trends
 
 
