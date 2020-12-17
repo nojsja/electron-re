@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/nojsja/electron-re#readme",
   "dependencies": {
-    "pidusage": "^2.0.21"
+    "pidusage": "^2.0.21",
+    "@babel/runtime": "^7.12.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
