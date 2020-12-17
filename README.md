@@ -27,6 +27,10 @@
 │   ├── Registry a task with unique name
 │   ├── Working with ChildProcessPool
 │   └── Unregistry a task with unique name
+├── * Instruction5: ProcessManager
+│   ├── Require it in main.js(electron)
+│   └── Open process-manager window for your application
+
 ├── Examples
 |
 ```
@@ -422,7 +426,43 @@ ProcessHost
   ...
 ```
 
-#### VII. Examples
+#### VII. Instruction 5: ProcessManager
+-----------------------
+> Used in Electron project, build for ChildProcessPool/BrowserService/IpcRenderer.
+
+##### Require it in main.js(electron)
+```js
+const { MessageChannel, BrowserService, ProcessManager } = require('electron-re');
+```
+##### Open process-manager window
+```js
+ProcessManager.openWindow();
+```
+
+1. main
+> Main ui
+
+![process-manager.main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png)
+
+2. console
+> Show console info of all processes
+
+![process-manager.console](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.console.png)
+
+3. devtools
+> Open devtools for electron renderer window
+
+![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.devtools.png)
+
+
+4. trends
+> Show cpu/memory occupancy trends
+
+
+![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.trends.png)
+
+
+#### VIII. Examples
 -----
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
