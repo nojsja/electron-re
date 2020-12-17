@@ -1,10 +1,11 @@
 {
   "name": "electron-re",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "electron sugar utils",
   "main": "./lib/index",
   "scripts": {
     "start": "cross-env NODE_ENV=dev electron index.dev.js --inspect=5858",
+    "start-lib": "cross-env NODE_ENV=dev LIB=lib electron index.dev.js --inspect=5858",
     "test": "cross-env NODE_ENV=dev TEST=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "test-src": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "compile": "npm run build-libs; npm run build-ui",
@@ -35,6 +36,7 @@
     "@babel/plugin-proposal-function-sent": "^7.12.1",
     "@babel/plugin-proposal-numeric-separator": "^7.12.7",
     "@babel/plugin-proposal-throw-expressions": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.12.7",
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",

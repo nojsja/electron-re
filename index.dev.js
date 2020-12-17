@@ -2,11 +2,13 @@ const path = require('path');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 
+
+
 const { 
   MessageChannel, /* must required in index.js even if you don't use it */
   BrowserService,
   ChildProcessPool
-} = require('./src/index');
+} = require(`./${process.env.LIB ? 'lib' : 'src'}/index`);
 
 const processManager = require('./src/libs/ProcessManager.class');
 
@@ -27,7 +29,7 @@ function createWindow() {
     },
   });
 
-  processManager.openWindow('dev');
+  processManager.openWindow(process.env.LIB ? 'prod' : 'dev');
   // processManager.openWindow('prod');
   global.mainWindow.loadFile(entryHtml);
 }

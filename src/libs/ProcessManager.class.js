@@ -131,7 +131,7 @@ class ProcessManager {
 
   /* open a process list window */
   openWindow(env = 'prod') {
-    app.whenReady().then(async() => {
+    app.whenReady().then(() => {
 
       this.processWindow = new BrowserWindow({
         show: false,
@@ -152,7 +152,7 @@ class ProcessManager {
           slashes: true,
         }) :
         url.format({
-          pathname: path.join(__dirname, '../../lib/ui/index.html'),
+          pathname: path.join(__dirname, '../ui/index.html'),
           protocol: 'file:',
           slashes: true,
         });
