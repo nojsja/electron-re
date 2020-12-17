@@ -7,7 +7,7 @@ body {
 @keyframes progressive-show {
   0% {
     opacity: 0;
-    transform: translateY(3rem) scale(0.9);
+    transform: translateY(-100%) scale(1);
   }
   100% {
     opacity: 1;
@@ -86,7 +86,7 @@ i {
   overflow-y: scroll;
   cursor: pointer;
   animation: progressive-show;
-  animation-duration: 0.1s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-in-out;
 }
 .fixed-window::-webkit-scrollbar {
@@ -112,6 +112,7 @@ i {
   right: 0.5rem;
   top: 0.3rem;
   text-align: right;
+  z-index: 2;
 }
 /*=============================================
 =                body styles                =
@@ -135,7 +136,7 @@ i {
   overflow-y: scroll;
   cursor: pointer;
   animation: progressive-show;
-  animation-duration: 0.1s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-in-out;
 }
 .container-router .process-console-container::-webkit-scrollbar {
@@ -161,6 +162,7 @@ i {
   right: 0.5rem;
   top: 0.3rem;
   text-align: right;
+  z-index: 2;
 }
 .container-router .process-trends-container {
   position: fixed;
@@ -172,8 +174,10 @@ i {
   overflow-y: scroll;
   cursor: pointer;
   animation: progressive-show;
-  animation-duration: 0.1s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-in-out;
+  transition: all 0.2s;
+  transform: translateY(-100%) scale(1);
 }
 .container-router .process-trends-container::-webkit-scrollbar {
   width: 6px;
@@ -198,14 +202,20 @@ i {
   right: 0.5rem;
   top: 0.3rem;
   text-align: right;
+  z-index: 2;
+}
+.container-router .process-trends-container.progressive-show {
+  transform: translateY(0rem) scale(1);
 }
 .container-router .process-trends-container .trends-drawer {
   width: 100%;
   height: 100%;
 }
 .container-router .process-trends-container .trends-drawer canvas {
+  position: fixed;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 .hover-pointer {
   cursor: pointer;

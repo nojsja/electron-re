@@ -7,10 +7,13 @@ body {
 =               pre define style              =
 =============================================*/
 
+@cyan: rgb(116, 227, 255);
+@green: rgb(124, 255, 174);
+
 @keyframes progressive-show {
   0% {
     opacity: 0;
-    transform: translateY(3rem) scale(.9);
+    transform: translateY(-100%) scale(1);
   }
 
   100% {
@@ -18,11 +21,6 @@ body {
     transform: translateY(0) scale(1);
     scale: 1;
   }
-}
-
-.progressive-show {
-  transition: all .2s;
-  transition-timing-function: ease-in-out;
 }
 
 i {
@@ -102,17 +100,16 @@ i {
   overflow-y: scroll;
 
   .scroll-style-1;
-  // animation: progressive-show;
-  // animation-duration: .1s;
-  // animation-timing-function: ease-in-out;
-
-  .progressive-show;
+  animation: progressive-show;
+  animation-duration: .2s;
+  animation-timing-function: ease-in-out;
 
   header {
     position: fixed;
     right: .5rem;
     top: .3rem;
     text-align: right;
+    z-index: 2;
   }
 }
 
@@ -142,14 +139,24 @@ i {
 
   .process-trends-container {
     .fixed-window;
+    
+    transition: all .2s;
+    transform: translateY(-100%) scale(1);
+
+
+    &.progressive-show {
+      transform: translateY(0rem) scale(1);
+    }
 
     .trends-drawer {
       width: 100%;
       height: 100%;
       
       canvas {
+        position: fixed;
         width: 100%;
         height: 100%;
+        z-index: 1;
       }
     }
   }
