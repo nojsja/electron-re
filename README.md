@@ -5,34 +5,40 @@
 #### Contents
 ```sh
 ├── Contents (you are here!)
+│
 ├── * What can be used for?
 │   ├── In Electron Project
 │   └── In Nodejs/Electron Project
+│
 ├── * Install
-├── * Instruction1: Service
+│
+├── * Instruction1: ProcessManager
+│   ├── Require it in main.js(electron)
+│   └── Open process-manager window for your application
+│
+├── * Instruction2: Service
 │   ├── The arguments to create a service
 │   ├── Enable service auto reload after code changed
 │   └── The methods of a Service instance
-├── * Instruction2: MessageChannel
+│
+├── * Instruction3: MessageChannel
 │   ├── The methods of MessageChannel
 │   └── A full usage
-├── * Instruction3: ChildProcessPool
+│
+├── * Instruction4: ChildProcessPool
 │   ├── Create a childprocess pool
 │   ├── Send request to a process instance
 │   ├── Send request to all process instances
 │   ├── Destroy the child processes of the process pool
 │   └── Set the max instance limit of pool
-├── * Instruction4: ProcessHost
+│
+├── * Instruction5: ProcessHost
 │   ├── Require it in a sub process
 │   ├── Registry a task with unique name
 │   ├── Working with ChildProcessPool
 │   └── Unregistry a task with unique name
-├── * Instruction5: ProcessManager
-│   ├── Require it in main.js(electron)
-│   └── Open process-manager window for your application
-
+│
 ├── Examples
-|
 ```
 
 #### I. What can be used for?
@@ -41,6 +47,7 @@
 1. In Electron Project
 - 1）Servcie
 - 2）MessageChannel
+- 3）ProcessManager
 
 Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupying cpu into rendering process instead of in main process, exactly you can use it for. Check usage of `Servcie` and `MessageChannel` below.
 
@@ -54,20 +61,57 @@ Besides, If you want to create some sub processes (see nodejs `child_process`) t
 #### II. Install
 -----
 ```bash
-# 01 - for github-package depository user
-$: npm install @nojsja/electron-re --save
-# or
-$: yarn add @nojsja/electron-re
-
-# 02 - for npm-package depository user
 $: npm install electron-re --save
 # or
 $: yarn add electron-re
 ```
+#### III. Instruction 1: ProcessManager
+-----------------------
+> Used in Electron project, build for ChildProcessPool/BrowserService/IpcRenderer.
 
-#### III. Instruction 1: Service
+##### Require it in main.js(electron)
+```js
+const {
+  MessageChannel, // must required in main.js even if you don't use it
+  ProcessManager
+} = require('electron-re');
+```
+##### Open process-manager window
+```js
+ProcessManager.openWindow();
+```
+
+1. Main
+> The main ui
+
+![process-manager.main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png)
+
+2. Console
+> Show console info of all processes
+
+![process-manager.console](http://nojsja.gitee.io/static-resources/images/electron-re/console.gif)
+
+3. DevTools
+> Open devtools for electron renderer window
+
+![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/devtools.gif)
+
+
+4. Trends
+> Show cpu/memory occupancy trends
+
+![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/trends.gif)
+
+![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/trends2.gif)
+
+5. Kill
+> Kill process from one-click
+
+![process-manager.console](http://nojsja.gitee.io/static-resources/images/electron-re/kill.gif)
+
+#### IV. Instruction 2: Service
 -----
->Used in Electron project, working with MessageChannel, remember to check "Instruction 2".
+>Used in Electron project, working with MessageChannel, remember to check "Instruction 3".
 
 ##### 1. The arguments to create a service
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
@@ -143,7 +187,7 @@ ipcRenderer.on('channel1', (event, result) => {
 });
 ```
 
-#### IV. Instruction 2: MessageChannel
+#### V. Instruction 3: MessageChannel
 -----
 >Used in Electron project, working with Service.
 
@@ -273,9 +317,9 @@ MessageChannel.send('main', 'channel3', { value: 'test3' });
 MessageChannel.invoke('main', 'channel4', { value: 'test4' });
 ```
 
-#### V. Instruction 3: ChildProcessPool
+#### VI. Instruction 4: ChildProcessPool
 -----
->Used in Nodejs/Electron project, working with ProcessHost, remember to check "Instruction 4".
+>Used in Nodejs/Electron project, working with ProcessHost, remember to check "Instruction 5".
 
 Multi-process helps to make full use of multi-core CPU, let's see some differences between multi-process and multi-thread:
 
@@ -361,11 +405,11 @@ In addition to using the `max` parameter to specify the maximum number of child 
 global.ipcUploadProcess.setMaxInstanceLimit(number);
 ```
 
-#### VI. Instruction 4: ProcessHost
+#### VII. Instruction 5: ProcessHost
 -----
 > Used in Nodejs/Electron project, working with ChildProcessPool.
 
-In `Instruction 3`, We already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
+In `Instruction 4`, We already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
 
 Using `ProcessHost` we will no longer pay attention to the message sending/receiving between main process and sub processes. Just declaring a task with a unique service-name and put your processing code into a function. And remember that if the code is async, return a Promise instance instead.
 
@@ -425,42 +469,6 @@ ProcessHost
   .unregistry('async-works')
   ...
 ```
-
-#### VII. Instruction 5: ProcessManager
------------------------
-> Used in Electron project, build for ChildProcessPool/BrowserService/IpcRenderer.
-
-##### Require it in main.js(electron)
-```js
-const { MessageChannel, BrowserService, ProcessManager } = require('electron-re');
-```
-##### Open process-manager window
-```js
-ProcessManager.openWindow();
-```
-
-1. Main
-> The main ui
-
-![process-manager.main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png)
-
-2. Console
-> Show console info of all processes
-
-![process-manager.console](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.console.png)
-
-3. DevTools
-> Open devtools for electron renderer window
-
-![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.devtools.png)
-
-
-4. Trends
-> Show cpu/memory occupancy trends
-
-
-![process-manager.devtools](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.trends.png)
-
 
 #### VIII. Examples
 -----
