@@ -34,14 +34,12 @@ export default class ProcessManager extends React.Component {
       console.log('update:list');
       const { history } = this.state;
       for (let pid in records) {
-        if (Object.hasOwnProperty.call(records, pid)) {
-          history[pid] = history[pid] || { memory: [], cpu: [] };
-          if (!records[pid]) continue;
-          history[pid].memory.push(records[pid].memory);
-          history[pid].cpu.push(records[pid].cpu);
-          history[pid].memory = history[pid].memory.slice(-60);
-          history[pid].cpu = history[pid].cpu.slice(-60);
-        }
+        history[pid] = history[pid] || { memory: [], cpu: [] };
+        if (!records[pid]) continue;
+        history[pid].memory.push(records[pid].memory);
+        history[pid].cpu.push(records[pid].cpu);
+        history[pid].memory = history[pid].memory.slice(-60);
+        history[pid].cpu = history[pid].cpu.slice(-60);
       }
       this.setState({
         processes: records,
@@ -75,8 +73,9 @@ export default class ProcessManager extends React.Component {
     const { selectedPid, types } = this.state;
     
     return this.isPidValid() &&
-    ( types[selectedPid] !== 'main' &&
-      types[selectedPid] !== 'manager' );
+    ( types[selectedPid] &&
+      types[selectedPid].type !== 'main' &&
+      types[selectedPid].type !== 'manager' );
   }
 
   canOpenTrends = () => {
@@ -91,8 +90,9 @@ export default class ProcessManager extends React.Component {
     const { selectedPid, types } = this.state;
 
     return this.isPidValid() &&
-      ( types[selectedPid] === 'renderer' ||
-        types[selectedPid] === 'service' );
+      ( types[selectedPid] &&
+        types[selectedPid].type === 'renderer' ||
+        types[selectedPid].type === 'service' );
   }
 
   handleKillProcess = () => {

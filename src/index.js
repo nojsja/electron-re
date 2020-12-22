@@ -14,10 +14,14 @@ if (isMain) {
 
   exports.ProcessManager = require('./libs/ProcessManager.class');
 
-  exports.MessageChannel.event.on('registry', ({pid}) => {
-    exports.ProcessManager.listen(pid, 'service');
+  exports.MessageChannel.event.on('registry', ({ pid, id }) => {
+    const win = BrowserWindow.fromId(id);
+
+    if (win && pid) {
+      exports.ProcessManager.listen(pid, 'service', win.webContents.getURL());
+    }
   });
-  exports.MessageChannel.event.on('unregistry', ({pid}) => {
+  exports.MessageChannel.event.on('unregistry', ({ pid }) => {
     exports.ProcessManager.unlisten(pid)
   });
 
@@ -27,7 +31,7 @@ if (isMain) {
       if (exports.ProcessManager.processWindow &&
         exports.ProcessManager.processWindow.webContents.getOSProcessId() === pid) return;
 
-      exports.ProcessManager.listen(pid, 'renderer');
+      exports.ProcessManager.listen(pid, 'renderer', webContents.getURL());
       webContents.on('console-message', (e, level, msg, line, sourceid) => {
         exports.ProcessManager.stdout(pid, msg);
       });

@@ -27,7 +27,8 @@ export default class ProcessTable extends React.Component {
         cpu: (processes[pid].cpu).toFixed(2),
         memory: formatSizeStr(processes[pid].memory),
         pid: Number(pid),
-        mark: types[pid] || 'node',
+        url: (types[pid] ? (types[pid].url || '(none)') : '(none)'),
+        mark: (types[pid] ? types[pid].type : 'node'),
         ppid: Number(processes[pid].ppid),
         key: pid
       }))
@@ -53,6 +54,12 @@ export default class ProcessTable extends React.Component {
       <table className="process-table table-striped">
         <thead>
           <tr>
+            <ProcessTableHeader
+              path='url'
+              sorting={sorting}
+              disableSort
+              onSortingChange={this.props.onSortingChange}
+            >URL</ProcessTableHeader>
             <ProcessTableHeader
               path='pid'
               sorting={sorting}

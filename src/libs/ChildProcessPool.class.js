@@ -20,7 +20,7 @@ class ChildProcessPool {
     this.maxInstance = max;
     this.event = new EventEmitter();
     this.event.on('fork', (pids) => {
-      ProcessManager.listen(pids, 'node');
+      ProcessManager.listen(pids, 'node', this.forkedPath);
     });
     this.event.on('unfork', (pids) => {
       ProcessManager.unlisten(pids);

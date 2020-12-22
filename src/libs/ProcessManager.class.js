@@ -8,7 +8,10 @@ class ProcessManager {
     this.pidList = [process.pid];
     this.pid = null;
     this.typeMap = {
-      [process.pid]: 'main',
+      [process.pid]: {
+        type: 'main',
+        url: ''
+      },
     };
     this.status = 'pending';
     this.processWindow = null;
@@ -83,13 +86,15 @@ class ProcessManager {
   }
 
   /* listen processes with pids */
-  listen(pids, mark="renderer") {
+  listen(pids, mark="renderer", url="") {
     pids = (pids instanceof Array) ? pids : [pids];
     pids.forEach((pid) => {
       if (!this.pidList.includes(pid)) {
         this.pidList.push(pid);
       }
-      this.typeMap[pid] = mark;
+      this.typeMap[pid] = this.typeMap[pid] || {};
+      this.typeMap[pid].type = mark;
+      this.typeMap[pid].url = url;
     });
   }
 

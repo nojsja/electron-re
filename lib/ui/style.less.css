@@ -126,6 +126,14 @@ i {
 .container-router .process-table-container {
   width: 100%;
 }
+.container-router .process-table-container .process-table .url {
+  text-align: center;
+  display: inline-block;
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 5px;
+}
 .container-router .process-console-container {
   position: fixed;
   width: 100%;

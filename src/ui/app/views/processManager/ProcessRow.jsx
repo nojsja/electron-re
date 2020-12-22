@@ -13,12 +13,13 @@ export default class ProcessRow extends React.Component {
   }
 
   render() {
-    const { cpu, pid, ppid, memory, mark } = this.props;
+    const { cpu, url, pid, ppid, memory, mark } = this.props;
     return (
       <tr
         className={this.props.selected ? 'selected': ''}
         onClick={this.props.onSelect}
       >
+        <td title={url} className="url">{url}</td>
         <td>{pid}</td>
         <td>{mark}</td>
         <td>{ppid}</td>
