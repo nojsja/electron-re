@@ -49,7 +49,7 @@
 #### Architecture
 -------
 
-![architecture](http://nojsja.gitee.io/static-resources/images/electron-re/electron-re.png)
+![architecture](http://nojsja.gitee.io/static-resources/images/electron-re/electron-re.png?v2)
 
 #### I. What can be used for?
 -----
@@ -106,30 +106,30 @@ ProcessManager.openWindow();
 1. Main
 > The main ui
 
-![main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png)
+![main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png?v2)
 
 2. Console
 > Show console info of all processes
 
-![console](http://nojsja.gitee.io/static-resources/images/electron-re/console.gif)
+![console](http://nojsja.gitee.io/static-resources/images/electron-re/console.gif?v2)
 
 3. DevTools
 > Open devtools for electron renderer window
 
-![devtools](http://nojsja.gitee.io/static-resources/images/electron-re/devtools.gif)
+![devtools](http://nojsja.gitee.io/static-resources/images/electron-re/devtools.gif?v2)
 
 
 4. Trends
 > Show cpu/memory occupancy trends
 
-![trends](http://nojsja.gitee.io/static-resources/images/electron-re/trends.gif)
+![trends](http://nojsja.gitee.io/static-resources/images/electron-re/trends.gif?v2)
 
-![trends2](http://nojsja.gitee.io/static-resources/images/electron-re/trends2.gif)
+![trends2](http://nojsja.gitee.io/static-resources/images/electron-re/trends2.gif?v2)
 
 5. Kill
 > Kill process from one-click
 
-![kill](http://nojsja.gitee.io/static-resources/images/electron-re/kill.gif)
+![kill](http://nojsja.gitee.io/static-resources/images/electron-re/kill.gif?v2)
 
 #### IV. Instruction 2: Service
 -----
