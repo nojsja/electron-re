@@ -81,6 +81,16 @@ $: yarn add electron-re
 
 > Compatible with native IpcRenderer/Main.
 
+All functions:
+
+1. Show all alive processes in your Electron application, including the main process, renderer process, the Service process (import from electron-re), and the child process created by ChildProcessPool (import from electron-re).
+
+2. The process list displays the process ID, process mark, parent process ID, memory usage, CPU usage percentage. All process marks include main (main process), service (service process), renderer (rendering process) , node (child process in process pool), click on the header of the table to sort an item in increasing/decreasing order.
+
+3. After selecting a process, you can kill the process, view the process console data, and view the process CPU/memory occupancy trend within 1 minute. If the process is a renderer process, you can also open the built-in debugging tool by pressing the `DevTools` button.
+
+4. The child process created by ChildProcessPool does not support opening DevTools for debugging, but because the `--inspect` parameter is added when creating the child process, we can use `chrome://inspect` in chrome for remote debugging.
+
 ##### Require it in main.js(electron)
 ```js
 const {
