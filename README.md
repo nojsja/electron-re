@@ -1,3 +1,6 @@
+[![GitHub license](https://img.shields.io/github/license/nojsja/electron-re)](https://github.com/nojsja/electron-re/blob/master/LICENSE.md)
+[![GitHub issues](https://img.shields.io/github/issues/nojsja/electron-re)](https://github.com/nojsja/electron-re/issues)
+[![GitHub stars](https://img.shields.io/github/stars/nojsja/electron-re)](https://github.com/nojsja/electron-re/stargazers)
 ###  electron-re
 ---------------
 > Test on electron@8.2.0 / 9.3.5
@@ -63,7 +66,7 @@ Using `electron-re` to generate some service processs and communicate between `m
 - 1）ChildProcessPool
 - 2）ProcessHost
 
-Besides, If you want to create some sub processes (see nodejs `child_process`) that not depends on `electron runtime`, there is a process-pool written for pure `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
+Besides, If you want to create some sub processes (reference: nodejs `child_process`) that not depends on `electron runtime`, there is a process-pool written for pure `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
 
 #### II. Install
 -----
@@ -74,7 +77,9 @@ $: yarn add electron-re
 ```
 #### III. Instruction 1: ProcessManager
 -----------------------
-> Used in Electron project, build for ChildProcessPool/BrowserService/IpcRenderer.
+> Used in Electron project, build for ChildProcessPool/BrowserService.
+
+> Compatible with native IpcRenderer/Main.
 
 ##### Require it in main.js(electron)
 ```js
