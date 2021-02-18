@@ -144,7 +144,7 @@ The `service` process is a customized render process that works in the backgroun
 
 * path -- The absolute path to a js file
 ```js
-const { BrowserService } = require('electron');
+const { BrowserService } = require('electron-re');
 const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
 ```
 
