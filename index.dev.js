@@ -1,8 +1,5 @@
 const path = require('path');
 const { app, BrowserWindow, ipcMain } = require('electron');
-const url = require('url');
-
-
 
 const { 
   MessageChannel, /* must required in index.js even if you don't use it */
@@ -38,12 +35,12 @@ function createWindow() {
 /* prepare to test */
 app.whenReady().then(async() => {
     global.appService = new BrowserService('app',
-        entryService,
-        { dev: isInDev, webPreferences: { webSecurity: false } }
-      );
+      entryService,
+      { dev: isInDev, webPreferences: { webSecurity: false } }
+    );
     global.otherService = new BrowserService('other',
-        otherService,
-        { dev: isInDev, webPreferences: { webSecurity: false } }
+      otherService,
+      { dev: isInDev, webPreferences: { webSecurity: false } }
     );
     await global.appService.connected();
     await global.otherService.connected();

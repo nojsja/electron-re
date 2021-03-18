@@ -1,0 +1,5 @@
+{
+  "protocolName": "electron-re-service",
+  "uiDevServer": "127.0.0.1:3000",
+  "uiRefreshInterval": 2e3
+}

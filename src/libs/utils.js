@@ -38,7 +38,7 @@ const path = require('path');
               } catch(error) {
                 result =
                   _require(path.join(
-                    path.dirname(document.querySelector('base').href),
+                    path.dirname(document.baseURI),
                     _path).replace('file:', ''));
               }
               return result;
@@ -57,7 +57,11 @@ const path = require('path');
                 depends: (function(_module) {
                   const paths = [];
                   const getPaths = (modu) => {
-                    if (fs.existsSync(modu.filename) && !paths.includes(modu.filename)) paths.push(modu.filename);
+                    fs.exists(modu.filename, (exists) => {
+                      if (exists && !paths.includes(modu.filename)) {
+                        paths.push(modu.filename);
+                      }
+                    });
                     modu.children.forEach(getPaths);
                   };
                   getPaths(_module);

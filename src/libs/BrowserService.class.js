@@ -2,6 +2,8 @@ const { BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
+
+const conf = require('../conf/global.json');
 const { isEnvDev, loadView, fnDebounce, getRandomString } = require('./utils');
 const MessageChannel = require('./MessageChannel.class');
 const FileWatcher = require('./FileWatcher.class');
@@ -156,7 +158,7 @@ class BrowserService {
               base: baseUrl
           }),
           {
-            // baseURLForDataURL: path.dirname(baseUrl)
+            baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}` 
           }
         ).then(resolve)
         .catch(err => {
@@ -184,7 +186,7 @@ class BrowserService {
           base: baseUrl
       }),
       {
-        // baseURLForDataURL: path.dirname(baseUrl)
+        baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}`
       }
     ).catch(err => {
       this.didFailLoad(err);

@@ -63,7 +63,7 @@
 - 2）MessageChannel
 - 3）ProcessManager
 
-Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupying cpu into rendering process instead of in main process, exactly you can use it for. Check usage of `Servcie` and `MessageChannel` below.
+Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupying cpu into rendering process instead of in main process, exactly you can use it for. Check usage of `Service` and `MessageChannel` below.
 
 2. In Nodejs/Electron Project
 
@@ -93,7 +93,7 @@ All functions:
 
 3. After selecting a process, you can kill the process, view the process console data, and view the process CPU/memory occupancy trend within 1 minute. If the process is a renderer process, you can also open the built-in debugging tool by pressing the `DevTools` button.
 
-4. The child process created by ChildProcessPool does not support opening DevTools for debugging, but because the `--inspect` parameter is added when creating the child process, we can use `chrome://inspect` in chrome for remote debugging.
+4. The child processes created by ChildProcessPool does not support opening DevTools for debugging, but because the `--inspect` parameter is added when creating the child process, we can visit `chrome://inspect` in chrome for remote debugging.
 
 ##### Require it in main.js(electron)
 ```js
@@ -413,7 +413,7 @@ global.ipcUploadProcess.sendToAll(
 
 ##### 4. Destroy the child processes of the process pool
 
-- If you do not specify `id`, all child processes will be destroyed. Specifying the `id` parameter can separately destroy a child process bound to this `id` value.
+- If do not specify `id`, all child processes will be destroyed. Specifying the `id` parameter can separately destroy a child process bound to this `id`.
 
 - After the destruction, using the process pool to send a new request, a new child process will be created automatically.
 
@@ -423,7 +423,7 @@ global.ipcUploadProcess.sendToAll(
 global.ipcUploadProcess.disconnect(id);
 ```
 
-##### 5. Set the max instance limit of pool
+##### 5. Set the max instance limitation of pool
 
 In addition to using the `max` parameter to specify the maximum number of child process instances created by the process pool, you can also call this method to dynamically set the number of child process instances that need to be created.
 

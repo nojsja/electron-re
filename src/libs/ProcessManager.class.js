@@ -3,6 +3,8 @@ const path = require('path');
 const url = require('url');
 const pidusage = require('pidusage');
 
+const conf = require('../conf/global.json');
+
 class ProcessManager {
   constructor() {
     this.pidList = [process.pid];
@@ -23,14 +25,14 @@ class ProcessManager {
   /* -------------- internal -------------- */
 
   /* refresh process list */
-  refreshList = () => {
+  refreshProcessList = () => {
     return new Promise((resolve, reject) => {
       if (this.pidList.length) {
         pidusage(this.pidList, (err, records) => {
           if (err) {
             console.log(`ProcessManager: refreshList -> ${err}`);
           } else {
-            this.processWindow.webContents.send('process:update-list', { records, types: this.typeMap });
+            this.processWindow.sendToWeb('process:update-list', { records, types: this.typeMap })
           }
           resolve();
         });
@@ -41,12 +43,12 @@ class ProcessManager {
   }
   
   /* set timer to refresh */
-  setTimer() {
+  startTimer() {
     if (this.status === 'started') return console.warn('ProcessManager: the timer is already started!');
 
     const interval = async () => {
       setTimeout(async () => {
-        await this.refreshList()
+        await this.refreshProcessList()
         interval(this.time)
       }, this.time)
     }
@@ -63,7 +65,8 @@ class ProcessManager {
       if (!this.callSymbol) {
         this.callSymbol = true;
         setTimeout(() => {
-          this.processWindow.webContents.send('process:stdout', this.logs);
+          this.processWindow.sendToWeb('process:stdout', this.logs)
+
           this.logs = [];
           this.callSymbol = false;
         }, this.time);
@@ -134,25 +137,33 @@ class ProcessManager {
     this.time = time;
   }
 
+  /* -------------- ui -------------- */
+
   /* open a process list window */
   openWindow(env = 'prod') {
     app.whenReady().then(() => {
 
-      this.processWindow = new BrowserWindow({
-        show: false,
-        width: 600,
-        height: 400,
-        autoHideMenuBar: true,
-        webPreferences: {
-          nodeIntegration: true,
-          enableRemoteModule: true
-        },
+      this.processWindow = Object.assign(
+        new BrowserWindow({
+          show: false,
+          width: 600,
+          height: 400,
+          autoHideMenuBar: true,
+          webPreferences: {
+            nodeIntegration: true,
+            enableRemoteModule: true
+          },
+        }),
+        {
+          sendToWeb: (action, data) => {
+            if (!this.processWindow.isDestroyed())
+              this.processWindow.webContents.send(action, data);
+        }
       });
-      // this.processWindow.setMenu(null);
 
       const loadingUrl = (env === 'dev') ?
         url.format({
-          pathname: '127.0.0.1:3000',
+          pathname: conf.uiDevServer,
           protocol: 'http:',
           slashes: true,
         }) :
@@ -165,7 +176,7 @@ class ProcessManager {
       this.processWindow.once('ready-to-show', () => {
         this.processWindow.show();
         this.pid = this.processWindow.webContents.getOSProcessId();
-        this.setTimer(2e3);
+        this.startTimer(conf.uiRefreshInterval);
         ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
         ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))
       });
