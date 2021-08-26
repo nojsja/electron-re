@@ -1,16 +1,16 @@
 {
   "name": "electron-re",
   "version": "1.0.10",
-  "description": "Electron process manager",
+  "description": "Electron Process Manager",
   "main": "./lib/index",
   "scripts": {
-    "start": "cross-env NODE_ENV=dev electron index.dev.js --inspect=5858",
-    "start-lib": "cross-env NODE_ENV=dev LIB=lib electron index.dev.js --inspect=5858",
-    "test": "cross-env NODE_ENV=dev TEST=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "test-src": "cross-env NODE_ENV=dev ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "compile": "npm run build-libs; npm run build-ui",
-    "build-libs": "babel src --out-dir lib --ignore src/ui; ",
-    "build-ui": "mkdir lib/ui -p; cd ./src/ui; npm run build; cp ./dist/* ../../lib/ui -rf; cd -; rm ./lib/ui/dll_vendor.js.map;"
+    "start": "cross-env NODE_ENV=prod electron index.js --inspect=5858",
+    "start:dev": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
+    "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "build:libs": "babel src --out-dir lib --ignore ./src/ui",
+    "build:ui": "shx mkdir -p lib/ui && cd ./src/ui && npm run build && shx cp -rf ./dist/* ../../lib/ui && cd - && shx rm ./lib/ui/dll_vendor.js.map",
+    "build": "npm run build:libs && npm run build:ui"
   },
   "keywords": [
     "electron",
@@ -42,7 +42,8 @@
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",
     "electron": "^9.3.5",
-    "electron-mocha": "^9.3.2"
+    "electron-mocha": "^9.3.2",
+    "shx": "^0.3.3"
   },
   "peerDependencies": {
     "electron": "^9.3.5"

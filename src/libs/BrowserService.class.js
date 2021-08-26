@@ -137,12 +137,6 @@ class BrowserService {
 
   /* loadURL - safe function with script injection */
   loadURL_SAFE = (_path) => {
-    const baseUrl = url.format({
-      pathname: (_path),
-      protocol: 'file:',
-      slashes: true
-    });
-
     return new Promise((resolve, reject) => {
       fs.readFile(_path, { encoding: 'utf-8' }, (err, buffer) => {
         if (err) {
@@ -155,10 +149,10 @@ class BrowserService {
               webSecurity: true,
               script: buffer.toString(),
               title: `${this.name} service`,
-              base: baseUrl
+              base: _path
           }),
           {
-            baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}` 
+            // baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}` 
           }
         ).then(resolve)
         .catch(err => {
@@ -172,21 +166,15 @@ class BrowserService {
 
   /* loadURL - unsafe function to external script and options.webSecurity closed */
   loadURL_UNSAFE = (_path) => {
-    const baseUrl = url.format({
-      pathname: (_path),
-      protocol: 'file:',
-      slashes: true
-    });
-    
     return this._super.loadURL(
       loadView({
           webSecurity: false,
           src: this.exec,
           title: `${this.name} service`,
-          base: baseUrl
+          base: _path
       }),
       {
-        baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}`
+        // baseURLForDataURL: `${conf.protocolName}://${path.dirname(_path)}`
       }
     ).catch(err => {
       this.didFailLoad(err);

@@ -1,5 +1,6 @@
 const conf = require('../conf/global.json');
 const { protocol } = require('electron');
+const path = require('path');
 
 /* new renderer-window listen */
 exports.listenerForNewWindow = (app, ep) => {
@@ -28,7 +29,7 @@ exports.registryProtocolForService = (app, ep) => {
   const protocolName = conf.protocolName;
   app.whenReady().then(() => {
     protocol.registerFileProtocol(protocolName, (request, callback) => {
-      const url = request.url.substr(protocolName.length + 2);
+      const url = request.url.substr(protocolName.length + 4);
       callback({ path: path.normalize(decodeURIComponent(url)) })
     });
   });

@@ -2,7 +2,7 @@
   "name": "process-manager",
   "description": "process-manager",
   "author": {
-    "name": "NoJsJa",
+    "name": "nojsja",
     "email": "yangwei020154@gmail.com"
   },
   "scripts": {
@@ -13,8 +13,7 @@
   "keywords": [
     "process-manager"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@ant-design/icons": "^4.0.2",
     "@babel/core": "^7.12.7",

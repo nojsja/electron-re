@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
+const conf = require('../conf/global.json');
 
 /**
   * loadView [生成可以供直接读取显示到BrowserWindow的html content]
@@ -37,16 +39,22 @@ const path = require('path');
                 result = _require(_path);
               } catch(error) {
                 result =
-                  _require(path.join(
-                    path.dirname(document.baseURI),
-                    _path).replace('file:', ''));
+                  _require(
+                    (path.posix.join(...(path.dirname(document.baseURI.replace('file:///', ''))).split(path.sep), _path))
+                  );
               }
               return result;
             }
           })(require);
         </script>
 
-        ${ webSecurity ? ("<script>" + script + "</script>") : "<script src="+ src + "></script>" }
+        ${ webSecurity ? ("<script>" + script + "</script>") : "<script src='"+ (
+          url.format({
+            pathname: (path.posix.join(...(src).split(path.sep))),
+            protocol: conf.protocolName+':',
+            slashes: true
+          })
+        ) + "'></script>" }
 
         <script>
           (function() {
