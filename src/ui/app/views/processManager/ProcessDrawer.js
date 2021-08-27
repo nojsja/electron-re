@@ -95,7 +95,7 @@ class UI_Drawer extends Drawer {
 
     ctx.fillStyle = 'white';
     ctx.font = ".8rem sans-serif";
-    ctx.fillText("%/1gb", padding - 5, padding - 2);
+    ctx.fillText("%/1Gb", padding - 5, padding - 2);
 
     ctx.font = ".8rem sans-serif";
 
@@ -124,6 +124,8 @@ class UI_Drawer extends Drawer {
   draw() {
     if (!this.ctx) return console.error(new Error('Failed to get context(2d) of canvas!'));
     const { width, height } = this.getRect();
+
+    console.log(width, height, 'ui', this.initialized);
 
     if (!this.initialized) {
       if (width && height) {

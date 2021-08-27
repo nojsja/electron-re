@@ -20,7 +20,7 @@ const func = {
   },
   /* build for win platform */
   'build:ui': async (env) => {
-    console_log('>>>>>> build:libs ...');
+    console_log('>>>>>> build:ui ...');
     await execRealtime(`shx mkdir -p lib/ui`);
     await execRealtime(`npm run build`, { cwd: './src/ui' });
     await copyDirSync('./src/ui/dist', './lib/ui')

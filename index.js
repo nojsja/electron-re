@@ -44,8 +44,8 @@ app.whenReady().then(async() => {
     await global.otherService.connected();
 
     /* service devtools */
-    global.appService.openDevTools();
-    global.otherService.openDevTools();
+    // global.appService.openDevTools();
+    // global.otherService.openDevTools();
 
     global.childProcessPool = new ChildProcessPool({
       path: path.resolve(__dirname, './test/child_process/child1.js'),
