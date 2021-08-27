@@ -8,8 +8,8 @@
     "start:dev": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "build:libs": "babel src --out-dir lib --ignore ./src/ui",
-    "build:ui": "shx mkdir -p lib/ui && cd ./src/ui && npm run build && shx cp -rf ./dist/* ../../lib/ui && cd - && shx rm ./lib/ui/dll_vendor.js.map",
+    "build:libs": "node ./build.js build:libs",
+    "build:ui": "node ./build.js build:ui",
     "build": "npm run build:libs && npm run build:ui"
   },
   "keywords": [
