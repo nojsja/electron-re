@@ -1,12 +1,14 @@
+!lib/
+
 # keep source code out
 src/
-index.js
 
 # keep build tools out
 build.js
 build.utils.js
 .babelrc
+.vscode/
 
 # keep test code out
-index.text.js
+index.test.js
 test/

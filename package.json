@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Electron Process Manager",
   "main": "./lib/index",
   "scripts": {
