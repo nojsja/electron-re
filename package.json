@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Electron Process Manager",
   "main": "./lib/index",
   "scripts": {
@@ -41,7 +41,7 @@
     "@babel/preset-env": "^7.12.7",
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",
-    "electron": "^9.3.5",
+    "electron": "9.3.5",
     "electron-mocha": "^9.3.2",
     "shx": "^0.3.3"
   },

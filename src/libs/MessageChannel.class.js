@@ -295,13 +295,17 @@ class MessageChannelMain extends MessageChannel {
 }
 
 
-if (isMain) {
-  global['globalMessage'] = global['globalMessage'] || new MessageChannelMain();
+if (!('electronre:$globalMessage' in global)) {
+  Object.defineProperty(
+    global,
+    "electronre:$globalMessage", {
+      value: isMain ?
+        new MessageChannelMain() :
+        (isRenderer ? new MessageChannelRender() : null),
+      writable: false,
+      configurable: false,
+      enumerable: true
+  });
 }
 
-if (isRenderer) {
-  global['globalMessage'] = global['globalMessage'] || new MessageChannelRender();
-}
-
-
-module.exports = global['globalMessage'];
+module.exports = global['electronre:$globalMessage'];

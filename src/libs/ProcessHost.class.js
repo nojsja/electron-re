@@ -79,6 +79,13 @@ class ProcessHost {
 }
 
 
-global.processHost = global.processHost || new ProcessHost()
+if (!('electronre:$processHost' in global)) {
+  Object.defineProperty(global, "electronre:$processHost", {
+    value: new ProcessHost(),
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+}
 
-module.exports = global.processHost;
+module.exports = global['electronre:$processHost'];

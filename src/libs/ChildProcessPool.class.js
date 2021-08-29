@@ -7,8 +7,9 @@ const ProcessManager = require('./ProcessManager.class');
 
 let inspectStartIndex = 5858;
 
-class ChildProcessPool {
+class ChildProcessPool extends EventEmitter {
   constructor({ path, max=6, cwd, env }) {
+    super();
     this.cwd = cwd || _path.dirname(path);
     this.env = env || process.env;
     this.callbacks = {};
@@ -18,16 +19,20 @@ class ChildProcessPool {
     this.forkedPath = path;
     this.forkIndex = 0;
     this.maxInstance = max;
-    this.event = new EventEmitter();
-    this.event.on('fork', (pids) => {
-      ProcessManager.listen(pids, 'node', this.forkedPath);
-    });
-    this.event.on('unfork', (pids) => {
-      ProcessManager.unlisten(pids);
-    });
+    this.initEvents();
   }
 
   /* -------------- internal -------------- */
+
+  /* init events */
+  initEvents = () => {
+    this.on('fork', (pids) => {
+      ProcessManager.listen(pids, 'node', this.forkedPath);
+    });
+    this.on('unfork', (pids) => {
+      ProcessManager.unlisten(pids);
+    });
+  }
   
   /* Received data from a child process */
   dataRespond = (data, id) => {
@@ -77,7 +82,7 @@ class ChildProcessPool {
         forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
         forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
         ProcessManager.pipe(forked);
-        this.event.emit('fork', this.forked.map(fork => fork.pid));
+        this.emit('fork', this.forked.map(fork => fork.pid));
       } else {
         this.forkIndex = this.forkIndex % this.maxInstance;
         forked = this.forked[this.forkIndex];
@@ -103,7 +108,7 @@ class ChildProcessPool {
     * @param  {[String]} pid [process pid]
     */
   onProcessDisconnect(pid){
-    this.event.emit('unfork', pid);
+    this.emit('unfork', pid);
     removeForkedFromPool(this.forked, pid, this.pidMap);
   }
 

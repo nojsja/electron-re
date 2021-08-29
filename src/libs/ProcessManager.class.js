@@ -187,6 +187,13 @@ class ProcessManager {
 
 }
 
-global.processManager = global.processManager || new ProcessManager();
+if (!('electronre:$processManager' in global)) {
+  Object.defineProperty(global, "electronre:$processManager", {
+    value: new ProcessManager(),
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+}
 
-module.exports = global.processManager;
+module.exports = global['electronre:$processManager'];
