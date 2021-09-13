@@ -1,16 +1,25 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import { sorting } from '../../types';
 
+interface Props {
+  disableSort: boolean,
+  sorting: sorting,
+  path: 'memory' | 'cpu' | 'pid' | 'ppid' | 'url' | 'mark',
+  onSortingChange: {
+    (params: sorting) : void
+  }
+}
 
-export default class ProcessTableHeader extends React.Component {
-  constructor(props) {
+export class ProcessTableHeader extends React.Component<Props, {}> {
+  constructor(props: Props) {
     super(props);
     this.handleClick = this.handleClick.bind(this);
   }
   static propTypes = {
     children: PropTypes.node,
     path: PropTypes.string.isRequired,
-    sorting: PropTypes.PropTypes.shape({
+    sorting: PropTypes.shape({
       path: PropTypes.string,
       how: PropTypes.string
     }),
@@ -34,7 +43,7 @@ export default class ProcessTableHeader extends React.Component {
   }
 
   handleClick() {
-    let nextSortHow = null;
+    let nextSortHow: 'ascend' | 'descend' | null = null;
     if(this.sortHow === null) {
       nextSortHow = 'ascend';
     } else if (this.sortHow === 'ascend') {
@@ -42,10 +51,12 @@ export default class ProcessTableHeader extends React.Component {
     } else {
       nextSortHow = null;
     }
-    this.props.onSortingChange({
-      path: this.props.path,
-      how: nextSortHow
-    });
+    if (this.props.path !== 'url' && this.props.path !== 'mark') {
+      this.props.onSortingChange({
+        path: this.props.path,
+        how: nextSortHow
+      });
+    }
   }
   render() {
     return (

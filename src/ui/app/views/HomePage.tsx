@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import * as React from 'react';
 
-import ProcessManager from './processManager';
+import { ProcessManager } from './processManager';
 
 const HomePage = () => {
   return (

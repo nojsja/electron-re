@@ -1,6 +1,15 @@
-import React, { Component } from 'react'
+import * as React from 'react';
+import { Component } from 'react';
 
-export class ProcessConsole extends Component {
+interface Props {
+  handleOpenConsole: {
+    (attr: boolean): unknown
+  },
+  logs: string[],
+  visible: boolean
+}
+
+export class ProcessConsole extends Component<Props, {}> {
 
   handleOpenConsole = () => {
     this.props.handleOpenConsole(false);
@@ -22,5 +31,3 @@ export class ProcessConsole extends Component {
     )
   }
 }
-
-export default ProcessConsole

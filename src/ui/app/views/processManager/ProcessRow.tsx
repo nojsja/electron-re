@@ -1,13 +1,26 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-export default class ProcessRow extends React.Component {
+interface Props {
+  pid: number,
+  url: string,
+  ppid: number,
+  memory: string,
+  mark: string,
+  cpu: number,
+  selected: boolean,
+  onSelect: {
+    (): unknown
+  }
+}
+
+export class ProcessRow extends React.Component<Props, {}> {
   static propTypes = {
     pid: PropTypes.number,
     ppid: PropTypes.number,
     memory: PropTypes.string,
     mark: PropTypes.string,
-    cpu: PropTypes.string,
+    cpu: PropTypes.number,
     selected: PropTypes.bool,
     onSelect: PropTypes.func
   }

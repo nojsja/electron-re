@@ -1,19 +1,26 @@
 /* -------------- Drawer -------------- */
 
-class Drawer {
-  constructor(selector) {
-    this.canvas = document.querySelector(selector);
+export class Drawer {
+  ctx: CanvasRenderingContext2D | null
+  canvas: HTMLCanvasElement | null
+
+  constructor(selector: string) {
     this.ctx = null;
-    if (this.canvas && this.canvas.getContext) {
-      this.ctx = this.canvas.getContext('2d');
-      this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    this.canvas = null;
+    let find = document.querySelector(selector);
+    if (find !== null) {
+      this.canvas = find as HTMLCanvasElement;
+      if (this.canvas.getContext) {
+        this.ctx = this.canvas.getContext('2d');
+        if (this.ctx) this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
     }
   }
 
   getRect = () => {
     return {
-      width: this.canvas.width,
-      height: this.canvas.height,
+      width: this.canvas?.width,
+      height: this.canvas?.height,
       padding: 30,
     };
   }
@@ -21,26 +28,29 @@ class Drawer {
   clear() {
     if (this.ctx) {
       const { width, height, padding } = this.getRect();
-      this.ctx.clearRect(0, 0, width, height);
+      if (width !== undefined && height !== undefined)
+        this.ctx.clearRect(0, 0, width, height);
     }
   }
 
-  draw() {
+  draw(cpu: number[], memory: number[]) {
     throw new Error('Drawer: draw - method is not implemented!');
   }
 }
 
 /* -------------- Data_Drawer -------------- */
 
-class Data_Drawer extends Drawer {
-  constructor(selector) {
+export class Data_Drawer extends Drawer {
+  constructor(selector: string) {
     super(selector);
   }
 
-  drawWork(data, lineColor="white") {
+  drawWork(data: number[], lineColor="white") {
     const { ctx } = this;
     const { width, height, padding } = this.getRect();
     let x, y;
+
+    if (!ctx || height === undefined || width === undefined) return;
 
     ctx.strokeStyle = lineColor;
     ctx.beginPath();
@@ -59,7 +69,7 @@ class Data_Drawer extends Drawer {
     ctx.stroke();
   }
 
-  draw(cpu, memory) {
+  draw(cpu: number[], memory: number[]) {
     if (!this.ctx) return console.error(new Error('Failed to get context(2d) of canvas!'));
     console.log('draw data');
     const G = 1024 * 1024 * 1024;
@@ -71,8 +81,11 @@ class Data_Drawer extends Drawer {
 
 /* -------------- UI_Drawer -------------- */
 
-class UI_Drawer extends Drawer {
-  constructor(selector, {
+export class UI_Drawer extends Drawer {
+  xPoints: number
+  yPoints: number
+  initialized: boolean
+  constructor(selector: string, {
     xPoints=60, yPoints=100
   }) {
     super(selector);
@@ -85,6 +98,8 @@ class UI_Drawer extends Drawer {
     const { ctx } = this;
     const { width, height, padding } = this.getRect();
     let x, y;
+
+    if (!ctx || height === undefined || width === undefined) return;
 
     ctx.strokeStyle = 'white';
     ctx.beginPath();
@@ -104,7 +119,7 @@ class UI_Drawer extends Drawer {
       x = padding;
       y = height - padding - i * (( height - 2 * padding ) / this.yPoints);
       ctx.fillRect(Math.floor(x), Math.floor(y), 3, 1);
-      ctx.fillText(i, 5, Math.floor(y + 5));
+      ctx.fillText(String(i), 5, Math.floor(y + 5));
     }
 
     ctx.font = ".8rem sans-serif";
@@ -113,7 +128,7 @@ class UI_Drawer extends Drawer {
       x = padding + i * (( width - 2 * padding ) / this.xPoints);
       y = height - padding - 3;
       ctx.fillRect(Math.floor(x), Math.floor(y), 1, 3);
-      ctx.fillText(i, Math.floor(x - 5), Math.floor(height - 10));
+      ctx.fillText(String(i), Math.floor(x - 5), Math.floor(height - 10));
     }
   }
 
@@ -137,7 +152,3 @@ class UI_Drawer extends Drawer {
     }
   }
 }
-
-exports.Drawer = Drawer;
-exports.UI_Drawer = UI_Drawer;
-exports.Data_Drawer = Data_Drawer;

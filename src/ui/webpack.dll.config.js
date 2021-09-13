@@ -19,7 +19,7 @@ module.exports = {
     publicPath: '/',
   },
   resolve: {
-    extensions: [".js", ".jsx", ".es6"],
+    extensions: [".js", ".jsx", ".es6", ".tsx", ".ts"],
     alias: {
       resources: path.resolve(__dirname, 'resources'),
       app: path.resolve(__dirname, 'app'),

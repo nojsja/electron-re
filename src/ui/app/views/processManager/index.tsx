@@ -1,30 +1,36 @@
-import React from 'react';
+import * as React from 'react';
 import { ipcRenderer, remote } from 'electron';
 
-import ProcessTable from './ProcessTable';
-import ToolBar from './ToolBar';
-import ProcessConsole from './ProcessConsole'
-import ProcessTrends from './ProcessTrends';
+import { ProcessTable }from './ProcessTable';
+import { ToolBar } from './ToolBar';
+import { ProcessConsole } from './ProcessConsole'
+import { ProcessTrends } from './ProcessTrends';
 
-export default class ProcessManager extends React.Component {
+import { record, sorting, ProcessManagerState } from '../../types';
 
-  constructor(props) {
+interface stdData {
+  pid: number,
+  data: string
+}
+
+export class ProcessManager extends React.Component<{}, ProcessManagerState> {
+  constructor(props: object) {
     super(props);
     this.state = {
-      processData: null,
-      selectedPid: null,
       processes: [],
       logs: { /* [pid]: [] */ },
-      history:{
+      history: {
         /* [pid]: { memory: [], cpu: [] } */
       },
       types: {},
       sorting: {
-        path: null,
+        path: 'pid',
         how: 'ascend'
       },
       logVisible: false,
       trendsVisible: false,
+      selectedPid: 0,
+  
     }
   }
 
@@ -33,7 +39,7 @@ export default class ProcessManager extends React.Component {
     ipcRenderer.on('process:update-list', (event, { records, types }) => {
       console.log('update:list');
       const { history } = this.state;
-      for (let pid in records) {
+      for (let pid in records as record) {
         history[pid] = history[pid] || { memory: [], cpu: [] };
         if (!records[pid]) continue;
         history[pid].memory.push(records[pid].memory);
@@ -48,15 +54,15 @@ export default class ProcessManager extends React.Component {
       });
     });
 
-    ipcRenderer.on('process:stdout', (event, dataArray) => {
+    ipcRenderer.on('process:stdout', (event, dataArray: stdData[]) => {
       console.log('process:stdout');
       const { logs } = this.state;
       dataArray.forEach(({ pid, data })=> {
         logs[pid] = logs[pid] || [];
         logs[pid].unshift(`[${new Date().toLocaleTimeString()}]: ${data}`);
       });
-      Object.keys(logs).forEach(pid => {
-        logs[pid].slice(0, 1000);
+      Object.keys(logs).forEach((pid: string) => {
+        logs[Number(pid)].slice(0, 1000);
       });
       this.setState({ logs });
     });

@@ -1,14 +1,36 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-export default class ToolBar extends React.Component {
+interface Props {
+  onKillClick: {
+    (): unknown
+  },
+  disableKill: boolean,
+  onOpenDevToolClick: {
+    (): unknown
+  },
+  disabelOpenDevTool: boolean,
+  disableConsole: boolean,
+  disableTrends: boolean,
+  onOpenConsoleClick: {
+    (): unknown
+  },
+  onOpenTrendsClick: {
+    (): unknown
+  }
+}
+
+export class ToolBar extends React.Component<Props, {}> {
 
   static propTypes = {
     onKillClick: PropTypes.func,
     disableKill: PropTypes.bool,
     onOpenDevToolClick: PropTypes.func,
     disabelOpenDevTool: PropTypes.bool,
-    disableConsole: PropTypes.bool
+    disableConsole: PropTypes.bool,
+    disableTrends: PropTypes.bool,
+    onOpenConsoleClick: PropTypes.func,
+    onOpenTrendsClick: PropTypes.func
   }
 
   render() {
