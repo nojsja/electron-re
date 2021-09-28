@@ -1,5 +1,5 @@
 /* depends */
-const { ipcRenderer, remote, ipcMain, BrowserWindow } = require('electron');
+const { ipcRenderer, ipcMain, BrowserWindow } = require('electron');
 const { isRenderer, isMain, getRandomString } = require('./utils');
 const EventEmitter = require('events');
 
