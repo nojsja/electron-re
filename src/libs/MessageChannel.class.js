@@ -237,6 +237,15 @@ class MessageChannelMain extends MessageChannel {
     const pid = getRandomString();
     const { id } = this.services[name];
 
+    ipcMain.emit('process:catch-signal', {
+      type: `ipcMain.invoke.${name}.${channel}`,
+      origin: 'ipcMain',
+      method: 'invoke',
+      target: name,
+      channel,
+      data: args
+    });
+
     return new Promise((resolve, reject) => {
       if (name === 'main') reject(new Error(`MessageChannel: the main process can not send a message to itself!`))
       if (!id) reject(new Error(`MessageChannel: can not get the id of the window names ${name}`));
@@ -258,7 +267,19 @@ class MessageChannelMain extends MessageChannel {
     */
   handle(channel, promiseFunc) {
     if (!promiseFunc instanceof Function) throw new Error('MessageChannel: promiseFunc must be a function!');
-    ipcMain.handle(channel, promiseFunc);
+    ipcMain.handle(channel, (event, ...args) => {
+      return promiseFunc(event, ...args).then((result) => {
+        ipcMain.emit('process:catch-signal', {
+          type: `ipcMain.handle.${'(none)'}.${channel}`,
+          origin: 'ipcMain',
+          method: 'handle',
+          target: '(none)',
+          channel,
+          data: result
+        });
+        return result;
+      });
+    });
   }
 
   /**
@@ -269,7 +290,19 @@ class MessageChannelMain extends MessageChannel {
     */
   handleOnce(channel, promiseFunc) {
     if (!promiseFunc instanceof Function) throw new Error('MessageChannel: promiseFunc must be a function!');
-    ipcMain.handleOnce(channel, promiseFunc);
+    ipcMain.handleOnce(channel, (event, ...args) => {
+      return promiseFunc(event, ...args).then(result => {
+        ipcMain.emit('process:catch-signal', {
+          type: `ipcMain.handleOnce.${'(none)'}.${channel}`,
+          origin: 'ipcMain',
+          method: 'handleOnce',
+          target: '(none)',
+          channel,
+          data: result
+        });
+        return result;
+      });
+    });
   }
 
   /**
@@ -281,6 +314,15 @@ class MessageChannelMain extends MessageChannel {
   send(name, channel, args={}) {
     const id = (this.services[name] || {}).id;
     
+    ipcMain.emit('process:catch-signal', {
+      type: `ipcMain.send.${name}.${channel}`,
+      origin: 'ipcMain',
+      method: 'send',
+      target: name,
+      channel,
+      data: args
+    });
+
     if (!id) throw new Error(`MessageChannel: can not get the id of the window names ${name}`);
     const win = BrowserWindow.fromId(id);
     if (!win) throw new Error(`MessageChannel: can not find a window with id: ${id}`);
@@ -294,9 +336,17 @@ class MessageChannelMain extends MessageChannel {
     * @param  {[String]} channel [服务监听的信号名]
     * @param  {[Any]} args [携带参数(会被序列化，不会传递对象Proptype信息)]
     */
-   sendTo(id, channel, args) {
-     if (!BrowserWindow.fromId(id)) throw new Error(`MessageChannel: can not find a window with id:${id}!`);
-     BrowserWindow.fromId(id).webContents.send(channel, args);
+  sendTo(id, channel, args) {
+    ipcMain.emit('process:catch-signal', {
+      type: `ipcMain.sendTo.${id}.${channel}`,
+      origin: 'ipcMain',
+      method: 'sendTo',
+      target: id,
+      channel,
+      data: args
+    });
+    if (!BrowserWindow.fromId(id)) throw new Error(`MessageChannel: can not find a window with id:${id}!`);
+    BrowserWindow.fromId(id).webContents.send(channel, args);
   }
 
   /**
@@ -306,7 +356,17 @@ class MessageChannelMain extends MessageChannel {
     */
   on(channel, func) {
     if (!func instanceof Function) throw new Error('MessageChannel: func must be a function!');
-    ipcMain.on(channel, func);
+    ipcMain.on(channel, (event, ...args) => {
+      ipcMain.emit('process:catch-signal', {
+        type: `ipcMain.on.${'(none)'}.${channel}`,
+        origin: 'ipcMain',
+        method: 'on',
+        target: '(none)',
+        channel,
+        data: args
+      });
+      func(event, ...args);
+    });
   }
 
   /**
@@ -316,7 +376,17 @@ class MessageChannelMain extends MessageChannel {
     */
    once(channel, func) {
     if (!func instanceof Function) throw new Error('MessageChannel: func must be a function!');
-    ipcMain.once(channel, func);
+    ipcMain.once(channel, (event, ...args) => {
+      ipcMain.emit('process:catch-signal', {
+        type: `ipcMain.once.${'(none)'}.${channel}`,
+        origin: 'ipcMain',
+        method: 'once',
+        target: '(none)',
+        channel,
+        data: args
+      });
+      func(event, ...args);
+    });
   }
   
   /**

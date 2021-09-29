@@ -73,9 +73,8 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
     ipcRenderer.on('process:catch-signal', (event, result: signal) => {
       console.log('process:catch-signal');
       let { signals } = this.state;
-      console.log(signals);
-      signals.push(result);
-      signals = signals.slice(-1000);
+      signals.unshift(result);
+      signals = signals.slice(0, 1000);
       this.setState({ signals });
     });
 

@@ -25,8 +25,7 @@ class ProcessManager {
   /* -------------- internal -------------- */
 
   /* ipc listener  */
-  ipcSignalsRecorder = (params) => {
-    console.log(params, 'signal');
+  ipcSignalsRecorder = (params, e) => {
     this.processWindow.sendToWeb('process:catch-signal', params);
   }
 
@@ -186,7 +185,7 @@ class ProcessManager {
         this.startTimer(conf.uiRefreshInterval);
         ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
         ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))
-        ipcMain.on('process:catch-signal', (event, args) => this.ipcSignalsRecorder(args))
+        ipcMain.on('process:catch-signal', (event, args) => this.ipcSignalsRecorder(args || event))
       });
       
       this.processWindow.loadURL(loadingUrl);

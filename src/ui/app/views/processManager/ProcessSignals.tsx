@@ -36,7 +36,7 @@ export class ProcessSignals extends Component<Props, {}> {
           <span className="text-button small" onClick={this.handleOpenConsole}>X</span>
         </header>
         <div className="selectable-text">
-          <table className="">
+          <table className="signals">
             <thead>
               <tr>
                 <th>origin</th>
@@ -46,10 +46,10 @@ export class ProcessSignals extends Component<Props, {}> {
                 <th>body</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="signals">
               {
                 signals.map(
-                  signal => {
+                  (signal, index) => {
                       let d = getDataString(signal.data);
                       return (
                         <tr>
@@ -57,7 +57,9 @@ export class ProcessSignals extends Component<Props, {}> {
                           <td>{signal.method}</td>
                           <td>{signal.target}</td>
                           <td>{signal.channel}</td>
-                          <td title={d}>{d}</td>
+                          <td>
+                            <input readOnly title={d} defaultValue={d}></input>
+                          </td>
                         </tr>
                       );
                     }

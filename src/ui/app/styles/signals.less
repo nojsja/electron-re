@@ -1,0 +1,34 @@
+@dark: rgba(grey, .5);
+thead.signals {
+  background-color: inherit;
+}
+
+tbody.signals {
+  background-color: inherit;
+}
+
+tbody.signals {
+  background-color: inherit;
+
+  tr > td {
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space:nowrap;
+    word-break: keep-all;
+
+    input {
+      width: 100%;
+      border: dashed 2px transparent;
+      background-color: rgba(white, .5);
+      &:active {
+        color: grey;
+        outline: none;
+      }
+      &:focus {
+        border: dashed 2px grey;
+        outline: none;
+      }
+    }
+  }
+}

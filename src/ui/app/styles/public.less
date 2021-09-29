@@ -93,11 +93,13 @@ i {
 .fixed-window {
   position: fixed;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.74);
   color: white;
   overflow-y: scroll;
+  overflow-x: hidden;
 
   .scroll-style-1;
   animation: progressive-show;
@@ -106,8 +108,8 @@ i {
 
   header {
     position: fixed;
-    right: .5rem;
-    top: .3rem;
+    right: .3rem;
+    top: 0;
     text-align: right;
     z-index: 2;
   }
@@ -152,7 +154,8 @@ i {
   .process-signal-container {
     .fixed-window;
     width: 100%;
-    overflow: hidden;
+    max-width: 100%;
+    // overflow: hidden;
     background-color: rgba(255, 255, 255, 0.74);
     color: black;
   }

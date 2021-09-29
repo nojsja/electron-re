@@ -79,11 +79,13 @@ i {
 .fixed-window {
   position: fixed;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.74);
   color: white;
   overflow-y: scroll;
+  overflow-x: hidden;
   cursor: pointer;
   animation: progressive-show;
   animation-duration: 0.2s;
@@ -109,8 +111,8 @@ i {
 }
 .fixed-window header {
   position: fixed;
-  right: 0.5rem;
-  top: 0.3rem;
+  right: 0.3rem;
+  top: 0;
   text-align: right;
   z-index: 2;
 }
@@ -137,11 +139,13 @@ i {
 .container-router .process-console-container {
   position: fixed;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.74);
   color: white;
   overflow-y: scroll;
+  overflow-x: hidden;
   cursor: pointer;
   animation: progressive-show;
   animation-duration: 0.2s;
@@ -167,19 +171,63 @@ i {
 }
 .container-router .process-console-container header {
   position: fixed;
-  right: 0.5rem;
-  top: 0.3rem;
+  right: 0.3rem;
+  top: 0;
+  text-align: right;
+  z-index: 2;
+}
+.container-router .process-signal-container {
+  position: fixed;
+  height: 100%;
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.74);
+  color: white;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  cursor: pointer;
+  animation: progressive-show;
+  animation-duration: 0.2s;
+  animation-timing-function: ease-in-out;
+  width: 100%;
+  max-width: 100%;
+  background-color: rgba(255, 255, 255, 0.74);
+  color: black;
+}
+.container-router .process-signal-container::-webkit-scrollbar {
+  width: 6px;
+  background-color: #F5F5F5;
+}
+.container-router .process-signal-container::-webkit-scrollbar-track-piece {
+  background-color: #eee;
+  margin: -2px;
+}
+.container-router .process-signal-container::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #929292;
+}
+.container-router .process-signal-container ::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  background-color: #F5F5F5;
+}
+.container-router .process-signal-container header {
+  position: fixed;
+  right: 0.3rem;
+  top: 0;
   text-align: right;
   z-index: 2;
 }
 .container-router .process-trends-container {
   position: fixed;
   width: 100%;
+  max-width: 100%;
   height: 100%;
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.74);
   color: white;
   overflow-y: scroll;
+  overflow-x: hidden;
   cursor: pointer;
   animation: progressive-show;
   animation-duration: 0.2s;
@@ -207,8 +255,8 @@ i {
 }
 .container-router .process-trends-container header {
   position: fixed;
-  right: 0.5rem;
-  top: 0.3rem;
+  right: 0.3rem;
+  top: 0;
   text-align: right;
   z-index: 2;
 }
@@ -230,4 +278,33 @@ i {
 }
 .hover-pointer:hover {
   transition: all 0.2s;
+}
+thead.signals {
+  background-color: inherit;
+}
+tbody.signals {
+  background-color: inherit;
+}
+tbody.signals {
+  background-color: inherit;
+}
+tbody.signals tr > td {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+tbody.signals tr > td input {
+  width: 100%;
+  border: dashed 2px transparent;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+tbody.signals tr > td input:active {
+  color: grey;
+  outline: none;
+}
+tbody.signals tr > td input:focus {
+  border: dashed 2px grey;
+  outline: none;
 }
