@@ -40,6 +40,10 @@ class MessageChannelRender extends MessageChannel {
 
     ipcRenderer.send('process:catch-signal', {
       type: `ipcRenderer.invoke.[${name || '(none)'}].${channel}`,
+      origin: 'ipcRenderer',
+      method: 'on',
+      target: name || '(none)',
+      channel,
       data: args
     });
 
@@ -72,6 +76,10 @@ class MessageChannelRender extends MessageChannel {
 
       ipcRenderer.send('process:catch-signal', {
         type: `ipcRenderer.handle.${'(none)'}.${channel}`,
+        origin: 'ipcRenderer',
+        method: 'handle',
+        target: '(none)',
+        channel,
         data: args
       });
 
@@ -112,6 +120,10 @@ class MessageChannelRender extends MessageChannel {
 
     ipcRenderer.send('process:catch-signal', {
       type: `ipcRenderer.send.${name || '(none)'}.${channel}`,
+      origin: 'ipcRenderer',
+      method: 'send',
+      target: name || '(none)',
+      channel,
       data: args
     });
 
@@ -131,6 +143,10 @@ class MessageChannelRender extends MessageChannel {
   sendTo(id, channel, args) {
     ipcRenderer.send('process:catch-signal', {
       type: `ipcRenderer.sendTo.${id || '(none)'}.${channel}`,
+      origin: 'ipcRenderer',
+      method: 'sendTo',
+      target: id || '(none)',
+      channel,
       data: args
     });
     ipcRenderer.sendTo(id, channel, args)
@@ -145,6 +161,10 @@ class MessageChannelRender extends MessageChannel {
     ipcRenderer.on(channel, (event, ...args) => {
       ipcRenderer.send('process:catch-signal', {
         type: `ipcRenderer.on.${'(none)'}.${channel}`,
+        origin: 'ipcRenderer',
+        method: 'on',
+        target: '(none)',
+        channel,
         data: args
       });
       func(event, ...args);
@@ -160,6 +180,10 @@ class MessageChannelRender extends MessageChannel {
     ipcRenderer.once(channel, (event, ...args) => {
       ipcRenderer.send('process:catch-signal', {
         type: `ipcRenderer.once.${'(none)'}.${channel}`,
+        origin: 'ipcRenderer',
+        method: 'once',
+        target: '(none)',
+        channel,
         data: args
       });
       func(event, ...args);

@@ -7,7 +7,7 @@ import { ProcessConsole } from './ProcessConsole'
 import { ProcessSignals } from './ProcessSignals'
 import { ProcessTrends } from './ProcessTrends';
 
-import { record, sorting, signal, ProcessManagerState } from '../../types';
+import { record, ProcessManagerState, signal } from '../../types';
 
 interface stdData {
   pid: number,
@@ -70,12 +70,11 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
       this.setState({ logs });
     });
     
-    ipcRenderer.on('process:catch-signal', (event, { type, data }) => {
+    ipcRenderer.on('process:catch-signal', (event, result: signal) => {
       console.log('process:catch-signal');
       let { signals } = this.state;
-      signals.push({
-        type, data
-      });
+      console.log(signals);
+      signals.push(result);
       signals = signals.slice(-1000);
       this.setState({ signals });
     });

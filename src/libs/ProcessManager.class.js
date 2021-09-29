@@ -27,9 +27,7 @@ class ProcessManager {
   /* ipc listener  */
   ipcSignalsRecorder = (params) => {
     console.log(params, 'signal');
-    this.processWindow.sendToWeb('process:catch-signal', {
-      type: params.type, data: params.data
-    });
+    this.processWindow.sendToWeb('process:catch-signal', params);
   }
 
   /* refresh process list */

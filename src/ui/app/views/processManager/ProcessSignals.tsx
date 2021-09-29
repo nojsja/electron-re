@@ -5,9 +5,21 @@ interface Props {
   handleOpenConsole: {
     (status: boolean, attr: 'logVisible' | 'signalVisible'): unknown
   },
-  signals: {type: string, data: any}[],
+  signals: {
+    type: string,
+    data: any,
+    origin: string,
+    method: string,
+    target: string,
+    channel: string,
+  }[],
   visible: boolean
 }
+
+const getDataString = (data: any): string => {
+  console.log(data);
+  return (typeof data === 'object') ? JSON.stringify(data) : data
+};
 
 export class ProcessSignals extends Component<Props, {}> {
 
@@ -19,18 +31,40 @@ export class ProcessSignals extends Component<Props, {}> {
     const { signals=[], visible } = this.props;
     return (
       visible ?
-      (<div className="process-console-container">
+      (<div className="process-signal-container">
         <header>
           <span className="text-button small" onClick={this.handleOpenConsole}>X</span>
         </header>
         <div className="selectable-text">
-        {
-          signals.map(
-            signal => <React.Fragment key={signal.type}>{
-              (typeof signal.data === 'object') ? `${signal.type} : ${JSON.stringify(signal.data)}` : `${signal.type} : ${signal.data}`
-            }<br></br></React.Fragment>
-          )
-        }
+          <table className="">
+            <thead>
+              <tr>
+                <th>origin</th>
+                <th>method</th>
+                <th>target</th>
+                <th>channel</th>
+                <th>body</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                signals.map(
+                  signal => {
+                      let d = getDataString(signal.data);
+                      return (
+                        <tr>
+                          <td>{signal.origin}</td>
+                          <td>{signal.method}</td>
+                          <td>{signal.target}</td>
+                          <td>{signal.channel}</td>
+                          <td title={d}>{d}</td>
+                        </tr>
+                      );
+                    }
+                )
+              }
+            </tbody>
+          </table>
         </div>
       </div>)
       : null

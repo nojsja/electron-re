@@ -25,7 +25,11 @@ export interface processTypes {
 
 export interface signal {
   type: string,
-  data: unknown
+  data: any,
+  origin: string,
+  method: string,
+  target: string,
+  channel: string,
 }
 
 export interface ProcessManagerState {
