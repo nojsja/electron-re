@@ -24,6 +24,14 @@ class ProcessManager {
 
   /* -------------- internal -------------- */
 
+  /* ipc listener  */
+  ipcSignalsRecorder = (params) => {
+    console.log(params, 'signal');
+    this.processWindow.sendToWeb('process:catch-signal', {
+      type: params.type, data: params.data
+    });
+  }
+
   /* refresh process list */
   refreshProcessList = () => {
     return new Promise((resolve, reject) => {
@@ -151,6 +159,7 @@ class ProcessManager {
           autoHideMenuBar: true,
           webPreferences: {
             nodeIntegration: true,
+            contextIsolation: false,
             enableRemoteModule: true
           },
         }),
@@ -179,6 +188,7 @@ class ProcessManager {
         this.startTimer(conf.uiRefreshInterval);
         ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
         ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))
+        ipcMain.on('process:catch-signal', (event, args) => this.ipcSignalsRecorder(args))
       });
       
       this.processWindow.loadURL(loadingUrl);

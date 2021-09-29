@@ -1,5 +1,5 @@
 {
   "protocolName": "electronre",
-  "uiDevServer": "127.0.0.1:3000",
+  "uiDevServer": "127.0.0.1:3001",
   "uiRefreshInterval": 2e3
 }

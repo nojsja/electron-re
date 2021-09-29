@@ -13,7 +13,7 @@ interface Props {
   disableConsole: boolean,
   disableTrends: boolean,
   onOpenConsoleClick: {
-    (): unknown
+    (status: boolean, attr: 'logVisible' | 'signalVisible'): unknown
   },
   onOpenTrendsClick: {
     (): unknown
@@ -54,7 +54,7 @@ export class ToolBar extends React.Component<Props, {}> {
               <button
                 className="btn btn-default"
                 disabled={this.props.disableConsole}
-                onClick={this.props.onOpenConsoleClick}
+                onClick={() => this.props.onOpenConsoleClick(true, 'logVisible')}
               >
                 Console
               </button>
@@ -64,6 +64,13 @@ export class ToolBar extends React.Component<Props, {}> {
                 onClick={this.props.onOpenTrendsClick}
               >
                 Trends
+              </button>
+              <button
+                className="btn btn-default"
+                disabled={false}
+                onClick={() => this.props.onOpenConsoleClick(true, 'signalVisible')}
+              >
+                Signals
               </button>
             </div>
           </div>

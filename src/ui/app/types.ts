@@ -23,15 +23,22 @@ export interface processTypes {
   [pid: number]: { type: string, url: string }
 }
 
+export interface signal {
+  type: string,
+  data: unknown
+}
+
 export interface ProcessManagerState {
   processes: record,
   logs: { [pid: number]: string[] },
+  signals: signal[],
   history: {
     [pid: number]: { memory: number[], cpu: number[] }
   },
   types: processTypes,
   sorting: sorting,
   logVisible: boolean,
+  signalVisible: boolean,
   trendsVisible: boolean,
   selectedPid: number
 }

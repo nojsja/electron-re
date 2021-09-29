@@ -38,6 +38,11 @@ class MessageChannelRender extends MessageChannel {
   invoke (name, channel, args) {
     const pid = getRandomString();
 
+    ipcRenderer.send('process:catch-signal', {
+      type: `ipcRenderer.invoke.[${name || '(none)'}].${channel}`,
+      data: args
+    });
+
     if (name === 'main') return ipcRenderer.invoke(channel, args);
 
     return new Promise((resolve, reject) => {
@@ -59,11 +64,16 @@ class MessageChannelRender extends MessageChannel {
     */
   handle(channel, promiseFunc) {
     if (!promiseFunc instanceof Function) throw new Error('MessageChannel: promiseFunc must be a function!');
-    
+
     ipcRenderer.on(channel, (event, params) => {
       const { pid, isFromMain } = params;
       delete params[pid];
       let execResult;
+
+      ipcRenderer.send('process:catch-signal', {
+        type: `ipcRenderer.handle.${'(none)'}.${channel}`,
+        data: args
+      });
 
       try {
         execResult = promiseFunc(event, params);
@@ -99,6 +109,12 @@ class MessageChannelRender extends MessageChannel {
     * @param  {[Any]} args [携带参数(会被序列化，不会传递对象Proptype信息)]
     */
   send(name, channel, args) {
+
+    ipcRenderer.send('process:catch-signal', {
+      type: `ipcRenderer.send.${name || '(none)'}.${channel}`,
+      data: args
+    });
+
     if (name === 'main') return ipcRenderer.send(channel, args);
     ipcRenderer.invoke('MessageChannel.getIdFromName', { name }).then(id => {
       if (!id) return console.error(`MessageChannel: cant find a service named: ${name}!`)
@@ -113,6 +129,10 @@ class MessageChannelRender extends MessageChannel {
     * @param  {[Any]} args [携带参数(会被序列化，不会传递对象Proptype信息)]
     */
   sendTo(id, channel, args) {
+    ipcRenderer.send('process:catch-signal', {
+      type: `ipcRenderer.sendTo.${id || '(none)'}.${channel}`,
+      data: args
+    });
     ipcRenderer.sendTo(id, channel, args)
   }
 
@@ -122,7 +142,13 @@ class MessageChannelRender extends MessageChannel {
     * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
     */
   on(channel, func) {
-    ipcRenderer.on(channel, func);
+    ipcRenderer.on(channel, (event, ...args) => {
+      ipcRenderer.send('process:catch-signal', {
+        type: `ipcRenderer.on.${'(none)'}.${channel}`,
+        data: args
+      });
+      func(event, ...args);
+    });
   }
 
   /**
@@ -131,7 +157,13 @@ class MessageChannelRender extends MessageChannel {
     * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
     */
   once(channel, func) {
-    ipcRenderer.once(channel, func);
+    ipcRenderer.once(channel, (event, ...args) => {
+      ipcRenderer.send('process:catch-signal', {
+        type: `ipcRenderer.once.${'(none)'}.${channel}`,
+        data: args
+      });
+      func(event, ...args);
+    });
   }
 
   /**

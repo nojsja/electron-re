@@ -4,9 +4,10 @@ import { ipcRenderer, remote } from 'electron';
 import { ProcessTable }from './ProcessTable';
 import { ToolBar } from './ToolBar';
 import { ProcessConsole } from './ProcessConsole'
+import { ProcessSignals } from './ProcessSignals'
 import { ProcessTrends } from './ProcessTrends';
 
-import { record, sorting, ProcessManagerState } from '../../types';
+import { record, sorting, signal, ProcessManagerState } from '../../types';
 
 interface stdData {
   pid: number,
@@ -22,12 +23,14 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
       history: {
         /* [pid]: { memory: [], cpu: [] } */
       },
+      signals: [],
       types: {},
       sorting: {
         path: 'pid',
         how: 'ascend'
       },
       logVisible: false,
+      signalVisible: false,
       trendsVisible: false,
       selectedPid: 0,
   
@@ -66,6 +69,17 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
       });
       this.setState({ logs });
     });
+    
+    ipcRenderer.on('process:catch-signal', (event, { type, data }) => {
+      console.log('process:catch-signal');
+      let { signals } = this.state;
+      signals.push({
+        type, data
+      });
+      signals = signals.slice(-1000);
+      this.setState({ signals });
+    });
+
   }
 
   isPidValid = () => {
@@ -113,10 +127,16 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
     ipcRenderer.send('process:open-devtools', pid);
   }
 
-  handleOpenConsole = (status=true) => {
-    this.setState({
-      logVisible: status
-    });
+  handleOpenConsole = (status=true, attr: 'logVisible' | 'signalVisible') => {
+    if (attr === 'logVisible') {
+      this.setState({
+        'logVisible': status
+      });
+    } else if (attr === 'signalVisible') {
+      this.setState({
+        'signalVisible': status
+      });
+    }
   }
 
   handleOpenTrends = (status=true) => {
@@ -126,7 +146,10 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
   }
 
   render () {
-    const { logVisible, logs, selectedPid, trendsVisible, history } = this.state;
+    const {
+      logVisible, logs, selectedPid, trendsVisible, history,
+      signals, signalVisible
+    } = this.state;
     return (
       <React.Fragment>
         <header className="toolbar toolbar-header">
@@ -155,6 +178,11 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
           handleOpenConsole={this.handleOpenConsole}
           visible={logVisible}
           logs={logs[selectedPid]}
+        />
+        <ProcessSignals
+          handleOpenConsole={this.handleOpenConsole}
+          visible={signalVisible}
+          signals={signals}
         />
         <ProcessTrends
           handleOpenTrends={this.handleOpenTrends}

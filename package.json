@@ -3,7 +3,7 @@
   "version": "1.0.13",
   "description": "Electron Process Manager",
   "main": "./lib/index",
-  "types": "types/index.d.ts",
+  "types": "./types/index.d.ts",
   "scripts": {
     "start": "cross-env NODE_ENV=prod electron index.js --inspect=5858",
     "start:dev": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
