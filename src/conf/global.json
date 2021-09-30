@@ -1,5 +1,6 @@
 {
   "protocolName": "electronre",
   "uiDevServer": "127.0.0.1:3001",
-  "uiRefreshInterval": 2e3
+  "uiRefreshInterval": 2e3,
+  "inspectStartIndex": 5858
 }

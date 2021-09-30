@@ -204,7 +204,9 @@ const mainAndService = () => {
     });
 
     it('service handle a channel signal using [handle]', (callback) => {
+      console.log(1);
       MessageChannel.invoke('app', 'mainAndService:test9', { value: 'test9' }).then(result => {
+        console.log(result);
         if (result && result.value === 'test9') {
           callback();
         } else {

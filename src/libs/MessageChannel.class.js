@@ -37,7 +37,6 @@ class MessageChannelRender extends MessageChannel {
     */
   invoke (name, channel, args) {
     const pid = getRandomString();
-
     ipcRenderer.send('process:catch-signal', {
       type: `ipcRenderer.invoke.[${name || '(none)'}].${channel}`,
       origin: 'ipcRenderer',
@@ -73,15 +72,7 @@ class MessageChannelRender extends MessageChannel {
       const { pid, isFromMain } = params;
       delete params[pid];
       let execResult;
-
-      ipcRenderer.send('process:catch-signal', {
-        type: `ipcRenderer.handle.${'(none)'}.${channel}`,
-        origin: 'ipcRenderer',
-        method: 'handle',
-        target: '(none)',
-        channel,
-        data: args
-      });
+      let data = null;
 
       try {
         execResult = promiseFunc(event, params);
@@ -94,6 +85,7 @@ class MessageChannelRender extends MessageChannel {
           execResult :
           Promise.resolve(execResult)
       ).then((rsp) => {
+        data = rsp;
         if (isFromMain) {
           ipcRenderer.send(pid, rsp);
         } else {
@@ -104,6 +96,16 @@ class MessageChannelRender extends MessageChannel {
         ipcRenderer.sendTo(event.senderId, pid, {
           code: 600,
           error,
+        });
+      })
+      .finally(() => {
+        ipcRenderer.send('process:catch-signal', {
+          type: `ipcRenderer.handle.${'(none)'}.${channel}`,
+          origin: 'ipcRenderer',
+          method: 'handle',
+          target: '(none)',
+          channel,
+          data: data
         });
       });
 

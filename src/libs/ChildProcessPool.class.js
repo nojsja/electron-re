@@ -4,8 +4,7 @@ const EventEmitter = require('events');
 
 const { getRandomString, removeForkedFromPool } = require('./utils');
 const ProcessManager = require('./ProcessManager.class');
-
-let inspectStartIndex = 5858;
+let { inspectStartIndex } = require('../conf/global.json');
 
 class ChildProcessPool extends EventEmitter {
   constructor({ path, max=6, cwd, env }) {

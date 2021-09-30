@@ -10,6 +10,7 @@ const timer = setInterval(() => {
 /* -------------- mainAndService -------------- */
 
 ipcRenderer.on('mainAndService:test1', (event, result) => {
+  console.log(event, result);
   ipcRenderer.send('mainAndService:test1', result);
 });
 
