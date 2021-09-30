@@ -24,12 +24,13 @@ export interface processTypes {
 }
 
 export interface signal {
+  key?: any,
   type: string,
   data: any,
   origin: string,
   method: string,
   target: string,
-  channel: string,
+  channel: string
 }
 
 export interface ProcessManagerState {

@@ -1,18 +1,13 @@
 import * as React from 'react';
 import { Component } from 'react';
 
+import { signal } from '../../types';
+
 interface Props {
   handleOpenConsole: {
     (status: boolean, attr: 'logVisible' | 'signalVisible'): unknown
   },
-  signals: {
-    type: string,
-    data: any,
-    origin: string,
-    method: string,
-    target: string,
-    channel: string,
-  }[],
+  signals: signal[],
   visible: boolean
 }
 
@@ -49,10 +44,10 @@ export class ProcessSignals extends Component<Props, {}> {
             <tbody className="signals">
               {
                 signals.map(
-                  (signal, index) => {
+                  (signal) => {
                       let d = getDataString(signal.data);
                       return (
-                        <tr>
+                        <tr key={signal.key}>
                           <td>{signal.origin}</td>
                           <td>{signal.method}</td>
                           <td>{signal.target}</td>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer } from 'electron';
 
 import { ProcessTable }from './ProcessTable';
 import { ToolBar } from './ToolBar';
@@ -8,6 +8,7 @@ import { ProcessSignals } from './ProcessSignals'
 import { ProcessTrends } from './ProcessTrends';
 
 import { record, ProcessManagerState, signal } from '../../types';
+import { getRandomString } from '../../utils/utils';
 
 interface stdData {
   pid: number,
@@ -73,7 +74,7 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
     ipcRenderer.on('process:catch-signal', (event, result: signal) => {
       console.log('process:catch-signal');
       let { signals } = this.state;
-      signals.unshift(result);
+      signals.unshift({...result, key: getRandomString()});
       signals = signals.slice(0, 1000);
       this.setState({ signals });
     });

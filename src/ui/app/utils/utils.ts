@@ -3,6 +3,8 @@ import {
   objType
 } from '../types';
 
+export const getRandomString = () => Math.random().toString(36).substr(2);
+
 // 存储单位转换
 export function formatSizeStr(sizeStr: number | string, unit?: string, flag?: boolean): string {
   // sizeStr为传入的数据大小
