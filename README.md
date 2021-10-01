@@ -70,7 +70,7 @@ Using `electron-re` to generate some service processs and communicate between `m
 - 1）ChildProcessPool
 - 2）ProcessHost
 
-Besides, If you want to create some sub processes (reference: nodejs `child_process`) that not depends on `electron runtime`, there is a process-pool written for pure `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
+Besides, If you want to create some sub processes (reference: nodejs `child_process`), there is a process-pool written for `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
 
 #### II. Install
 -----
@@ -87,18 +87,20 @@ $: yarn add electron-re
 
 All functions:
 
-1. Show all alive processes in your Electron application, including the main process, renderer process, the Service process (import from electron-re), and the child process created by ChildProcessPool (import from electron-re).
+1. Show all alive processes in your Electron application: main process, renderer process, the service process (imported by electron-re), and the child process created by ChildProcessPool (imported by electron-re).
 
-2. The process list displays the process ID, process mark, parent process ID, memory usage, CPU usage percentage. All process marks include main (main process), service (service process), renderer (rendering process) , node (child process in process pool), click on the header of the table to sort an item in increasing/decreasing order.
+2. The process list displays info: process ID, process type(mark), parent process ID, memory, CPU. All processes type include main (main process), service (service process), renderer (renderer process) , node (child process in process pool). click on table header to sort an item in increasing/decreasing order.
 
-3. After selecting a process, you can kill the process, view the process console data, and view the process CPU/memory occupancy trend within 1 minute. If the process is a renderer process, you can also open the built-in debugging tool by pressing the `DevTools` button.
+3. You can kill a process, view process console data, check CPU/memory occupancy within 1 min.
 
-4. The child processes created by ChildProcessPool does not support opening DevTools for debugging, but because the `--inspect` parameter is added when creating the child process, we can visit `chrome://inspect` in chrome for remote debugging.
+4. If a process marked as renderer, pressing the `DevTools` button then the built-in debugging tool will open as an undocked window. Besides the child-processes are created by ChildProcessPool with `--inspect` parameter, DevTools is not supported, just visit `chrome://inspect` in chrome for remote debugging.
+
+5. Try to use `MessageChannel` for sending/receiving ipc messages, there is a ui pannel area that show activities of it (logger).
 
 ##### Require it in main.js(electron)
 ```js
 const {
-  MessageChannel, // must required in main.js even if you don't use it
+  MessageChannel, // remember to require it in main.js even if you don't use it
   ProcessManager
 } = require('electron-re');
 ```
@@ -110,7 +112,7 @@ ProcessManager.openWindow();
 1. Main
 > The main ui
 
-![main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png?v2)
+![main](http://nojsja.gitee.io/static-resources/images/electron-re/process-manager.main.png?v3)
 
 2. Console
 > Show console info of all processes
@@ -134,6 +136,11 @@ ProcessManager.openWindow();
 > Kill process from one-click
 
 ![kill](http://nojsja.gitee.io/static-resources/images/electron-re/kill.gif?v2)
+
+6. Signals Pannel
+> Activities logger for `MessageChannel` tool
+
+![signals](http://nojsja.gitee.io/static-resources/images/electron-re/signals.png)
 
 #### IV. Instruction 2: Service
 -----

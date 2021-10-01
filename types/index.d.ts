@@ -36,7 +36,7 @@ declare module electronReModule {
       openDevTools: (pid: number) => void
       killProcess: (pid: number) => void
       setIntervalTime: (time: number) => void
-      openWindow: (env: 'prod' | 'dev' | undefined) => void
+      openWindow: (env: 'prod' | 'dev' | void) => void
     }
   }
 }
