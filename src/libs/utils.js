@@ -21,7 +21,9 @@ const conf = require('../conf/global.json');
       </head>
       <body>
         <script>
+          const baseUrl = document.querySelector('base').getAttribute('href');
           global._depends = [];
+          global.$require = require;
           global.require = require = (function(require) {
             const _require = require;
           
@@ -40,7 +42,7 @@ const conf = require('../conf/global.json');
               } catch(error) {
                 result =
                   _require(
-                    (path.posix.join(...(path.dirname(document.baseURI.replace('file:///', ''))).split(path.sep), _path))
+                    (path.posix.join(path.sep, ...(path.dirname(baseUrl.replace('file:///', ''))).split(path.sep), _path))
                   );
               }
               return result;

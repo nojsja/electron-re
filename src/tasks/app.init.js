@@ -29,7 +29,7 @@ exports.registryProtocolForService = (app, ep) => {
   const protocolName = conf.protocolName;
   app.whenReady().then(() => {
     protocol.registerFileProtocol(protocolName, (request, callback) => {
-      const url = request.url.substr(protocolName.length + 4);
+      const url = request.url.substr(protocolName.length + 3);
       callback({ path: path.normalize(decodeURIComponent(url)) })
     });
   });

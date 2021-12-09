@@ -11,6 +11,9 @@ const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
 const otherService = path.join(__dirname, 'test/services/other.service.js');
 
+// allow require native modules in renderer process
+app.allowRendererProcessReuse = false;
+
 /* 创建窗口 */
 function createWindow() {
   global.mainWindow = new BrowserWindow({
