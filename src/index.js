@@ -5,7 +5,7 @@ const {
   registryProtocolForService
 } = require('./tasks/app.init');
 
-exports.ChildProcessPool = require('./libs/ChildProcessPool.class');
+exports.ChildProcessPool = require('./libs/ChildProcessPool');
 exports.ProcessHost = require('./libs/ProcessHost.class');
 
 /* -------------- renderer process -------------- */
@@ -20,7 +20,7 @@ if (isMain) {
   exports.BrowserService = require('./libs/BrowserService.class')
   exports.MessageChannel = require('./libs/MessageChannel.class');
 
-  exports.ProcessManager = require('./libs/ProcessManager.class');
+  exports.ProcessManager = require('./libs/ProcessManager');
 
   /* new service listen */
   exports.MessageChannel.event.on('registry', ({ pid, id }) => {

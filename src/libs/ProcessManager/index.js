@@ -1,12 +1,21 @@
-const { ipcMain, app, BrowserWindow } = require('electron');
-const path = require('path');
-const url = require('url');
+const { BrowserWindow } = require('electron');
+const { EventEmitter } = require('stream');
 const pidusage = require('pidusage');
 
-const conf = require('../conf/global.json');
+const {
+  KILL_SIGNAL,
+  OPEN_DEVTOOLS_SIGNAL,
+  CATCH_SIGNAL,
+  LOG_SIGNAL,
+  UPDATE_SIGNAL,
+  START_TIMER_SIGNAL,
+} = require('../consts');
+const ProcessManagerUI = require('./ui');
 
-class ProcessManager {
+class ProcessManager extends EventEmitter {
   constructor() {
+    super();
+    this.window = new ProcessManagerUI(this);
     this.pidList = [process.pid];
     this.pid = null;
     this.typeMap = {
@@ -16,17 +25,27 @@ class ProcessManager {
       },
     };
     this.status = 'pending';
-    this.processWindow = null;
     this.time = 1e3;
     this.callSymbol = false;
-    this.logs = []
+    this.logs = [];
+    this.pidMap = {};
+    this.initTemplate();
   }
 
   /* -------------- internal -------------- */
 
+  /* template */
+
+  initTemplate = () => {
+    this.on(KILL_SIGNAL, (event, ...args) => this.killProcess(...args));
+    this.on(OPEN_DEVTOOLS_SIGNAL, (event, ...args) => this.openDevTools(...args));
+    this.on(CATCH_SIGNAL, (event, ...args) => this.ipcSignalsRecorder(...args));
+    this.on(START_TIMER_SIGNAL, (event, ...args) => this.startTimer(...args));
+  }
+
   /* ipc listener  */
   ipcSignalsRecorder = (params, e) => {
-    this.processWindow.sendToWeb('process:catch-signal', params);
+    this.window.sendToWeb(CATCH_SIGNAL, params);
   }
 
   /* refresh process list */
@@ -37,7 +56,8 @@ class ProcessManager {
           if (err) {
             console.log(`ProcessManager: refreshList -> ${err}`);
           } else {
-            this.processWindow.sendToWeb('process:update-list', { records, types: this.typeMap })
+            this.pidMap = Object.assign(this.pidMap, records);
+            this.window.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }
           resolve();
         });
@@ -66,12 +86,11 @@ class ProcessManager {
 
   /* send stdout to ui-processor */
   stdout(pid, data) {
-    if (this.processWindow) {
+    if (this.window) {
       if (!this.callSymbol) {
         this.callSymbol = true;
         setTimeout(() => {
-          this.processWindow.sendToWeb('process:stdout', this.logs)
-
+          this.window.sendToWeb(LOG_SIGNAL, this.logs)
           this.logs = [];
           this.callSymbol = false;
         }, this.time);
@@ -116,7 +135,7 @@ class ProcessManager {
   openDevTools = (pid) => {
     BrowserWindow.getAllWindows().forEach(win => {
       if (win.webContents.getOSProcessId() === Number(pid)) {
-        win.webContents.openDevTools({mode: 'undocked'});
+        win.webContents.openDevTools({ mode: 'undocked' });
       }
     });
   }
@@ -134,7 +153,7 @@ class ProcessManager {
     * setIntervalTime [set interval (ms)]
     * @param  {[Number]} time [a positive number to set the refresh interval]
     */
-  setIntervalTime(time) {
+  setIntervalTime = (time) => {
     time = Number(time);
     if (isNaN(time)) throw new Error('ProcessManager: the time value is invalid!')
     if (time < 100) console.warn(`ProcessManager: the refresh interval is too small!`);
@@ -145,51 +164,8 @@ class ProcessManager {
   /* -------------- ui -------------- */
 
   /* open a process list window */
-  openWindow(env = 'prod') {
-    app.whenReady().then(() => {
-
-      this.processWindow = Object.assign(
-        new BrowserWindow({
-          show: false,
-          width: 600,
-          height: 400,
-          autoHideMenuBar: true,
-          webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            enableRemoteModule: true
-          },
-        }),
-        {
-          sendToWeb: (action, data) => {
-            if (!this.processWindow.isDestroyed())
-              this.processWindow.webContents.send(action, data);
-        }
-      });
-
-      const loadingUrl = (env === 'dev') ?
-        url.format({
-          pathname: conf.uiDevServer,
-          protocol: 'http:',
-          slashes: true,
-        }) :
-        url.format({
-          pathname: path.join(__dirname, '../ui/index.html'),
-          protocol: 'file:',
-          slashes: true,
-        });
-  
-      this.processWindow.once('ready-to-show', () => {
-        this.processWindow.show();
-        this.pid = this.processWindow.webContents.getOSProcessId();
-        this.startTimer(conf.uiRefreshInterval);
-        ipcMain.on('process:kill-process', (event, args) => this.killProcess(args))
-        ipcMain.on('process:open-devtools', (event, args) => this.openDevTools(args))
-        ipcMain.on('process:catch-signal', (event, args) => this.ipcSignalsRecorder(args || event))
-      });
-      
-      this.processWindow.loadURL(loadingUrl);
-    });
+  openWindow = (env = 'prod') => {
+    this.window.open(env);
   }
 
 }

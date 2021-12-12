@@ -10,7 +10,7 @@ const {
 // allow require native modules in renderer process
 app.allowRendererProcessReuse = false;
 
-const processManager = require(`./${base}/libs/ProcessManager.class`);
+const processManager = require(`./${base}/libs/ProcessManager`);
 
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
