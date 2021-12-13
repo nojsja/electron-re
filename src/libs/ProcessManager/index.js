@@ -34,8 +34,7 @@ class ProcessManager extends EventEmitter {
 
   /* -------------- internal -------------- */
 
-  /* template */
-
+  /* template functions */
   initTemplate = () => {
     this.on(KILL_SIGNAL, (event, ...args) => this.killProcess(...args));
     this.on(OPEN_DEVTOOLS_SIGNAL, (event, ...args) => this.openDevTools(...args));
@@ -54,7 +53,7 @@ class ProcessManager extends EventEmitter {
       if (this.pidList.length) {
         pidusage(this.pidList, (err, records) => {
           if (err) {
-            console.log(`ProcessManager: refreshList -> ${err}`);
+            console.log(`ProcessManager: refreshList errored -> ${err}`);
           } else {
             this.pidMap = Object.assign(this.pidMap, records);
             this.window.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
@@ -69,7 +68,8 @@ class ProcessManager extends EventEmitter {
   
   /* set timer to refresh */
   startTimer() {
-    if (this.status === 'started') return console.warn('ProcessManager: the timer is already started!');
+    if (this.status === 'started')
+      return console.warn('ProcessManager: the timer is already started!');
 
     const interval = async () => {
       setTimeout(async () => {
@@ -145,7 +145,7 @@ class ProcessManager extends EventEmitter {
     try {
       process.kill(pid);
     } catch (error) {
-      console.error(`ProcessManager: killProcess -> ${pid} error: ${error}`);
+      console.error(`ProcessManager: killProcess -> ${pid} errored: ${error}`);
     }
   }
 
@@ -155,8 +155,10 @@ class ProcessManager extends EventEmitter {
     */
   setIntervalTime = (time) => {
     time = Number(time);
-    if (isNaN(time)) throw new Error('ProcessManager: the time value is invalid!')
-    if (time < 100) console.warn(`ProcessManager: the refresh interval is too small!`);
+    if (isNaN(time))
+      throw new Error('ProcessManager: the time value is invalid!')
+    if (time < 100)
+      console.warn(`ProcessManager: the refresh interval is too small!`);
 
     this.time = time;
   }

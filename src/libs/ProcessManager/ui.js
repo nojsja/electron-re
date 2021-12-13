@@ -16,8 +16,17 @@ class ProcessManagerUI {
     this.host = host;
     this.url = null;
     this.window = null;
+    this.initTemplate();
   }
 
+  /* template functions */
+  initTemplate() {
+    ipcMain.on(KILL_SIGNAL, (event, args) => this.host.emit(KILL_SIGNAL, args));
+    ipcMain.on(OPEN_DEVTOOLS_SIGNAL, (event, args) => this.host.emit(OPEN_DEVTOOLS_SIGNAL, args));
+    ipcMain.on(CATCH_SIGNAL, (event, args) => this.host.emit(CATCH_SIGNAL, args || event));
+  }
+
+  /* get dev/prod ui address */
   getAddress = (env = 'prod') => {
     this.url = (env === 'dev') ?
       url.format({
@@ -34,12 +43,13 @@ class ProcessManagerUI {
     return this.url;
   }
 
+  /* send data to webContents */
   sendToWeb = (action, data) => {
     if (!this.window.isDestroyed())
       this.window.webContents.send(action, data);
   }
 
-  /* open a process list window */
+  /* open main window */
   open = (env = 'prod') => {
     app.whenReady().then(() => {
       this.window =
@@ -60,9 +70,6 @@ class ProcessManagerUI {
         this.window.show();
         this.host.pid = this.window.webContents.getOSProcessId();
         this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
-        ipcMain.on(KILL_SIGNAL, (event, args) => this.host.emit(KILL_SIGNAL, args));
-        ipcMain.on(OPEN_DEVTOOLS_SIGNAL, (event, args) => this.host.emit(OPEN_DEVTOOLS_SIGNAL, args));
-        ipcMain.on(CATCH_SIGNAL, (event, args) => this.host.emit(CATCH_SIGNAL, args || event));
       });
 
       this.window.loadURL(this.getAddress(env));
