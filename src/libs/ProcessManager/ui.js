@@ -15,7 +15,7 @@ class ProcessManagerUI {
   constructor(host) {
     this.host = host;
     this.url = null;
-    this.window = null;
+    this.win = null;
     this.initTemplate();
   }
 
@@ -45,34 +45,34 @@ class ProcessManagerUI {
 
   /* send data to webContents */
   sendToWeb = (action, data) => {
-    if (!this.window.isDestroyed())
-      this.window.webContents.send(action, data);
+    if (this.win && !this.win.isDestroyed())
+      this.win.webContents.send(action, data);
   }
 
   /* open main window */
-  open = (env = 'prod') => {
-    app.whenReady().then(() => {
-      this.window =
-        new BrowserWindow({
-          show: false,
-          width: 600,
-          height: 400,
-          autoHideMenuBar: true,
-          webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            enableRemoteModule: true,
-            webSecurity: false,
-          },
-        });
+  open = async (env = 'prod') => {
+    await app.whenReady();
+    this.win = new BrowserWindow({
+      show: false,
+      width: 600,
+      height: 400,
+      autoHideMenuBar: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+        webSecurity: false,
+      },
+    });
 
-      this.window.once('ready-to-show', () => {
-        this.window.show();
-        this.host.pid = this.window.webContents.getOSProcessId();
+    await new Promise((resolve) => {
+      this.win.once('ready-to-show', () => {
+        this.win.show();
+        this.host.pid = this.win.webContents.getOSProcessId();
         this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
+        resolve();
       });
-
-      this.window.loadURL(this.getAddress(env));
+      this.win.loadURL(this.getAddress(env));
     });
   }
 }

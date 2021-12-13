@@ -15,7 +15,7 @@ const ProcessManagerUI = require('./ui');
 class ProcessManager extends EventEmitter {
   constructor() {
     super();
-    this.window = new ProcessManagerUI(this);
+    this.ui = new ProcessManagerUI(this);
     this.pidList = [process.pid];
     this.pid = null;
     this.typeMap = {
@@ -44,7 +44,7 @@ class ProcessManager extends EventEmitter {
 
   /* ipc listener  */
   ipcSignalsRecorder = (params, e) => {
-    this.window.sendToWeb(CATCH_SIGNAL, params);
+    this.ui.sendToWeb(CATCH_SIGNAL, params);
   }
 
   /* refresh process list */
@@ -56,7 +56,7 @@ class ProcessManager extends EventEmitter {
             console.log(`ProcessManager: refreshList errored -> ${err}`);
           } else {
             this.pidMap = Object.assign(this.pidMap, records);
-            this.window.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
+            this.ui.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }
           resolve();
         });
@@ -67,7 +67,7 @@ class ProcessManager extends EventEmitter {
   }
   
   /* set timer to refresh */
-  startTimer() {
+  startTimer = () => {
     if (this.status === 'started')
       return console.warn('ProcessManager: the timer is already started!');
 
@@ -85,12 +85,12 @@ class ProcessManager extends EventEmitter {
   /* -------------- function -------------- */
 
   /* send stdout to ui-processor */
-  stdout(pid, data) {
-    if (this.window) {
+  stdout = (pid, data) => {
+    if (this.ui) {
       if (!this.callSymbol) {
         this.callSymbol = true;
         setTimeout(() => {
-          this.window.sendToWeb(LOG_SIGNAL, this.logs)
+          this.ui.sendToWeb(LOG_SIGNAL, this.logs)
           this.logs = [];
           this.callSymbol = false;
         }, this.time);
@@ -101,7 +101,7 @@ class ProcessManager extends EventEmitter {
   }
 
   /* pipe to process.stdout */
-  pipe(pinstance) {
+  pipe = (pinstance) => {
     if (pinstance.stdout) {
       pinstance.stdout.on(
         'data',
@@ -113,7 +113,7 @@ class ProcessManager extends EventEmitter {
   }
 
   /* listen processes with pids */
-  listen(pids, mark="renderer", url="") {
+  listen = (pids, mark="renderer", url="") => {
     pids = (pids instanceof Array) ? pids : [pids];
     pids.forEach((pid) => {
       if (!this.pidList.includes(pid)) {
@@ -126,7 +126,7 @@ class ProcessManager extends EventEmitter {
   }
 
   /* unlisten processes with pids */
-  unlisten(pids) {
+  unlisten = (pids) => {
     pids = (pids instanceof Array) ? pids : [pids];
     this.pidList = this.pidList.filter(pid => !pids.includes(pid));
   }
@@ -166,8 +166,8 @@ class ProcessManager extends EventEmitter {
   /* -------------- ui -------------- */
 
   /* open a process list window */
-  openWindow = (env = 'prod') => {
-    this.window.open(env);
+  openWindow = async (env = 'prod') => {
+    await ui.open(env);
   }
 
 }
