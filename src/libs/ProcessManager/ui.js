@@ -65,6 +65,7 @@ class ProcessManagerUI {
       },
     });
 
+    this.win.loadURL(this.getAddress(env));
     await new Promise((resolve) => {
       this.win.once('ready-to-show', () => {
         this.win.show();
@@ -72,7 +73,6 @@ class ProcessManagerUI {
         this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
         resolve();
       });
-      this.win.loadURL(this.getAddress(env));
     });
   }
 }

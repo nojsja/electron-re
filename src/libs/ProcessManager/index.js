@@ -15,7 +15,7 @@ const ProcessManagerUI = require('./ui');
 class ProcessManager extends EventEmitter {
   constructor() {
     super();
-    this.ui = new ProcessManagerUI(this);
+    this.ui = null;
     this.pidList = [process.pid];
     this.pid = null;
     this.typeMap = {
@@ -29,17 +29,16 @@ class ProcessManager extends EventEmitter {
     this.callSymbol = false;
     this.logs = [];
     this.pidMap = {};
-    this.initTemplate();
   }
 
   /* -------------- internal -------------- */
 
   /* template functions */
   initTemplate = () => {
-    this.on(KILL_SIGNAL, (event, ...args) => this.killProcess(...args));
-    this.on(OPEN_DEVTOOLS_SIGNAL, (event, ...args) => this.openDevTools(...args));
-    this.on(CATCH_SIGNAL, (event, ...args) => this.ipcSignalsRecorder(...args));
-    this.on(START_TIMER_SIGNAL, (event, ...args) => this.startTimer(...args));
+    this.on(KILL_SIGNAL, (...args) => this.killProcess(...args));
+    this.on(OPEN_DEVTOOLS_SIGNAL, (...args) => this.openDevTools(...args));
+    this.on(CATCH_SIGNAL, (...args) => this.ipcSignalsRecorder(...args));
+    this.on(START_TIMER_SIGNAL, (...args) => this.startTimer(...args));
   }
 
   /* ipc listener  */
@@ -167,7 +166,13 @@ class ProcessManager extends EventEmitter {
 
   /* open a process list window */
   openWindow = async (env = 'prod') => {
-    await ui.open(env);
+    if (!this.ui) {
+      this.ui = new ProcessManagerUI(this);
+      this.initTemplate();
+      await this.ui.open(env);
+    } else {
+      this.ui.show();
+    }
   }
 
 }
