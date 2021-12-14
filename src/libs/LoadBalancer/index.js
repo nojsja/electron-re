@@ -1,4 +1,5 @@
 const CONSTS = require("./consts");
+const Scheduler = require("./scheduler");
 const {
   POLLING,
   WEIGHTS,
@@ -14,6 +15,7 @@ class LoadBalancer {
   constructor(options) {
     this.targets = options.targets;
     this.algorithm = options.algorithm || POLLING;
+    this.scheduler = new Scheduler(this.algorithm, this.targets);
   }
 
   pickOne() {
@@ -30,6 +32,11 @@ class LoadBalancer {
 
   delAll() {
 
+  }
+
+  setTargets(targets) {
+    this.targets = targets;
+    this.scheduler.setTasks(targets);
   }
 
   setAlgorithm(algorithm) {
