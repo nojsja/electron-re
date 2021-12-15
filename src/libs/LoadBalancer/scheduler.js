@@ -1,28 +1,28 @@
+const CONSTS = require("./consts");
+const algorithm = require('./algorithm');
 const {
   POLLING,
-  WEIGHTS,
-  RANDOM,
-  SPECIFY,
-  MINIMUM_CONNECTION,
-  WEIGHTS_POLLING,
-  WEIGHTS_RANDOM,
-  WEIGHTS_MINIMUM_CONNECTION,
 } = CONSTS;
-const algorithm = require('./algorithm');
 
 /* Scheduler for LoadBalancer  */
 class Scheduler {
-  constructor(algorithm, tasks = []) {
-    this.algorithm = algorithm;
-    this.tasks = tasks;
+  constructor(algorithm) {
+    this.algorithm = algorithm || POLLING;
   }
 
   /* pick one task from task list based on algorithm and params */
-  calculate(tasks) {
-    const results = algorithm[this.algorithm](tasks);
-    this.currentIndex++;
-    this.currentIndex %= this.tasks.length;
+  calculate(tasks, params) {
+    const results = algorithm[this.algorithm](tasks, ...params);
     return results;
+  }
+
+  /* change algorithm strategy */
+  setAlgorithm = (algorithm) => {
+    if (algorithm in CONSTS) {
+      this.algorithm = algorithm;
+    } else {
+      throw new Error(`Invalid algorithm: ${algorithm}, pick from ${Object.keys(CONSTS).join('|')}`);
+    }
   }
 }
 

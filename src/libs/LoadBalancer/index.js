@@ -1,13 +1,13 @@
 const CONSTS = require("./consts");
 const Scheduler = require("./scheduler");
 const {
+  RANDOM,
   POLLING,
   WEIGHTS,
-  RANDOM,
   SPECIFY,
-  MINIMUM_CONNECTION,
-  WEIGHTS_POLLING,
   WEIGHTS_RANDOM,
+  WEIGHTS_POLLING,
+  MINIMUM_CONNECTION,
   WEIGHTS_MINIMUM_CONNECTION,
 } = CONSTS;
 
@@ -20,36 +20,47 @@ class LoadBalancer {
       connectionsMap: {}, // connections of each target
       cpuOccupancyMap: {}, // cpu occupancy of each target
     };
-    this.scheduler = new Scheduler(this.algorithm, this.targets);
+    this.scheduler = new Scheduler(this.algorithm);
     this.memoParams = this.memorizedParams();
   }
 
+  /* params formatter */
+  memorizedParams = () => {
+    const empty = [];
+    return {
+      [RANDOM]: () => empty,
+      [POLLING]: () => [this.params.currentIndex, this.params],
+      [WEIGHTS]: () => empty,
+      [SPECIFY]: () => empty,
+      [WEIGHTS_RANDOM]: empty,
+      [WEIGHTS_POLLING]: empty,
+      [MINIMUM_CONNECTION]: () => [this.params.connectionsMap],
+      [WEIGHTS_MINIMUM_CONNECTION]: [this.params.connectionsMap],
+    };
+  }
+
   /* pick one task from queue */
-  pickOne() {
+  pickOne = () => {
     return this.scheduler.calculate(
-      this.targets.map(target => Object.assign(
-        target,
-        { params: this.getParams(this.algorithm, target.id) })
-      )
+      this.targets, this.memoParams[this.algorithm]()
     );
   }
 
   /* pick multi task from queue */
-  pickMulti(count = 1) {
-    const formattedTargets =
-      this.targets.map(target => Object.assign(
-        target,
-        { params: this.getParams(this.algorithm, target.id) })
-      );
-
-    return new Array(count).map(() => this.scheduler.calculate(formattedTargets));
+  pickMulti = (count = 1) => {
+    return new Array(count).map(
+      () => this.pickOne()
+    );
   }
 
   /* clean data of a task or all task */
-  clean(id) {
+  clean = (id) => {
     if (id) {
       delete this.params.connectionsMap[id];
       delete this.params.cpuOccupancyMap[id];
+      if (this.params.currentIndex === this.targets.length) {
+        this.params.currentIndex --;
+      }
     } else {
       this.params = {
         currentIndex: 0,
@@ -59,25 +70,40 @@ class LoadBalancer {
     }
   }
 
-  /* remote target from queue */
-  del(target) {
-    this.targets = this.targets.filter(t => t.id !== target.id);
-    this.clean(target.id);
+  /*  */
+  add = (task) => {
+    this.targets.push(task);
+    if (this.targets.find(target => target.id === task.id)) {
+      return console.warn(`Add Operation: the task ${task.id} already exists.`);
+    }
+    this.targets.push(task);
+  }
+
+  /* remove target from queue */
+  del = (target) => {
+    let found = false;
+    for (let i  = 0; i < this.targets.length; i++) {
+      if (array[i].id === target.id) {
+        this.targets.splice(i, 1);
+        this.clean(target.id);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      console.warn(`Del Operation: the task ${target.id} is not found.`);
+    }
   }
 
   /* wipe queue and data */
-  wipe() {
+  wipe = () => {
     this.targets = [];
     this.clean();
   }
 
-  /* set tasks */
-  setTasks(tasks) {
-    this.tasks = tasks;
-  }
-
   /* update calculate params */
-  updateParams(object) {
+  updateParams = (object) => {
     Object.entries(object).map(([key, value]) => {
       if (key in this.params) {
         this.params[key] = value;
@@ -85,27 +111,8 @@ class LoadBalancer {
     });
   }
 
-  /* params formatter */
-  memorizedParams() {
-    return {
-      [POLLING]: () => ({ currentIndex: this.currentIndex }),
-      [WEIGHTS]: () => ({ }),
-      [RANDOM]: () => ({ }),
-      [SPECIFY]: () => ({ }),
-      [MINIMUM_CONNECTION]: () => ({ count: this.params.connectionsMap[id] || 0 }),
-      [WEIGHTS_POLLING]: () => ({ }),
-      [WEIGHTS_RANDOM]: () => ({ }),
-      [WEIGHTS_MINIMUM_CONNECTION]: ({ count: this.params.connectionsMap[id] || 0 }),
-    };
-  }
-
-  /* get algorithm params */
-  getParams(algorithm, id) {
-    return this.memoParams[algorithm](id);
-  }
-
   /* reset targets */
-  setTargets(targets) {
+  setTargets = (targets) => {
     const targetsMap = targets.reduce((total, cur) => {
       total[cur.id] = 1;
       return total;
@@ -116,13 +123,13 @@ class LoadBalancer {
       }
     });
     this.targets = targets;
-    this.scheduler.setTasks(targets);
   }
 
   /* change algorithm strategy */
-  setAlgorithm(algorithm) {
+  setAlgorithm = (algorithm) => {
     if (algorithm in CONSTS) {
       this.algorithm = algorithm;
+      this.scheduler.setAlgorithm(this.algorithm);
     } else {
       throw new Error(`Invalid algorithm: ${algorithm}, pick from ${Object.keys(CONSTS).join('|')}`);
     }
