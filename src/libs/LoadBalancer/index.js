@@ -17,6 +17,8 @@ class LoadBalancer {
     this.algorithm = options.algorithm || POLLING;
     this.params = { // data for algorithm
       currentIndex: 0, // index
+      weightIndex: 0, // index for weight alogrithm
+      weightTotal: 0, // total weight
       connectionsMap: {}, // connections of each target
       cpuOccupancyMap: {}, // cpu occupancy of each target
     };
@@ -26,31 +28,45 @@ class LoadBalancer {
 
   /* params formatter */
   memorizedParams = () => {
-    const empty = [];
     return {
-      [RANDOM]: () => empty,
+      [RANDOM]: () => [],
       [POLLING]: () => [this.params.currentIndex, this.params],
-      [WEIGHTS]: () => empty,
-      [SPECIFY]: () => empty,
-      [WEIGHTS_RANDOM]: empty,
-      [WEIGHTS_POLLING]: empty,
+      [WEIGHTS]: () => [this.params.weightTotal, this.params],
+      [SPECIFY]: (id) => [id],
+      [WEIGHTS_RANDOM]: () => [this.params.weightTotal],
+      [WEIGHTS_POLLING]: () => [this.params.weightIndex, this.params.weightTotal, this.params],
       [MINIMUM_CONNECTION]: () => [this.params.connectionsMap],
-      [WEIGHTS_MINIMUM_CONNECTION]: [this.params.connectionsMap],
+      [WEIGHTS_MINIMUM_CONNECTION]: () => [this.params.weightIndex, this.params.weightTotal, this.params.connectionsMap, this.params],
     };
   }
 
   /* pick one task from queue */
-  pickOne = () => {
+  pickOne = (...params) => {
     return this.scheduler.calculate(
-      this.targets, this.memoParams[this.algorithm]()
+      this.targets, this.memoParams[this.algorithm](...params)
     );
   }
 
   /* pick multi task from queue */
-  pickMulti = (count = 1) => {
+  pickMulti = (count = 1, ...params) => {
     return new Array(count).map(
-      () => this.pickOne()
+      () => this.pickOne(...params)
     );
+  }
+
+  /* calculate weight */
+  calculateWeightIndex = () => {
+    this.weightTotal = this.targets.reduce((total, cur) => total + (cur.weight || 0), 0);
+    if (this.params.weightIndex > this.weightTotal) {
+      this.params.weightIndex = this.weightTotal;
+    }
+  }
+
+  /* calculate index */
+  calculateIndex = () => {
+    if (this.params.currentIndex === this.targets.length) {
+      this.params.currentIndex --;
+    }
   }
 
   /* clean data of a task or all task */
@@ -58,9 +74,6 @@ class LoadBalancer {
     if (id) {
       delete this.params.connectionsMap[id];
       delete this.params.cpuOccupancyMap[id];
-      if (this.params.currentIndex === this.targets.length) {
-        this.params.currentIndex --;
-      }
     } else {
       this.params = {
         currentIndex: 0,
@@ -86,12 +99,15 @@ class LoadBalancer {
       if (array[i].id === target.id) {
         this.targets.splice(i, 1);
         this.clean(target.id);
+        this.calculateIndex();
         found = true;
         break;
       }
     }
 
-    if (!found) {
+    if (found) {
+      this.calculateWeightIndex();
+    } else {
       console.warn(`Del Operation: the task ${target.id} is not found.`);
     }
   }
@@ -120,9 +136,11 @@ class LoadBalancer {
     this.targets.forEach(target => {
       if (!(target.id in targetsMap)) {
         this.clean(target.id);
+        this.calculateIndex();
       }
     });
     this.targets = targets;
+    this.calculateWeightIndex();
   }
 
   /* change algorithm strategy */
