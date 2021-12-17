@@ -3,7 +3,7 @@ module.exports = function (tasks, weightTotal, connectionsMap, context) {
 
   if (!tasks.length) return null;
 
-  let max = tasks[0], maxIndex = 0, sum;
+  let max = tasks[0].weight, maxIndex = 0, sum;
 
   const connectionsTotal = tasks.reduce((total, cur => {
     total += (connectionsMap[cur.id] || 0);

@@ -450,9 +450,9 @@ const loadBalancer = () => {
       }
     });
 
-    it('pick five from the loadbalancer instance', (callback) => {
-      const targets = loadBalancer.pickMulti(5);
-      if (targets && targets.length === 5) {
+    it('pick ten from the loadbalancer instance', (callback) => {
+      const targets = loadBalancer.pickMulti(10);
+      if (targets && targets.length === 10) {
         console.log(...targets);
         callback();
       } else {

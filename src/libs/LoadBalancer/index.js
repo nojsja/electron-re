@@ -30,6 +30,7 @@ class LoadBalancer {
     };
     this.scheduler = new Scheduler(this.algorithm);
     this.memoParams = this.memorizedParams();
+    this.calculateWeightIndex();
   }
 
   /* params formatter */
@@ -62,7 +63,7 @@ class LoadBalancer {
 
   /* calculate weight */
   calculateWeightIndex = () => {
-    this.weightTotal = this.targets.reduce((total, cur) => total + (cur.weight || 0), 0);
+    this.params.weightTotal = this.targets.reduce((total, cur) => total + (cur.weight || 0), 0);
     if (this.params.weightIndex > this.weightTotal) {
       this.params.weightIndex = this.weightTotal;
     }
