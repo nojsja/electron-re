@@ -1,6 +1,6 @@
 const { ipcMain, ipcRenderer } = require('electron');
 const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
-const { MessageChannel, ChildProcessPool } = require(`../${base}`);
+const { MessageChannel, ChildProcessPool, LoadBalancer } = require(`../${base}`);
 const path = require('path');
 
 /* -------------- main <-> renderer -------------- */
@@ -386,7 +386,7 @@ const childProcessPool = () => {
     });
 
     it('kill a process in processPool and get sub processes count', (callback) => {
-      processPool.send('test5', { value: "test5" }, idForTest5).then(async(rsp) => {
+      processPool.send('test5', { value: "test5" }, idForTest5).then(async (rsp) => {
         if (rsp.result.value === "test5") {
           processPool.kill(idForTest5);
           setTimeout(() => {
@@ -412,12 +412,64 @@ const childProcessPool = () => {
   });
 }
 
+/* -------------- LoadBalancer -------------- */
+const loadBalancer = () => {
+  const targets = [
+    {id: 1, weight: 3},
+    {id: 2, weight: 1},
+    {id: 3, weight: 5},
+    {id: 4, weight: 1},
+    {id: 5, weight: 1},
+    {id: 6, weight: 1},
+    {id: 7, weight: 1},
+    {id: 8, weight: 1},
+    {id: 9, weight: 1},
+    {id: 10, weight: 2},
+  ];
+  const loadBalancer = new LoadBalancer({
+    targets,
+    algorithm: LoadBalancer.ALGORITHM.WEIGHTS,
+  });
+
+  describe('LoadBalancer test', () => {
+    it('create a loadbalancer instance which has 10 targets', (callback) => {
+      if (loadBalancer.targets.length === 10) {
+        callback();
+      } else {
+        callback('test1 failed!');
+      }
+    });
+
+    it('pick one from the loadbalancer instance', (callback) => {
+      const target = loadBalancer.pickOne();
+      if (target) {
+        console.log(target);
+        callback();
+      } else {
+        callback('test2 failed!');
+      }
+    });
+
+    it('pick five from the loadbalancer instance', (callback) => {
+      const targets = loadBalancer.pickMulti(5);
+      if (targets && targets.length === 5) {
+        console.log(...targets);
+        callback();
+      } else {
+        callback('test2 failed!');
+      }
+    });
+
+  });
+}
+
 module.exports = {
   run: () => {
-    mainAndRenderer();
-    mainAndService();
-    rendererAndService();
-    serviceAndService();
-    childProcessPool();
+    // mainAndRenderer();
+    // mainAndService();
+    // rendererAndService();
+    // serviceAndService();
+    // childProcessPool();
+    loadBalancer();
   }
 };

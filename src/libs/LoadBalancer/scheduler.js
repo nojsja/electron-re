@@ -13,6 +13,7 @@ class Scheduler {
   /* pick one task from task list based on algorithm and params */
   calculate(tasks, params) {
     const results = algorithm[this.algorithm](tasks, ...params);
+    console.log(results, 1);
     return results;
   }
 

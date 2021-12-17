@@ -11,7 +11,13 @@ const {
   WEIGHTS_MINIMUM_CONNECTION,
 } = CONSTS;
 
+/* Load Balance Instance */
 class LoadBalancer {
+  /**
+    * @param  {Object} options [ options object ]
+    * @param  {Array } options.targets [ targets for load balancing calculation: [{id: 1, weight: 1}, {id: 2, weight: 2}] ]
+    * @param  {String} options.algorithm [ strategies for load balancing calculation : RANDOM | POLLING | WEIGHTS | SPECIFY | WEIGHTS_RANDOM | WEIGHTS_POLLING | MINIMUM_CONNECTION | WEIGHTS_MINIMUM_CONNECTION]
+    */
   constructor(options) {
     this.targets = options.targets;
     this.algorithm = options.algorithm || POLLING;
@@ -49,7 +55,7 @@ class LoadBalancer {
 
   /* pick multi task from queue */
   pickMulti = (count = 1, ...params) => {
-    return new Array(count).map(
+    return new Array(count).fill().map(
       () => this.pickOne(...params)
     );
   }
@@ -64,8 +70,8 @@ class LoadBalancer {
 
   /* calculate index */
   calculateIndex = () => {
-    if (this.params.currentIndex === this.targets.length) {
-      this.params.currentIndex --;
+    if (this.params.currentIndex >= this.targets.length) {
+      this.params.currentIndex = (ths.params.currentIndex - 1 >= 0) ? (this.params.currentIndex - 1) : 0;
     }
   }
 
@@ -83,7 +89,7 @@ class LoadBalancer {
     }
   }
 
-  /*  */
+  /* add a task */
   add = (task) => {
     this.targets.push(task);
     if (this.targets.find(target => target.id === task.id)) {
@@ -115,6 +121,7 @@ class LoadBalancer {
   /* wipe queue and data */
   wipe = () => {
     this.targets = [];
+    this.calculateWeightIndex();
     this.clean();
   }
 
@@ -154,4 +161,4 @@ class LoadBalancer {
   }
 }
 
-module.exports = LoadBalancer;
+module.exports = Object.assign(LoadBalancer, { ALGORITHM: CONSTS });

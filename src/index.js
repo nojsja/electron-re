@@ -5,6 +5,7 @@ const {
 } = require('./tasks/app.init');
 
 exports.ChildProcessPool = require('./libs/ChildProcessPool');
+exports.LoadBalancer = require('./libs/LoadBalancer');
 exports.ProcessHost = require('./libs/ProcessHost.class');
 
 /* -------------- renderer process -------------- */

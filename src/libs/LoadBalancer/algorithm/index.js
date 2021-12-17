@@ -7,7 +7,7 @@ const {
   WEIGHTS_POLLING,
   WEIGHTS_RANDOM,
   WEIGHTS_MINIMUM_CONNECTION,
-} = CONSTS;
+} = require('../consts');
 
 module.exports = {
   [POLLING]: require('./POLLING'),
