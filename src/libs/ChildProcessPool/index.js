@@ -1,7 +1,7 @@
-const { fork } = require('child_process');
 const _path = require('path');
 const EventEmitter = require('events');
 
+const ForkedProcess = require('./ForkedProcess');
 const { getRandomString, removeForkedFromPool } = require('../utils');
 const ProcessManager = require('../ProcessManager/index');
 let { inspectStartIndex } = require('../../conf/global.json');
@@ -33,6 +33,18 @@ class ChildProcessPool extends EventEmitter {
     });
     this.on('unfork', (pids) => {
       ProcessManager.unlisten(pids);
+    });
+    this.on('forked_message', ({data, id}) => {
+      this.onMessage({data, id});
+    });
+    this.on('forked_exit', (pid) => {
+      this.onProcessDisconnect(pid);
+    });
+    this.on('forked_closed', (pid) => {
+      this.onProcessDisconnect(pid)
+    });
+    this.on('forked_error', (err, pid) => {
+      this.onProcessError(err, pid);
     });
   }
   
@@ -68,22 +80,14 @@ class ChildProcessPool extends EventEmitter {
       // create new process
       if (this.forked.length < this.maxInstance) {
         inspectStartIndex ++;
-        forked = fork(
+        forked = new ForkedProcess(
+          this,
           this.forkedPath,
           this.env.NODE_ENV === "development" ? [`--inspect=${inspectStartIndex}`] : [],
           { cwd: this.cwd, env: { ...this.env, id }, stdio: 'pipe' }
-        );
+        )
         this.forked.push(forked);
-        forked.on('message', (data) => {
-          const id = data.id;
-          delete data.id;
-          delete data.action;
-          this.onMessage({ data, id });
-        });
-        forked.on('exit', () => { this.onProcessDisconnect(forked.pid) });
-        forked.on('closed', () => { this.onProcessDisconnect(forked.pid) });
-        forked.on('error', (err) => { this.onProcessError(err, forked.pid) });
-        ProcessManager.pipe(forked);
+        ProcessManager.pipe(forked.child);
         this.emit('fork', this.forked.map(fork => fork.pid));
       } else {
         this.forkIndex = this.forkIndex % this.maxInstance;
