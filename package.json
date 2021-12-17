@@ -10,7 +10,7 @@
     "start:renderer": "cd src/ui && npm start",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "watch": "onchange 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
+    "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
     "build:libs": "node ./build.js build:libs",
     "build:ui": "node ./build.js build:ui",
     "build": "npm run build:libs && npm run build:ui"

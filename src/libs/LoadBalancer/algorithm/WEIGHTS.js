@@ -6,7 +6,7 @@ module.exports = function (tasks, weightTotal, context) {
   let max = tasks[0].weight, maxIndex = 0, sum;
 
   for (let i = 0; i < tasks.length; i++) {
-    sum = (tasks[i].weight || 0) + Math.random(weightTotal);
+    sum = (tasks[i].weight || 0) + Math.random() * weightTotal;
     if (sum >= max) {
       max = sum;
       maxIndex = i;

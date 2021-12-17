@@ -155,6 +155,7 @@ class LoadBalancer {
   setAlgorithm = (algorithm) => {
     if (algorithm in CONSTS) {
       this.algorithm = algorithm;
+      this.params.weightIndex = 0;
       this.scheduler.setAlgorithm(this.algorithm);
     } else {
       throw new Error(`Invalid algorithm: ${algorithm}, pick from ${Object.keys(CONSTS).join('|')}`);

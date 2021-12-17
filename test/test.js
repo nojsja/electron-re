@@ -417,10 +417,10 @@ const loadBalancer = () => {
   const targets = [
     {id: 1, weight: 3},
     {id: 2, weight: 1},
-    {id: 3, weight: 5},
+    {id: 3, weight: 1},
     {id: 4, weight: 1},
     {id: 5, weight: 1},
-    {id: 6, weight: 1},
+    {id: 6, weight: 5},
     {id: 7, weight: 1},
     {id: 8, weight: 1},
     {id: 9, weight: 1},
@@ -440,23 +440,77 @@ const loadBalancer = () => {
       }
     });
 
-    it('pick one from the loadbalancer instance', (callback) => {
+    it('pick one from the loadbalancer instance [WEIGHTS]', (callback) => {
       const target = loadBalancer.pickOne();
       if (target) {
-        console.log(target);
+        console.log('      ', target);
         callback();
       } else {
         callback('test2 failed!');
       }
     });
 
-    it('pick ten from the loadbalancer instance', (callback) => {
+    it('pick ten from the loadbalancer instance [WEIGHTS]', (callback) => {
       const targets = loadBalancer.pickMulti(10);
       if (targets && targets.length === 10) {
-        console.log(...targets);
+        console.log('      ', targets.map(target => target.id).join(','));
         callback();
       } else {
-        callback('test2 failed!');
+        callback('test3 failed!');
+      }
+    });
+
+    it('pick ten from the loadbalancer instance [POLLING]', (callback) => {
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.POLLING);
+      const targets = loadBalancer.pickMulti(15);
+      if (targets && targets.length === 15) {
+        console.log('      ', targets.map(target => target.id).join(','));
+        callback();
+      } else {
+        callback('test4 failed!');
+      }
+    });
+
+    it('pick ten from the loadbalancer instance [RANDOM]', (callback) => {
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.RANDOM);
+      const targets = loadBalancer.pickMulti(15);
+      if (targets && targets.length === 15) {
+        console.log('      ', targets.map(target => target.id).join(','));
+        callback();
+      } else {
+        callback('test5 failed!');
+      }
+    });
+
+    it('pick one from the loadbalancer instance [SPECIFY]', (callback) => {
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.SPECIFY);
+      const target = loadBalancer.pickOne(5);
+      if (target && target.id === 5) {
+        callback();
+      } else {
+        callback('test6 failed!');
+      }
+    });
+
+    it('pick ten from the loadbalancer instance [WEIGHTS_POLLING]', (callback) => {
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_POLLING);
+      const targets = loadBalancer.pickMulti(10);
+      if (targets && targets.length === 10) {
+        console.log('      ', targets.map(target => target.id).join(','));
+        callback();
+      } else {
+        callback('test7 failed!');
+      }
+    });
+
+    it('pick ten from the loadbalancer instance [WEIGHTS_RANDOM]', (callback) => {
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_RANDOM);
+      const targets = loadBalancer.pickMulti(10);
+      if (targets && targets.length === 10) {
+        console.log('      ', targets.map(target => target.id).join(','));
+        callback();
+      } else {
+        callback('test8 failed!');
       }
     });
 

@@ -3,7 +3,7 @@ module.exports = function (tasks, id) {
   let task;
 
   for (let i = 0; i < tasks.length; i++) {
-    if (task[i].id === id) {
+    if (tasks[i].id === id) {
       task = tasks[i];
       break;
     }
