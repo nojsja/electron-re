@@ -1,5 +1,4 @@
-const { BrowserWindow, app } = require('electron');
-const { isRenderer, isMain } = require('./libs/utils');
+const { isRenderer, isMain, isForkedChild } = require('./libs/utils');
 const {
   listenerForNewWindow,
   registryProtocolForService
@@ -16,7 +15,9 @@ if (isRenderer) {
 
 /* -------------- main process -------------- */
 
-if (isMain) {
+if (isMain && !isForkedChild) {
+  const { BrowserWindow, app } = require('electron');
+
   exports.BrowserService = require('./libs/BrowserService.class')
   exports.MessageChannel = require('./libs/MessageChannel.class');
 

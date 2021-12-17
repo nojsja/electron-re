@@ -108,6 +108,12 @@ exports.isMain = (
   process.type === 'browser'
 );
 
+/* child process check */
+exports.isForkedChild = (
+  process.env.ELECTRON_RUN_AS_NODE === '1' ||
+  process.env.ELECTRON_RUN_AS_NODE === 1
+);
+
 /**
    * @param  {Function} fn         [回调函数]
    * @param  {[Time]}   delayTime  [延迟时间(ms)]
