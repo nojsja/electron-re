@@ -2,12 +2,21 @@ const _path = require('path');
 const EventEmitter = require('events');
 
 const ForkedProcess = require('./ForkedProcess');
-const { getRandomString, removeForkedFromPool } = require('../utils');
+const { getRandomString, removeForkedFromPool, convertForkedToMap } = require('../utils');
 const ProcessManager = require('../ProcessManager/index');
+const LoadBalancer = require('../LoadBalancer');
+const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
 let { inspectStartIndex } = require('../../conf/global.json');
 
 class ChildProcessPool extends EventEmitter {
-  constructor({ path, max=6, cwd, env={} }) {
+  constructor({
+    path,
+    max=6,
+    cwd,
+    env={},
+    weights=[], // weights of processes, the length is equal to max
+    strategy=defaultStrategy
+  }) {
     super();
     this.cwd = cwd || _path.dirname(path);
     this.env = {
@@ -18,9 +27,17 @@ class ChildProcessPool extends EventEmitter {
     this.pidMap = new Map();
     this.collaborationMap = new Map();
     this.forked = [];
+    this.forkedMap = {};
     this.forkedPath = path;
     this.forkIndex = 0;
     this.maxInstance = max;
+    this.weights = new Array(max).fill().map(
+      (_, i) => (weights[i] !== undefined ? weights[i] : 1)
+    );
+    this.LB = new LoadBalancer({
+      algorithm: strategy,
+      targets: [],
+    });
     this.initEvents();
   }
 
@@ -29,9 +46,20 @@ class ChildProcessPool extends EventEmitter {
   /* init events */
   initEvents = () => {
     this.on('fork', (pids) => {
+      this.LB.setTargets(pids.map((p, i) => ({
+        id: p.pid,
+        weight: this.weights[i]
+      })));
+      this.getForkedMap(this.forked);
+      this.forkedMap = convertForkedToMap(this.forked);
       ProcessManager.listen(pids, 'node', this.forkedPath);
     });
     this.on('unfork', (pids) => {
+      this.LB.setTargets(pids.map((p, i) => ({
+        id: p.pid,
+        weight: this.weights[i]
+      })));
+      this.forkedMap = convertForkedToMap(this.forked);
       ProcessManager.unlisten(pids);
     });
     this.on('forked_message', ({data, id}) => {
@@ -39,12 +67,18 @@ class ChildProcessPool extends EventEmitter {
     });
     this.on('forked_exit', (pid) => {
       this.onProcessDisconnect(pid);
+      this.forkedMap = convertForkedToMap(this.forked);
+      this.LB.del({ id: pid });
     });
     this.on('forked_closed', (pid) => {
-      this.onProcessDisconnect(pid)
+      this.onProcessDisconnect(pid);
+      this.forkedMap = convertForkedToMap(this.forked);
+      this.LB.del({ id: pid });
     });
     this.on('forked_error', (err, pid) => {
       this.onProcessError(err, pid);
+      this.forkedMap = convertForkedToMap(this.forked);
+      this.LB.del({ id: pid });
     });
   }
   
@@ -77,7 +111,7 @@ class ChildProcessPool extends EventEmitter {
   getForkedFromPool(id="default") {
     let forked;
     if (!this.pidMap.get(id)) {
-      // create new process
+      // create new process and put it into the pool
       if (this.forked.length < this.maxInstance) {
         inspectStartIndex ++;
         forked = new ForkedProcess(
@@ -90,21 +124,20 @@ class ChildProcessPool extends EventEmitter {
         ProcessManager.pipe(forked.child);
         this.emit('fork', this.forked.map(fork => fork.pid));
       } else {
-        this.forkIndex = this.forkIndex % this.maxInstance;
-        forked = this.forked[this.forkIndex];
+      // get a process from the pool based on load balancing
+        const pickedId = this.LB.pickOne();
+        forked = this.forkedMap[pickedId];
       }
-      
       if(id !== 'default')
         this.pidMap.set(id, forked.pid);
       if(this.pidMap.keys.length === 1000)
         console.warn('ChildProcessPool: The count of pidMap is over than 1000, suggest to use unique id!');
-        
-      this.forkIndex += 1;
     } else {
-      // use existing processes
-      forked = this.forked.find(f => f.pid === this.pidMap.get(id));
-      if (!forked) throw new Error(`Get forked process from pool failed! the process pid: ${this.pidMap.get(id)}.`);
+      // pick a special process from the pool
+      forked = this.forkedMap[this.pidMap.get(id)];
     }
+
+    if (!forked) throw new Error(`Get forked process from pool failed! the process pid: ${this.pidMap.get(id)}.`);
 
     return forked;
   }
@@ -191,7 +224,7 @@ class ChildProcessPool extends EventEmitter {
   kill(id) {
     if (id !== undefined) {
       const pid = this.pidMap.get(id);
-      const fork = this.forked.find(p => p.pid === pid);
+      const fork = this.forkedMap[pid];
       try {
         // don't use disconnect, that just close the ipc channel.
         if (fork) process.kill(pid, "SIGTERM");

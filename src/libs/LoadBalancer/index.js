@@ -10,6 +10,7 @@ const {
   MINIMUM_CONNECTION,
   WEIGHTS_MINIMUM_CONNECTION,
 } = CONSTS;
+const ProcessManager = require('../ProcessManager');
 
 /* Load Balance Instance */
 class LoadBalancer {
@@ -31,6 +32,7 @@ class LoadBalancer {
     this.scheduler = new Scheduler(this.algorithm);
     this.memoParams = this.memorizedParams();
     this.calculateWeightIndex();
+    ProcessManager.on('refresh', this.refreshParams);
   }
 
   /* params formatter */
@@ -43,8 +45,13 @@ class LoadBalancer {
       [WEIGHTS_RANDOM]: () => [this.params.weightTotal],
       [WEIGHTS_POLLING]: () => [this.params.weightIndex, this.params.weightTotal, this.params],
       [MINIMUM_CONNECTION]: () => [this.params.connectionsMap],
-      [WEIGHTS_MINIMUM_CONNECTION]: () => [this.params.weightIndex, this.params.weightTotal, this.params.connectionsMap, this.params],
+      [WEIGHTS_MINIMUM_CONNECTION]: () => [this.params.weightTotal, this.params.connectionsMap, this.params],
     };
+  }
+
+  /* refresh params data */
+  refreshParams = (pidMap) => {
+    console.log('refresh params', pidMap);
   }
 
   /* pick one task from queue */
@@ -64,8 +71,8 @@ class LoadBalancer {
   /* calculate weight */
   calculateWeightIndex = () => {
     this.params.weightTotal = this.targets.reduce((total, cur) => total + (cur.weight || 0), 0);
-    if (this.params.weightIndex > this.weightTotal) {
-      this.params.weightIndex = this.weightTotal;
+    if (this.params.weightIndex > this.params.weightTotal) {
+      this.params.weightIndex = this.params.weightTotal;
     }
   }
 

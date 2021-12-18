@@ -514,6 +514,57 @@ const loadBalancer = () => {
       }
     });
 
+    it('pick ten from the loadbalancer instance [MINIMUM_CONNECTION]', (callback) => {
+      const connectionsMap = {
+        1: 1,
+        2: 2,
+        3: 5,
+        4: 2,
+        5: 1,
+        6: 1,
+        7: 0,
+        8: 1,
+        9: 1,
+        10: 1
+      };
+      loadBalancer.updateParams({
+        connectionsMap,
+      });
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.MINIMUM_CONNECTION);
+      const target = loadBalancer.pickOne();
+      if (target && target.id === 7 &&  connectionsMap[target.id] === 0) {
+        callback();
+      } else {
+        callback('test9 failed!');
+      }
+    });
+
+    it('pick ten from the loadbalancer instance [WEIGHTS_MINIMUM_CONNECTION]', (callback) => {
+      const connectionsMap = {
+        1: 1,
+        2: 2,
+        3: 5,
+        4: 2,
+        5: 1,
+        6: 1,
+        7: 0,
+        8: 1,
+        9: 1,
+        10: 1
+      };
+      loadBalancer.updateParams({
+        connectionsMap,
+      });
+      loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_MINIMUM_CONNECTION);
+      const targets = loadBalancer.pickMulti(10);
+      if (targets && targets.length === 10) {
+        console.log('      ', targets.map(target => target.id).join(','));
+        callback();
+      } else {
+        callback('test10 failed!');
+      }
+    });
+
   });
 }
 

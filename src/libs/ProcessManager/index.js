@@ -55,6 +55,7 @@ class ProcessManager extends EventEmitter {
             console.log(`ProcessManager: refreshList errored -> ${err}`);
           } else {
             this.pidMap = Object.assign(this.pidMap, records);
+            this.emit('refresh', this.pidMap);
             this.ui.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }
           resolve();

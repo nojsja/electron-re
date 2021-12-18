@@ -190,3 +190,11 @@ exports.removeForkedFromPool = function(forks, pid, pidMap) {
     });
   }
 }
+
+/* convert forked process array to map */
+exports.convertForkedToMap = function(arr) {
+  return arr.reduce((total, cur) => {
+    total[cur.pid] = cur;
+    return total;
+  }, {});
+}

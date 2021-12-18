@@ -46,8 +46,8 @@ describe('app ready => ', function() {
     await global.appService.connected();
     await global.otherService.connected();
 
-    global.appService.openDevTools();
-    global.otherService.openDevTools();
+    // global.appService.openDevTools();
+    // global.otherService.openDevTools();
     await createWindow();
     await new Promise(resolve => {
       global.mainWindow.webContents.on('did-finish-load', () => {
