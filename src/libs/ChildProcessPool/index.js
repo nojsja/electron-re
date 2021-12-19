@@ -45,40 +45,14 @@ class ChildProcessPool extends EventEmitter {
 
   /* init events */
   initEvents = () => {
-    this.on('fork', (pids) => {
-      this.LB.setTargets(pids.map((p, i) => ({
-        id: p.pid,
-        weight: this.weights[i]
-      })));
-      this.getForkedMap(this.forked);
-      this.forkedMap = convertForkedToMap(this.forked);
-      ProcessManager.listen(pids, 'node', this.forkedPath);
-    });
-    this.on('unfork', (pids) => {
-      this.LB.setTargets(pids.map((p, i) => ({
-        id: p.pid,
-        weight: this.weights[i]
-      })));
-      this.forkedMap = convertForkedToMap(this.forked);
-      ProcessManager.unlisten(pids);
-    });
     this.on('forked_message', ({data, id}) => {
       this.onMessage({data, id});
     });
     this.on('forked_exit', (pid) => {
-      this.onProcessDisconnect(pid);
-      this.forkedMap = convertForkedToMap(this.forked);
-      this.LB.del({ id: pid });
-    });
-    this.on('forked_closed', (pid) => {
-      this.onProcessDisconnect(pid);
-      this.forkedMap = convertForkedToMap(this.forked);
-      this.LB.del({ id: pid });
+      this.onForkedDisconnect(pid);
     });
     this.on('forked_error', (err, pid) => {
       this.onProcessError(err, pid);
-      this.forkedMap = convertForkedToMap(this.forked);
-      this.LB.del({ id: pid });
     });
   }
   
@@ -107,8 +81,41 @@ class ChildProcessPool extends EventEmitter {
     }
   }
 
+  /**
+    * onForkedCreate [triggered when a process instance created]
+    * @param  {[String]} pid [process pid]
+    */
+  onForkedCreate = (forked) => {
+    const pidsValue = this.forked.map(f => f.pid);
+    const length = this.forked.length;
+
+    ProcessManager.pipe(forked.child);
+    this.LB.add({
+      id: forked.pid,
+      weight: this.weights[length - 1],
+    })
+    this.forkedMap = convertForkedToMap(this.forked);
+    ProcessManager.listen(pidsValue, 'node', this.forkedPath);
+  }
+
+  /**
+    * onForkedDisconnect [triggered when a process instance disconnect]
+    * @param  {[String]} pid [process pid]
+    */
+   onForkedDisconnect = (pid) => {
+    const length = this.forked.length;
+
+    removeForkedFromPool(this.forked, pid, this.pidMap);
+    this.forkedMap = convertForkedToMap(this.forked);
+    this.LB.del({
+      id: pid,
+      weight: this.weights[length - 1],
+    })
+    ProcessManager.unlisten([pid]);
+  }
+
   /* Get a process instance from the pool */
-  getForkedFromPool(id="default") {
+  getForkedFromPool = (id="default") => {
     let forked;
     if (!this.pidMap.get(id)) {
       // create new process and put it into the pool
@@ -121,12 +128,10 @@ class ChildProcessPool extends EventEmitter {
           { cwd: this.cwd, env: { ...this.env, id }, stdio: 'pipe' }
         )
         this.forked.push(forked);
-        ProcessManager.pipe(forked.child);
-        this.emit('fork', this.forked.map(fork => fork.pid));
+        this.onForkedCreate(forked);
       } else {
-      // get a process from the pool based on load balancing
-        const pickedId = this.LB.pickOne();
-        forked = this.forkedMap[pickedId];
+      // get a process from the pool based on load balancing strategy
+        forked = this.forkedMap[this.LB.pickOne().id];
       }
       if(id !== 'default')
         this.pidMap.set(id, forked.pid);
@@ -143,22 +148,13 @@ class ChildProcessPool extends EventEmitter {
   }
 
   /**
-    * onProcessDisconnect [triggered when a process instance disconnect]
-    * @param  {[String]} pid [process pid]
-    */
-  onProcessDisconnect(pid){
-    this.emit('unfork', pid);
-    removeForkedFromPool(this.forked, pid, this.pidMap);
-  }
-
-  /**
     * onProcessError [triggered when a process instance break]
     * @param  {[Error]} err [error]
     * @param  {[String]} pid [process pid]
     */
-  onProcessError(err, pid) {
+  onProcessError = (err, pid) => {
     console.error("ChildProcessPool: ", err);
-    this.onProcessDisconnect(pid);
+    this.onForkedDisconnect(pid);
   }
 
   /**
@@ -166,7 +162,7 @@ class ChildProcessPool extends EventEmitter {
     * @param  {[Any]} data [response data]
     * @param  {[String]} id [process tmp id]
     */
-  onMessage({ data, id }) {
+  onMessage = ({ data, id }) => {
     if (this.collaborationMap.get(id) !== undefined) {
       this.dataRespondAll(data, id)
     } else {
@@ -183,7 +179,7 @@ class ChildProcessPool extends EventEmitter {
   * @param  {[String]} id [the unique id bound to a process instance - not necessary]
   * @return {[Promise]} [return a Promise instance]
   */
-  send(taskName, params, givenId) {
+  send = (taskName, params, givenId) => {
     if (givenId === 'default') throw new Error('ChildProcessPool: Prohibit the use of this id value: [default] !')
 
     const id = getRandomString();
@@ -200,7 +196,7 @@ class ChildProcessPool extends EventEmitter {
   * @param  {[Any]} params [data passed to process - necessary]
   * @return {[Promise]} [return a Promise instance]
   */
-  sendToAll(taskName, params) {
+  sendToAll = (taskName, params) => {
     const id = getRandomString(); 
     return new Promise(resolve => {
       this.callbacks[id] = resolve;
@@ -221,13 +217,13 @@ class ChildProcessPool extends EventEmitter {
   * disconnect [shutdown a sub process or all sub processes]
   * @param  {[String]} id [id bound with a sub process. If none is given, all sub processes will be killed.]
   */
-  kill(id) {
+  kill = (id) => {
     if (id !== undefined) {
       const pid = this.pidMap.get(id);
       const fork = this.forkedMap[pid];
       try {
         // don't use disconnect, that just close the ipc channel.
-        if (fork) process.kill(pid, "SIGTERM");
+        if (fork) process.kill(pid, "SIGINT");
       } catch (error) {
         console.error(`ChildProcessPool: Failed to kill the child process ${pid}!`);
       }
@@ -235,7 +231,7 @@ class ChildProcessPool extends EventEmitter {
       console.warn('ChildProcessPool: The all sub processes will be shutdown!');
       this.forked.forEach(fork => {
         try {
-          process.kill(fork.pid, "SIGTERM")
+          process.kill(fork.pid, "SIGINT")
         } catch (error) {
           console.error(`ChildProcessPool: Failed to kill the child process ${pid}!`);
         }
@@ -247,7 +243,7 @@ class ChildProcessPool extends EventEmitter {
   * setMaxInstanceLimit [set the max count of sub process instances created by pool]
   * @param  {[Number]} count [the max count instances]
   */
-  setMaxInstanceLimit(count) {
+  setMaxInstanceLimit = (count) => {
     if (!Number.isInteger(count) || count <= 0)
       return console.warn('ChildProcessPool: setMaxInstanceLimit - the param count must be an positive integer!');
     if (count < this.maxInstance)

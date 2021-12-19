@@ -179,15 +179,16 @@ exports.getModuleFilePath = function (_module) {
 
 /* remove a forked process from pool */
 exports.removeForkedFromPool = function(forks, pid, pidMap) {
-  let index;
-  const forked = forks.find((f, i) => { index = i; return f.pid === pid; });
-  if (forked) {
-    forks.splice(index, 1);
-    pidMap.entries(([key, value]) => {
-      if (value === pid) {
-        pidMap.delete(key);
-      }
-    });
+  for (let i = 0; i < forks.length; i++) {
+    if (forks[i].pid === pid) {
+      forks.splice(i, 1);
+      pidMap.entries(([key, value]) => {
+        if (value === pid) {
+          pidMap.delete(key);
+        }
+      });
+      break;
+    }
   }
 }
 

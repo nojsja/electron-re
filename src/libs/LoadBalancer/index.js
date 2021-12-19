@@ -99,7 +99,6 @@ class LoadBalancer {
 
   /* add a task */
   add = (task) => {
-    this.targets.push(task);
     if (this.targets.find(target => target.id === task.id)) {
       return console.warn(`Add Operation: the task ${task.id} already exists.`);
     }
@@ -110,7 +109,7 @@ class LoadBalancer {
   del = (target) => {
     let found = false;
     for (let i  = 0; i < this.targets.length; i++) {
-      if (array[i].id === target.id) {
+      if (this.targets[i].id === target.id) {
         this.targets.splice(i, 1);
         this.clean(target.id);
         this.calculateIndex();
@@ -122,7 +121,7 @@ class LoadBalancer {
     if (found) {
       this.calculateWeightIndex();
     } else {
-      console.warn(`Del Operation: the task ${target.id} is not found.`);
+      console.warn(`Del Operation: the task ${target.id} is not found.`, this.targets);
     }
   }
 

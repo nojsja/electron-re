@@ -5,7 +5,7 @@ const path = require('path');
 
 /* -------------- main <-> renderer -------------- */
 const mainAndRenderer = () => {
-  describe('Communication between main and renderer with [MessageChannel]', () => {
+  describe('▸ Communication between main and renderer with [MessageChannel]', () => {
     it('main send data to renderer using [sendTo]', (callback) => {
       MessageChannel.sendTo(global.mainWindow.id, 'mainAndRenderer:test1', { value: 'test1' });
 
@@ -107,7 +107,7 @@ const mainAndRenderer = () => {
 
 /* -------------- main <-> service -------------- */
 const mainAndService = () => {
-  describe('Communication between main and service with [MessageChannel]', () => {
+  describe('▸ Communication between main and service with [MessageChannel]', () => {
     it('main send data to service using [send]', (callback) => {
       MessageChannel.send('app', 'mainAndService:test1', { value: 'test1' });
       ipcMain.once('mainAndService:test1', (event, result) => {
@@ -204,9 +204,7 @@ const mainAndService = () => {
     });
 
     it('service handle a channel signal using [handle]', (callback) => {
-      console.log(1);
       MessageChannel.invoke('app', 'mainAndService:test9', { value: 'test9' }).then(result => {
-        console.log(result);
         if (result && result.value === 'test9') {
           callback();
         } else {
@@ -220,7 +218,7 @@ const mainAndService = () => {
 
 /* -------------- renderer <-> service -------------- */
 const rendererAndService = () => {
-  describe('Communication between renderer and service with [MessageChannel]', () => {
+  describe('▸ Communication between renderer and service with [MessageChannel]', () => {
     it('renderer send data to service using [send]', (callback) => {
       global.mainWindow.webContents.send('rendererAndService:test1', { value: 'test1' });
 
@@ -273,7 +271,7 @@ const rendererAndService = () => {
 
 /* -------------- service <-> service -------------- */
 const serviceAndService = () => {
-  describe('Communication between service and service with [MessageChannel]', () => {
+  describe('▸ Communication between service and service with [MessageChannel]', () => {
     it('service send data to service using [send]', (callback) => {
       global.appService.webContents.send('serviceAndService:test1', { value: 'test1' });
 
@@ -326,17 +324,19 @@ const serviceAndService = () => {
 
 /* -------------- ChildProcessPool -------------- */
 const childProcessPool = () => {
-  const maxProcessCount = 6;
+  const maxProcessCount = 3;
   const idForTest5 = 'test5id';
   const processPool = new ChildProcessPool({
     path: path.join(__dirname, 'child_process/child1.js'),
     max: maxProcessCount,
+    strategy: LoadBalancer.ALGORITHM.WEIGHTS,
+    weights: [1, 2, 3],
     env: {
       cwd: path.basename(path.join(__dirname, 'child_process/child1.js'))
     }
   });
   
-  describe('ChildProcessPool/ProcessHost test', () => {
+  describe('▸ ChildProcessPool/ProcessHost test', () => {
     it('send request to a process in processPool and get response data', (callback) => {
       processPool.send('test1', { value: "test1" }).then((rsp) => {
         if (rsp.result.value === 'test1') {
@@ -390,7 +390,7 @@ const childProcessPool = () => {
         if (rsp.result.value === "test5") {
           processPool.kill(idForTest5);
           setTimeout(() => {
-            if (processPool.forked.length === (4 - 1))
+            if (processPool.forked.length === (maxProcessCount - 1))
               callback();
             else
               callback("test5 failed!")
@@ -431,7 +431,7 @@ const loadBalancer = () => {
     algorithm: LoadBalancer.ALGORITHM.WEIGHTS,
   });
 
-  describe('LoadBalancer test', () => {
+  describe('▸ LoadBalancer test', () => {
     it('create a loadbalancer instance which has 10 targets', (callback) => {
       if (loadBalancer.targets.length === 10) {
         callback();
@@ -570,11 +570,11 @@ const loadBalancer = () => {
 
 module.exports = {
   run: () => {
-    // mainAndRenderer();
-    // mainAndService();
-    // rendererAndService();
-    // serviceAndService();
-    // childProcessPool();
+    mainAndRenderer();
+    mainAndService();
+    rendererAndService();
+    serviceAndService();
+    childProcessPool();
     loadBalancer();
   }
 };
