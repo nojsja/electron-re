@@ -2,7 +2,7 @@ const _path = require('path');
 const EventEmitter = require('events');
 
 const ForkedProcess = require('./ForkedProcess');
-const { getRandomString, removeForkedFromPool, convertForkedToMap } = require('../utils');
+const { getRandomString, removeForkedFromPool, convertForkedToMap, isValidValue } = require('../utils');
 const ProcessManager = require('../ProcessManager/index');
 const LoadBalancer = require('../LoadBalancer');
 const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
@@ -32,7 +32,7 @@ class ChildProcessPool extends EventEmitter {
     this.forkIndex = 0;
     this.maxInstance = max;
     this.weights = new Array(max).fill().map(
-      (_, i) => (weights[i] !== undefined ? weights[i] : 1)
+      (_, i) => (isValidValue(weights[i]) ? weights[i] : 1)
     );
     this.LB = new LoadBalancer({
       algorithm: strategy,
@@ -93,7 +93,7 @@ class ChildProcessPool extends EventEmitter {
     this.LB.add({
       id: forked.pid,
       weight: this.weights[length - 1],
-    })
+    });
     this.forkedMap = convertForkedToMap(this.forked);
     ProcessManager.listen(pidsValue, 'node', this.forkedPath);
   }
@@ -126,17 +126,19 @@ class ChildProcessPool extends EventEmitter {
           this.forkedPath,
           this.env.NODE_ENV === "development" ? [`--inspect=${inspectStartIndex}`] : [],
           { cwd: this.cwd, env: { ...this.env, id }, stdio: 'pipe' }
-        )
+        );
         this.forked.push(forked);
         this.onForkedCreate(forked);
       } else {
       // get a process from the pool based on load balancing strategy
         forked = this.forkedMap[this.LB.pickOne().id];
       }
-      if(id !== 'default')
+      if (id !== 'default') {
         this.pidMap.set(id, forked.pid);
-      if(this.pidMap.keys.length === 1000)
+      }
+      if (this.pidMap.keys.length === 1000) {
         console.warn('ChildProcessPool: The count of pidMap is over than 1000, suggest to use unique id!');
+      }
     } else {
       // pick a special process from the pool
       forked = this.forkedMap[this.pidMap.get(id)];

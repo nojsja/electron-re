@@ -199,3 +199,12 @@ exports.convertForkedToMap = function(arr) {
     return total;
   }, {});
 }
+
+/* tree value */
+exports.isValidValue = function(value) {
+  return (
+    value !== undefined &&
+    value !== null &&
+    value !== ''
+  );
+};
