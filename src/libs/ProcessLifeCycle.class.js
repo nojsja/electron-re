@@ -1,11 +1,16 @@
 const EventEmitter = require('events');
 
+const defaultLifecycle = {
+  expect: 600e3, // default timeout 10 minutes
+  internal: 30e3 // default loop check interval 30 seconds
+};
+
 class ProcessLifeCycle extends EventEmitter {
   constructor(options) {
     super();
     const {
-      expect=600e3, // default timeout 10 minutes
-      internal=30e3 // default loop check interval 30 seconds
+      expect=defaultLifecycle.expect,
+      internal=defaultLifecycle.internal
     } = options;
     this.timer = null;
     this.internal = internal;
@@ -71,4 +76,4 @@ class ProcessLifeCycle extends EventEmitter {
   }
 }
 
-module.exports = ProcessLifeCycle;
+module.exports = Object.assign(ProcessLifeCycle, { defaultLifecycle });

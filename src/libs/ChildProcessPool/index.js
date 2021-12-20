@@ -2,8 +2,10 @@ const _path = require('path');
 const EventEmitter = require('events');
 
 const ForkedProcess = require('./ForkedProcess');
+const ProcessLifeCycle = require('../ProcessLifeCycle.class');
 const { getRandomString, removeForkedFromPool, convertForkedToMap, isValidValue } = require('../utils');
 const ProcessManager = require('../ProcessManager/index');
+const { defaultLifecycle } = require('../ProcessLifeCycle.class');
 const LoadBalancer = require('../LoadBalancer');
 const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
 let { inspectStartIndex } = require('../../conf/global.json');
@@ -15,7 +17,11 @@ class ChildProcessPool extends EventEmitter {
     cwd,
     env={},
     weights=[], // weights of processes, the length is equal to max
-    strategy=defaultStrategy
+    strategy=defaultStrategy,
+    lifecycle={ // lifecycle of processes
+      expect: defaultLifecycle.expect, // default timeout 10 minutes
+      internal: defaultLifecycle.internal
+    }
   }) {
     super();
     this.cwd = cwd || _path.dirname(path);
@@ -38,6 +44,12 @@ class ChildProcessPool extends EventEmitter {
       algorithm: strategy,
       targets: [],
     });
+    this.lifecycle = new ProcessLifeCycle({
+      expect: lifecycle.expect,
+      internal: lifecycle.internal
+    });
+
+    this.lifecycle.start();
     this.initEvents();
   }
 
@@ -45,12 +57,23 @@ class ChildProcessPool extends EventEmitter {
 
   /* init events */
   initEvents = () => {
+    // let process sleep when no activity in expect time
+    this.lifecycle.on('sleep', (ids) => {
+      ids.forEach(pid => {
+        if (this.forkedMap[pid]) {
+          this.forkedMap[pid].sleep();
+        }
+      });
+    });
+    // message from forked process
     this.on('forked_message', ({data, id}) => {
       this.onMessage({data, id});
     });
+    // process exit
     this.on('forked_exit', (pid) => {
       this.onForkedDisconnect(pid);
     });
+    // process error
     this.on('forked_error', (err, pid) => {
       this.onProcessError(err, pid);
     });
@@ -95,6 +118,7 @@ class ChildProcessPool extends EventEmitter {
       weight: this.weights[length - 1],
     });
     this.forkedMap = convertForkedToMap(this.forked);
+    this.lifecycle.watch([forked.pid]);
     ProcessManager.listen(pidsValue, 'node', this.forkedPath);
   }
 
@@ -110,7 +134,8 @@ class ChildProcessPool extends EventEmitter {
     this.LB.del({
       id: pid,
       weight: this.weights[length - 1],
-    })
+    });
+    this.lifecycle.unwatch([forked.pid]);
     ProcessManager.unlisten([pid]);
   }
 
@@ -186,6 +211,8 @@ class ChildProcessPool extends EventEmitter {
 
     const id = getRandomString();
     const forked = this.getForkedFromPool(givenId);
+    this.lifecycle.refresh([forked.pid]);
+
     return new Promise(resolve => {
       this.callbacks[id] = resolve;
       forked.send({action: taskName, params, id });
@@ -207,7 +234,8 @@ class ChildProcessPool extends EventEmitter {
         // use process in pool
         this.forked.forEach((forked) => {
           forked.send({ action: taskName, params, id });
-        })
+        });
+        this.lifecycle.refresh(this.forked.map(forked => forked.pid));
       } else {
         // use default process
         this.getForkedFromPool().send({ action: taskName, params, id });

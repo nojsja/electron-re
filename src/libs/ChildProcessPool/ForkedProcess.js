@@ -6,6 +6,7 @@ class ForkedProcess {
     this.forkedPath = forkedPath;
     this.args = args;
     this.options = options;
+    this.sleeping = false;
 
     this.child = fork(
       this.forkedPath,
@@ -15,6 +16,18 @@ class ForkedProcess {
 
     this.pid = this.child.pid;
     this.init();
+  }
+
+  /* send STOP signal to a child process and let it freeze */
+  sleep() {
+    process.kill(this.pid, 'SIGSTOP');
+    this.sleeping = true;
+  }
+
+  /* send CONT signal to wake up a child process */
+  wakeup() {
+    process.kill(this.pid, 'SIGCONT');
+    this.sleeping = false;
   }
 
   init() {
@@ -39,6 +52,9 @@ class ForkedProcess {
   }
 
   send = (...params) => {
+    if (this.sleeping) {
+      this.wakeup();
+    }
     this.child.send(...params);
   }
 }
