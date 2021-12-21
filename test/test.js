@@ -593,7 +593,7 @@ const processLifecycle = () => {
       }
     });
 
-    it('sleep test: wait for 3 seconds and all processes sleep', (callback) => {
+    it('sleep test: wait for 4 seconds and all processes are sleeping', (callback) => {
       lifecycle.refresh(processes);
       lifecycle.start();
       setTimeout(() => {
@@ -603,7 +603,7 @@ const processLifecycle = () => {
           callback('test2 failed');
         }
         lifecycle.stop();
-      }, 3e3);
+      }, 4e3);
     });
 
     it('sleep test: wake up 1 process', (callback) => {

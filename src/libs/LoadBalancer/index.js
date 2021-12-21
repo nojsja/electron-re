@@ -28,6 +28,7 @@ class LoadBalancer {
       weightTotal: 0, // total weight
       connectionsMap: {}, // connections of each target
       cpuOccupancyMap: {}, // cpu occupancy of each target
+      memoryOccupancyMap: {}, // cpu occupancy of each target
     };
     this.scheduler = new Scheduler(this.algorithm);
     this.memoParams = this.memorizedParams();
@@ -51,7 +52,12 @@ class LoadBalancer {
 
   /* refresh params data */
   refreshParams = (pidMap) => {
-    console.log('refresh params', pidMap);
+    const infos = Object.values(pidMap);
+    for (let info of infos) {
+      // this.params.connectionsMap[id] = connections;
+      this.params.cpuOccupancyMap[info.pid] = info.cpu;
+      this.params.memoryOccupancyMap[info.pid] = info.memory;
+    }
   }
 
   /* pick one task from queue */

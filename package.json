@@ -46,6 +46,7 @@
     "cross-env": "^7.0.2",
     "electron": "9.3.5",
     "electron-mocha": "^9.3.2",
+    "istanbul": "^0.4.5",
     "onchange": "^7.1.0",
     "shx": "^0.3.3"
   },
