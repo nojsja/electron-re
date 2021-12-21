@@ -182,7 +182,7 @@ exports.removeForkedFromPool = function(forks, pid, pidMap) {
   for (let i = 0; i < forks.length; i++) {
     if (forks[i].pid === pid) {
       forks.splice(i, 1);
-      pidMap.entries(([key, value]) => {
+      ([...pidMap.entries()]).map(([key, value]) => {
         if (value === pid) {
           pidMap.delete(key);
         }

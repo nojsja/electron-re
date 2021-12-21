@@ -7,6 +7,7 @@ const {
 exports.ChildProcessPool = require('./libs/ChildProcessPool');
 exports.LoadBalancer = require('./libs/LoadBalancer');
 exports.ProcessHost = require('./libs/ProcessHost.class');
+exports.ProcessLifeCycle = require('./libs/ProcessLifeCycle.class');
 
 /* -------------- renderer process -------------- */
 

@@ -20,12 +20,14 @@ class ForkedProcess {
 
   /* send STOP signal to a child process and let it freeze */
   sleep() {
+    if (this.sleeping) return;
     process.kill(this.pid, 'SIGSTOP');
     this.sleeping = true;
   }
 
   /* send CONT signal to wake up a child process */
   wakeup() {
+    if (!this.sleeping) return;
     process.kill(this.pid, 'SIGCONT');
     this.sleeping = false;
   }
@@ -38,7 +40,6 @@ class ForkedProcess {
       this.host.emit('forked_message', {data, id});
     });
     this.child.on('exit', (code, signal) => {
-      console.log('forked process exited with: ', code, signal);
       if (code !== 0 && code !== null) {
         this.host.emit('forked_error', this.pid);
       } else {

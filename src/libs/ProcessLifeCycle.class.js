@@ -28,13 +28,13 @@ class ProcessLifeCycle extends EventEmitter {
       const sleepTasks = [];
       const date = new Date();
       const { activities } = this.params;
-      activities.entries(([key, value]) => {
+      ([...activities.entries()]).map(([key, value]) => {
         if (date - value > this.expect) {
           sleepTasks.push(key);
         }
       });
       if (sleepTasks.length) {
-        this.unwatch(sleepTasks);
+        // this.unwatch(sleepTasks);
         this.emit('sleep', sleepTasks);
       }
     }, this.internal);
@@ -57,6 +57,7 @@ class ProcessLifeCycle extends EventEmitter {
   /* stop task check loop */
   stop = () => {
     clearInterval(this.timer);
+    this.timer = null;
   }
 
   /* start task check loop */

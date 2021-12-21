@@ -1,6 +1,6 @@
 const { ipcMain, ipcRenderer } = require('electron');
 const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
-const { MessageChannel, ChildProcessPool, LoadBalancer } = require(`../${base}`);
+const { MessageChannel, ChildProcessPool, LoadBalancer, ProcessLifeCycle } = require(`../${base}`);
 const path = require('path');
 
 /* -------------- main <-> renderer -------------- */
@@ -431,7 +431,7 @@ const loadBalancer = () => {
     algorithm: LoadBalancer.ALGORITHM.WEIGHTS,
   });
 
-  describe('▸ LoadBalancer test', () => {
+  describe('▸ LoadBalancer Test', () => {
     it('create a loadbalancer instance which has 10 targets', (callback) => {
       if (loadBalancer.targets.length === 10) {
         callback();
@@ -566,7 +566,76 @@ const loadBalancer = () => {
     });
 
   });
-}
+};
+
+/* process lifecycle */
+
+const processLifecycle = () => {
+  const lifecycle = new ProcessLifeCycle({
+    expect: 2e3,
+    internal: 1e3
+  });
+  let sleeping = [];
+
+  lifecycle.on('sleep', pids => {
+    sleeping = pids;
+  });
+
+  lifecycle.watch([1, 2, 3, 4, 5]);
+  
+  describe('▸ Process LifeCycle Test', () => {
+    it('create a lifecycle instance which has 5 targets', (callback) => {
+      if (lifecycle.params.activities.size === 5) {
+        callback();
+      } else {
+        callback('test1 failed!');
+      }
+    });
+
+    it('sleep test: wait for 3 seconds and all processes sleep', (callback) => {
+      lifecycle.refresh([1, 2, 3, 4, 5]);
+      lifecycle.start();
+      setTimeout(() => {
+        if (sleeping.length === 5) {
+          callback();
+        } else {
+          callback('test2 failed');
+        }
+        lifecycle.stop();
+      }, 2.5e3);
+    });
+
+    it('sleep test: wake up 1 process', (callback) => {
+      lifecycle.refresh([1]);
+      lifecycle.start();
+      setTimeout(() => {
+        if (sleeping.length === 4 && !sleeping.includes(1)) {
+          callback();
+        } else {
+          callback('test3 failed');
+        }
+        lifecycle.stop();
+      }, 1.5e3);
+    });
+
+    it('sleep test: wake up all processes', (callback) => {
+      sleeping = [];
+      lifecycle.refresh([1, 2, 3, 4, 5]);
+      lifecycle.start();
+      setTimeout(() => {
+        if (sleeping.length === 0) {
+          callback();
+        } else {
+          callback('test4 failed');
+        }
+        lifecycle.stop();
+      }, 1.5e3);
+    });
+
+  });
+
+
+};
 
 module.exports = {
   run: () => {
@@ -576,5 +645,6 @@ module.exports = {
     serviceAndService();
     childProcessPool();
     loadBalancer();
+    processLifecycle();
   }
 };

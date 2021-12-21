@@ -3,12 +3,13 @@ const EventEmitter = require('events');
 
 const ForkedProcess = require('./ForkedProcess');
 const ProcessLifeCycle = require('../ProcessLifeCycle.class');
-const { getRandomString, removeForkedFromPool, convertForkedToMap, isValidValue } = require('../utils');
 const ProcessManager = require('../ProcessManager/index');
 const { defaultLifecycle } = require('../ProcessLifeCycle.class');
 const LoadBalancer = require('../LoadBalancer');
-const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
 let { inspectStartIndex } = require('../../conf/global.json');
+const { getRandomString, removeForkedFromPool, convertForkedToMap, isValidValue } = require('../utils');
+
+const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
 
 class ChildProcessPool extends EventEmitter {
   constructor({
@@ -20,7 +21,7 @@ class ChildProcessPool extends EventEmitter {
     strategy=defaultStrategy,
     lifecycle={ // lifecycle of processes
       expect: defaultLifecycle.expect, // default timeout 10 minutes
-      internal: defaultLifecycle.internal
+      internal: defaultLifecycle.internal // default loop interval 30 seconds
     }
   }) {
     super();
@@ -31,7 +32,7 @@ class ChildProcessPool extends EventEmitter {
     };
     this.callbacks = {};
     this.pidMap = new Map();
-    this.collaborationMap = new Map();
+    this.callbacksMap = new Map();
     this.forked = [];
     this.forkedMap = {};
     this.forkedPath = path;
@@ -90,17 +91,17 @@ class ChildProcessPool extends EventEmitter {
   /* Received data from multi child processes */
   dataRespondAll = (data, id) => {
     if (!id) return;
-    let resultAll = this.collaborationMap.get(id);
+    let resultAll = this.callbacksMap.get(id);
     if (resultAll !== undefined) {
-      this.collaborationMap.set(id, [...resultAll, data]);
+      this.callbacksMap.set(id, [...resultAll, data]);
     } else {
-      this.collaborationMap.set(id, [data]);
+      this.callbacksMap.set(id, [data]);
     }
-    resultAll = this.collaborationMap.get(id);
+    resultAll = this.callbacksMap.get(id);
     if (resultAll.length === this.forked.length) {
       this.callbacks[id](resultAll);
       delete this.callbacks[id];
-      this.collaborationMap.delete(id);
+      this.callbacksMap.delete(id);
     }
   }
 
@@ -135,7 +136,7 @@ class ChildProcessPool extends EventEmitter {
       id: pid,
       weight: this.weights[length - 1],
     });
-    this.lifecycle.unwatch([forked.pid]);
+    this.lifecycle.unwatch([pid]);
     ProcessManager.unlisten([pid]);
   }
 
@@ -190,7 +191,7 @@ class ChildProcessPool extends EventEmitter {
     * @param  {[String]} id [process tmp id]
     */
   onMessage = ({ data, id }) => {
-    if (this.collaborationMap.get(id) !== undefined) {
+    if (this.callbacksMap.get(id) !== undefined) {
       this.dataRespondAll(data, id)
     } else {
       this.dataRespond(data, id);
@@ -229,7 +230,7 @@ class ChildProcessPool extends EventEmitter {
     const id = getRandomString(); 
     return new Promise(resolve => {
       this.callbacks[id] = resolve;
-      this.collaborationMap.set(id, []);
+      this.callbacksMap.set(id, []);
       if (this.forked.length) {
         // use process in pool
         this.forked.forEach((forked) => {
