@@ -576,12 +576,13 @@ const processLifecycle = () => {
     internal: 1e3
   });
   let sleeping = [];
+  const processes = [1, 2, 3, 4, 5];
 
   lifecycle.on('sleep', pids => {
     sleeping = pids;
   });
 
-  lifecycle.watch([1, 2, 3, 4, 5]);
+  lifecycle.watch(processes);
   
   describe('▸ Process LifeCycle Test', () => {
     it('create a lifecycle instance which has 5 targets', (callback) => {
@@ -593,7 +594,7 @@ const processLifecycle = () => {
     });
 
     it('sleep test: wait for 3 seconds and all processes sleep', (callback) => {
-      lifecycle.refresh([1, 2, 3, 4, 5]);
+      lifecycle.refresh(processes);
       lifecycle.start();
       setTimeout(() => {
         if (sleeping.length === 5) {
@@ -602,7 +603,7 @@ const processLifecycle = () => {
           callback('test2 failed');
         }
         lifecycle.stop();
-      }, 2.5e3);
+      }, 3e3);
     });
 
     it('sleep test: wake up 1 process', (callback) => {
@@ -615,12 +616,12 @@ const processLifecycle = () => {
           callback('test3 failed');
         }
         lifecycle.stop();
-      }, 1.5e3);
+      }, 1.8e3);
     });
 
     it('sleep test: wake up all processes', (callback) => {
       sleeping = [];
-      lifecycle.refresh([1, 2, 3, 4, 5]);
+      lifecycle.refresh(processes);
       lifecycle.start();
       setTimeout(() => {
         if (sleeping.length === 0) {
