@@ -1,6 +1,6 @@
 {
   "name": "electron-re",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Electron Process Manager",
   "main": "./lib/index",
   "types": "./types/index.d.ts",
@@ -10,7 +10,7 @@
     "start:renderer": "cd src/ui && npm start",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
-    "watch": "onchange 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
+    "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
     "build:libs": "node ./build.js build:libs",
     "build:ui": "node ./build.js build:ui",
     "build": "npm run build:libs && npm run build:ui"
@@ -49,6 +49,7 @@
     "cross-env": "^7.0.2",
     "electron": "9.3.5",
     "electron-mocha": "^9.3.2",
+    "istanbul": "^0.4.5",
     "onchange": "^7.1.0",
     "shx": "^0.3.3"
   },

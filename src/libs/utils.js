@@ -108,6 +108,12 @@ exports.isMain = (
   process.type === 'browser'
 );
 
+/* child process check */
+exports.isForkedChild = (
+  process.env.ELECTRON_RUN_AS_NODE === '1' ||
+  process.env.ELECTRON_RUN_AS_NODE === 1
+);
+
 /**
    * @param  {Function} fn         [回调函数]
    * @param  {[Time]}   delayTime  [延迟时间(ms)]
@@ -173,14 +179,32 @@ exports.getModuleFilePath = function (_module) {
 
 /* remove a forked process from pool */
 exports.removeForkedFromPool = function(forks, pid, pidMap) {
-  let index;
-  const forked = forks.find((f, i) => { index = i; return f.pid === pid; });
-  if (forked) {
-    forks.splice(index, 1);
-    pidMap.entries(([key, value]) => {
-      if (value === pid) {
-        pidMap.delete(key);
-      }
-    });
+  for (let i = 0; i < forks.length; i++) {
+    if (forks[i].pid === pid) {
+      forks.splice(i, 1);
+      ([...pidMap.entries()]).map(([key, value]) => {
+        if (value === pid) {
+          pidMap.delete(key);
+        }
+      });
+      break;
+    }
   }
 }
+
+/* convert forked process array to map */
+exports.convertForkedToMap = function(arr) {
+  return arr.reduce((total, cur) => {
+    total[cur.pid] = cur;
+    return total;
+  }, {});
+}
+
+/* tree value */
+exports.isValidValue = function(value) {
+  return (
+    value !== undefined &&
+    value !== null &&
+    value !== ''
+  );
+};

@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
 const { 
   MessageChannel, /* must required in index.js even if you don't use it */
-  BrowserService
+  BrowserService,
 } = require(`./${base}/index`);
 
 const test = require('./test/test.js');
@@ -15,7 +15,7 @@ const otherService = path.join(__dirname, 'test/services/other.service.js');
 app.allowRendererProcessReuse = false;
 
 /* 创建窗口 */
-function createWindow() {
+async function createWindow() {
   global.mainWindow = new BrowserWindow({
     show: false,
     webPreferences: {
@@ -30,9 +30,11 @@ function createWindow() {
 
 /* prepare to test */
 describe('app ready => ', function() {
-  this.timeout(4e3);
+  this.timeout(30e3);
   before(async () => {
-    await app.whenReady().then(() => ipcMain.on('console', (event, info)  => console.log('console => ', info)));
+    await app.whenReady().then(() => {
+      ipcMain.on('console', (event, info)  => console.log('console => ', info));
+    });
     global.appService = new BrowserService('app',
         entryService,
         { dev: true, webPreferences: { webSecurity: false } }
@@ -44,11 +46,13 @@ describe('app ready => ', function() {
     await global.appService.connected();
     await global.otherService.connected();
 
-    global.appService.openDevTools();
-    global.otherService.openDevTools();
-    createWindow();
+    // global.appService.openDevTools();
+    // global.otherService.openDevTools();
+    await createWindow();
     await new Promise(resolve => {
-      global.mainWindow.webContents.on('did-finish-load', () => setTimeout(resolve, 3e3));
+      global.mainWindow.webContents.on('did-finish-load', () => {
+        setTimeout(resolve, 3e3);
+      });
     });
   });
 

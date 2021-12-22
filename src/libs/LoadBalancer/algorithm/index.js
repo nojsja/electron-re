@@ -1,0 +1,21 @@
+const {
+  POLLING,
+  WEIGHTS,
+  RANDOM,
+  SPECIFY,
+  MINIMUM_CONNECTION,
+  WEIGHTS_POLLING,
+  WEIGHTS_RANDOM,
+  WEIGHTS_MINIMUM_CONNECTION,
+} = require('../consts');
+
+module.exports = {
+  [POLLING]: require('./POLLING'),
+  [WEIGHTS]: require('./WEIGHTS'),
+  [RANDOM]: require('./RANDOM'),
+  [SPECIFY]: require('./SPECIFY'),
+  [MINIMUM_CONNECTION]: require('./MINIMUM_CONNECTION'),
+  [WEIGHTS_POLLING]: require('./WEIGHTS_POLLING'),
+  [WEIGHTS_RANDOM]: require('./WEIGHTS_RANDOM'),
+  [WEIGHTS_MINIMUM_CONNECTION]: require('./WEIGHTS_MINIMUM_CONNECTION'),
+};

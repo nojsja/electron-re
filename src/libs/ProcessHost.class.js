@@ -28,12 +28,12 @@ class ProcessHost {
         process.send({ action, error: null, result: rsp || {}, id });
       })
       .catch(error => {
-        process.send({ action, error, result: error || {}, id });
+        process.send({ action, error, result: String(error) || {}, id });
       });
     } else {
       process.send({
         action,
-        error: new Error(`ProcessHost: processor for action-[${action}] is not found!`),
+        error: `ProcessHost: processor for action-[${action}] is not found!`,
         result: null,
         id,
       });

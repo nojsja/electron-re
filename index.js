@@ -10,14 +10,14 @@ const {
 // allow require native modules in renderer process
 app.allowRendererProcessReuse = false;
 
-const processManager = require(`./${base}/libs/ProcessManager.class`);
+const processManager = require(`./${base}/libs/ProcessManager`);
 
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
 const otherService = path.join(__dirname, 'test/services/other.service.js');
 
 /* 创建窗口 */
-function createWindow() {
+async function createWindow() {
   global.mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: true,
@@ -27,7 +27,7 @@ function createWindow() {
     },
   });
 
-  processManager.openWindow(process.env.NODE_ENV);
+  await processManager.openWindow(process.env.NODE_ENV);
   // processManager.openWindow('prod');
   global.mainWindow.loadFile(entryHtml);
 }
@@ -59,5 +59,5 @@ app.whenReady().then(async() => {
     global.childProcessPool.send('test2', { value: 'test2' });
     global.childProcessPool.send('test2', { value: 'test3' });
 
-    createWindow();
+    await createWindow();
 });
