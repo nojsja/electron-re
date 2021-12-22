@@ -9,6 +9,7 @@ const {
   LOG_SIGNAL,
   UPDATE_SIGNAL,
   START_TIMER_SIGNAL,
+  UPDATE_CONNECTIONS_SIGNAL
 } = require('../consts');
 const ProcessManagerUI = require('./ui');
 
@@ -39,11 +40,23 @@ class ProcessManager extends EventEmitter {
     this.on(OPEN_DEVTOOLS_SIGNAL, (...args) => this.openDevTools(...args));
     this.on(CATCH_SIGNAL, (...args) => this.ipcSignalsRecorder(...args));
     this.on(START_TIMER_SIGNAL, (...args) => this.startTimer(...args));
+    this.on(UPDATE_CONNECTIONS_SIGNAL, (...args) => this.updateConnections(...args));
   }
 
   /* ipc listener  */
   ipcSignalsRecorder = (params, e) => {
     this.ui.sendToWeb(CATCH_SIGNAL, params);
+  }
+
+  /* updata connections */
+  updateConnections = (connectionsMap) => {
+    if (connectionsMap){
+      Object.entries(connectionsMap).forEach(([pid, count]) => {
+        if (pid in this.pidMap) {
+          this.pidMap[pid].connections = count;
+        }
+      });
+    }
   }
 
   /* refresh process list */
@@ -54,7 +67,9 @@ class ProcessManager extends EventEmitter {
           if (err) {
             console.log(`ProcessManager: refreshList errored -> ${err}`);
           } else {
-            this.pidMap = Object.assign(this.pidMap, records);
+            Object.keys(records).forEach((pid) => {
+              this.pidMap[pid] =  Object.assign(this.pidMap[pid] || {}, records[pid]);
+            });
             this.emit('refresh', this.pidMap);
             this.ui.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }

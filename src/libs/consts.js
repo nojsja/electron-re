@@ -5,4 +5,5 @@ module.exports = {
   UPDATE_SIGNAL: 'process:update-list',
   LOG_SIGNAL: 'process:stdout',
   START_TIMER_SIGNAL: 'process:start-timer',
+  UPDATE_CONNECTIONS_SIGNAL: 'process:update-connections',
 }

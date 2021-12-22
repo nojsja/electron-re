@@ -8,6 +8,7 @@ const { defaultLifecycle } = require('../ProcessLifeCycle.class');
 const LoadBalancer = require('../LoadBalancer');
 let { inspectStartIndex } = require('../../conf/global.json');
 const { getRandomString, removeForkedFromPool, convertForkedToMap, isValidValue } = require('../utils');
+const { UPDATE_CONNECTIONS_SIGNAL } = require('../consts');
 
 const defaultStrategy = LoadBalancer.ALGORITHM.POLLING;
 
@@ -22,7 +23,7 @@ class ChildProcessPool extends EventEmitter {
     lifecycle={ // lifecycle of processes
       expect: defaultLifecycle.expect, // default timeout 10 minutes
       internal: defaultLifecycle.internal // default loop interval 30 seconds
-    }
+    },
   }) {
     super();
     this.cwd = cwd || _path.dirname(path);
@@ -33,7 +34,9 @@ class ChildProcessPool extends EventEmitter {
     this.callbacks = {};
     this.pidMap = new Map();
     this.callbacksMap = new Map();
+    this.connectionsMap={};
     this.forked = [];
+    this.connectionsTimer = null;
     this.forkedMap = {};
     this.forkedPath = path;
     this.forkIndex = 0;
@@ -66,6 +69,10 @@ class ChildProcessPool extends EventEmitter {
         }
       });
     });
+    // process manager refresh connections
+    this.connectionsTimer = setInterval(() => {
+      ProcessManager.emit(UPDATE_CONNECTIONS_SIGNAL, this.connectionsMap);
+    }, 1e3);
     // message from forked process
     this.on('forked_message', ({data, id}) => {
       this.onMessage({data, id});

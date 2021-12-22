@@ -94,11 +94,13 @@ class LoadBalancer {
     if (id) {
       delete this.params.connectionsMap[id];
       delete this.params.cpuOccupancyMap[id];
+      delete this.params.memoryOccupancyMap[id];
     } else {
       this.params = {
         currentIndex: 0,
         connectionsMap: {},
         cpuOccupancyMap: {},
+        memoryOccupancyMap: {},
       };
     }
   }

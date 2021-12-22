@@ -7,6 +7,8 @@ class ForkedProcess {
     this.args = args;
     this.options = options;
     this.sleeping = false;
+    this.activitiesCount = 0;
+    this.activitiesMap = new Map();
 
     this.child = fork(
       this.forkedPath,
@@ -20,6 +22,7 @@ class ForkedProcess {
 
   /* send STOP signal to a child process and let it freeze */
   sleep() {
+    if (this.activitiesCount)
     if (this.sleeping) return;
     process.kill(this.pid, 'SIGSTOP');
     this.sleeping = true;
@@ -35,6 +38,7 @@ class ForkedProcess {
   init() {
     this.child.on('message', (data) => {
       const id = data.id;
+      this.connectionsCountMinux(id);
       delete data.id;
       delete data.action;
       this.host.emit('forked_message', {data, id});
@@ -52,11 +56,26 @@ class ForkedProcess {
     });
   }
 
-  send = (...params) => {
+  send = (params) => {
     if (this.sleeping) {
       this.wakeup();
     }
-    this.child.send(...params);
+    this.connectionsCountPlus(params.id);
+    this.child.send(params);
+  }
+
+  connectionsCountPlus = (id) => {
+    this.activitiesMap.set(id, 1);
+    this.activitiesCount += 1;
+    this.host.connectionsMap[this.pid] = this.activitiesCount;
+  }
+
+  connectionsCountMinux = (id) => {
+    if (this.activitiesMap.has(id)) {
+      this.activitiesCount = (this.activitiesCount > 0) ? (this.activitiesCount - 1) : 0;
+      this.activitiesMap.delete(id);
+    }
+    this.host.connectionsMap[this.pid] = this.activitiesCount;
   }
 }
 
