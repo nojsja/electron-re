@@ -53,7 +53,7 @@
 #### Architecture
 -------
 
-![architecture](http://nojsja.gitee.io/static-resources/images/electron-re/electron-re.png?v2)
+![architecture](http://nojsja.gitee.io/static-resources/images/electron-re/electron-re_arch.png)
 
 #### I. What can be used for?
 -----
