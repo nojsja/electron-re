@@ -39,6 +39,12 @@ exports.registryProtocolForService = (app, ep) => {
 /* polyfill - remote */
 exports.polyfillRemote = () => {
   if (compareVersion(process.versions.electron, '14') >= 0) {
-    require('@electron/remote').initialize();
+    Object.defineProperty(global, "electronre:$remoteMain", {
+      value: require('@electron/remote/main'),
+      writable: false,
+      configurable: false,
+      enumerable: true
+    });
+    global["electronre:$remoteMain"].initialize();
   }
 };

@@ -16,12 +16,14 @@ const conf = require('../conf/global.json');
 
    function internalFunc() {
     const baseUrl = document.querySelector('base').getAttribute('href');
+    const needPolyfill = compareVersion(process.versions.electron, '14') >= 0;
     global._depends = [];
     global.$require = require;
+
     global.require = require = (function(require) {
       const _require = require;
       const remote =
-        compareVersion(process.versions.electron, '14') >= 0 ?
+        needPolyfill ?
           _require('@electron/remote') :
           _require('electron').remote;
     
@@ -29,11 +31,14 @@ const conf = require('../conf/global.json');
         let result;
         const path = _require('path');
         if (_path === 'electron') return {
-          ...remote.require('electron'),
+          ...(needPolyfill ? remote.electron : remote.require('electron')),
+          ..._require('electron'),
           remote: remote,
-          desktopCapturer: _require('electron').desktopCapturer,
-          webFrame: _require('electron').webFrame,
-          ipcRenderer: _require('electron').ipcRenderer
+          remoteRequire: (function (name) {
+            if (needPolyfill)
+              return this[name];
+            return this.require(name);
+          }).bind(remote),
         };
         try {
           result = _require(_path);
@@ -92,7 +97,9 @@ const conf = require('../conf/global.json');
         <meta charset="UTF-8">
       </head>
       <body>
-        <script>${exports.compareVersion.toString()}</script>
+        <script>
+          ${exports.compareVersion.toString()}
+        </script>
         <script>
           (${internalFunc.toString()})();
         </script>
