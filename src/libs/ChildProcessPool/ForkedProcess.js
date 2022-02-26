@@ -38,7 +38,7 @@ class ForkedProcess {
   init() {
     this.child.on('message', (data) => {
       const id = data.id;
-      this.connectionsCountMinux(id);
+      this.connectionsCountMinus(id);
       delete data.id;
       delete data.action;
       this.host.emit('forked_message', {data, id});
@@ -70,7 +70,7 @@ class ForkedProcess {
     this.host.connectionsMap[this.pid] = this.activitiesCount;
   }
 
-  connectionsCountMinux = (id) => {
+  connectionsCountMinus = (id) => {
     if (this.activitiesMap.has(id)) {
       this.activitiesCount = (this.activitiesCount > 0) ? (this.activitiesCount - 1) : 0;
       this.activitiesMap.delete(id);

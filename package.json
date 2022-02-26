@@ -7,8 +7,10 @@
   "scripts": {
     "start": "cross-env NODE_ENV=prod electron index.js --inspect=5858",
     "start:main": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
+    "start:main:disable-sandbox": "cross-env NODE_ENV=dev electron index.js --inspect=5858 --disable-gpu-sandbox",
     "start:renderer": "cd src/ui && npm start",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "test:disable-sandbox": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
     "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
     "build:libs": "node ./build.js build:libs",
