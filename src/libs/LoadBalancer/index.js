@@ -111,6 +111,7 @@ class LoadBalancer {
       return console.warn(`Add Operation: the task ${task.id} already exists.`);
     }
     this.targets.push(task);
+    this.calculateWeightIndex();
   }
 
   /* remove target from queue */

@@ -326,10 +326,11 @@ const serviceAndService = () => {
 const childProcessPool = () => {
   const maxProcessCount = 3;
   const idForTest5 = 'test5id';
+  let pids = [];
   const processPool = new ChildProcessPool({
     path: path.join(__dirname, 'child_process/child1.js'),
     max: maxProcessCount,
-    strategy: LoadBalancer.ALGORITHM.WEIGHTS,
+    strategy: LoadBalancer.ALGORITHM.WEIGHTS_POLLING,
     weights: [1, 2, 3],
     env: {
       cwd: path.basename(path.join(__dirname, 'child_process/child1.js'))
@@ -338,18 +339,30 @@ const childProcessPool = () => {
   
   describe('▸ ChildProcessPool/ProcessHost test', () => {
     it('send request to a process in processPool and get response data', (callback) => {
-      processPool.send('test1', { value: "test1" }).then((rsp) => {
-        if (rsp.result.value === 'test1') {
-          callback();
-        } else {
-          callback('test1 failed!');
-        }
-      });
+      const results = [];
+      for (let i = 0; i < maxProcessCount; i++) {
+        processPool.send('test1', { value: "test1" }).then((rsp) => {
+          pids.push(rsp.result.id);
+          pids = pids.sort((a, b) => a - b);
+          results.push(rsp);
+          if (rsp.result.value === 'test1') {
+            if (
+              results.length === maxProcessCount &&
+              Array.from(new Set(pids)).length === pids.length
+            ) {
+              callback();
+            }
+          } else {
+            callback('test1 failed!');
+          }
+        });
+      }
     });
 
     it('send request to a process in processPool and get response data2', (callback) => {
       processPool.send('test2', { value: "test2" }).then((rsp) => {
-        if (rsp.result.value === 'test2') {
+        console.log(pids, rsp.result.id, 0);
+        if (rsp.result.value === 'test2' && rsp.result.id === pids[0]) {
           callback();
         } else {
           callback('test2 failed!');
@@ -357,12 +370,14 @@ const childProcessPool = () => {
       });
     });
 
-    it(`the count of child processes should be equal to ${3}`, (callback) => {
+    it(`the count of child processes should be equal to ${maxProcessCount}`, (callback) => {
       processPool.send('test3', { value: "test3" }).then((rsp) => {
+        console.log(pids, rsp.result.id, 1);
         if (
           !rsp.error &&
           rsp.result.value === 'test3' &&
-          processPool.forked.length === 3
+          processPool.forked.length === maxProcessCount &&
+          rsp.result.id === pids[1]
         ) {
           callback();
         } else {
@@ -387,6 +402,8 @@ const childProcessPool = () => {
 
     it('kill a process in processPool and get sub processes count', (callback) => {
       processPool.send('test5', { value: "test5" }, idForTest5).then(async (rsp) => {
+        console.log(pids, rsp.result.id, 2);
+        if (rsp.result.id !== pids[1]) callback("test5 failed!")
         if (rsp.result.value === "test5") {
           processPool.kill(idForTest5);
           setTimeout(() => {
@@ -443,7 +460,7 @@ const loadBalancer = () => {
     it('pick one from the loadbalancer instance [WEIGHTS]', (callback) => {
       const target = loadBalancer.pickOne();
       if (target) {
-        console.log('      ', target);
+        console.log('      WEIGHTS:', target);
         callback();
       } else {
         callback('test2 failed!');
@@ -453,7 +470,7 @@ const loadBalancer = () => {
     it('pick ten from the loadbalancer instance [WEIGHTS]', (callback) => {
       const targets = loadBalancer.pickMulti(10);
       if (targets && targets.length === 10) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      WEIGHTS: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test3 failed!');
@@ -464,7 +481,7 @@ const loadBalancer = () => {
       loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.POLLING);
       const targets = loadBalancer.pickMulti(15);
       if (targets && targets.length === 15) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      POLLING: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test4 failed!');
@@ -475,7 +492,7 @@ const loadBalancer = () => {
       loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.RANDOM);
       const targets = loadBalancer.pickMulti(15);
       if (targets && targets.length === 15) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      RANDOM: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test5 failed!');
@@ -496,7 +513,7 @@ const loadBalancer = () => {
       loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_POLLING);
       const targets = loadBalancer.pickMulti(10);
       if (targets && targets.length === 10) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      WEIGHTS_POLLING: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test7 failed!');
@@ -507,7 +524,7 @@ const loadBalancer = () => {
       loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_RANDOM);
       const targets = loadBalancer.pickMulti(10);
       if (targets && targets.length === 10) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      WEIGHTS_RANDOM: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test8 failed!');
@@ -558,7 +575,7 @@ const loadBalancer = () => {
       loadBalancer.setAlgorithm(LoadBalancer.ALGORITHM.WEIGHTS_MINIMUM_CONNECTION);
       const targets = loadBalancer.pickMulti(10);
       if (targets && targets.length === 10) {
-        console.log('      ', targets.map(target => target.id).join(','));
+        console.log('      WEIGHTS_MINIMUM_CONNECTION: ', targets.map(target => target.id).join(','));
         callback();
       } else {
         callback('test10 failed!');
