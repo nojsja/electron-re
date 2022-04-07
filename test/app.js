@@ -1,5 +1,6 @@
+const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
 const { ipcRenderer } = require('electron');
-const { MessageChannel } = require('../lib');
+const { MessageChannel } = require(`../${base}`);
 
 let count = 0;
 const timer = setInterval(() => {

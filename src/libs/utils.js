@@ -14,7 +14,25 @@ const conf = require('../conf/global.json');
 
     /* webview internal func1 */
 
-   function internalFunc() {
+   const compareVersion = `function compareVersion(version1, version2) {
+    const v1s = String(version1).split('.');
+    const v2s = String(version2).split('.');
+  
+    while (v1s.length || v2s.length) {
+      let tmp1 = +(v1s.shift() || 0);
+      let tmp2 = +(v2s.shift() || 0);
+      if (tmp1 > tmp2) {
+        return 1;
+      }
+      if (tmp1 < tmp2) {
+        return -1;
+      }
+    }
+  
+    return 0;
+  }`
+
+   const internalFunc = `function() {
     const baseUrl = document.querySelector('base').getAttribute('href');
     const needPolyfill = compareVersion(process.versions.electron, '14') >= 0;
     global._depends = [];
@@ -51,11 +69,11 @@ const conf = require('../conf/global.json');
         return result;
       }
     })(require);
-   };
+   }`;
 
    /* webview internal func2 */
 
-   function internalFunc2() {
+   const internalFunc2 = `function() {
      const fs = require('fs');
      const { ipcRenderer }= require('electron');
      ipcRenderer.once('get-watching-files', (event, { pid }) => {
@@ -74,7 +92,7 @@ const conf = require('../conf/global.json');
            return paths;
          })(module) });
      });
-   };
+   }`;
 
   /* script content  */
   const scriptContent =
@@ -98,14 +116,14 @@ const conf = require('../conf/global.json');
       </head>
       <body>
         <script>
-          ${exports.compareVersion.toString()}
+          ${compareVersion}
         </script>
         <script>
-          (${internalFunc.toString()})();
+          (${internalFunc})();
         </script>
         ${scriptContent}
         <script>
-          (${internalFunc2.toString()})();
+          (${internalFunc2})();
         </script>
       </body>
     </html>
