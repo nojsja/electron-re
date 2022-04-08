@@ -49,6 +49,23 @@ class ProcessManagerUI {
       this.win.webContents.send(action, data);
   }
 
+  onReadyToShow = () => {
+    this.win.show();
+    this.host.pid = this.win.webContents.getOSProcessId();
+    this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
+  }
+
+  onClosed = () => {
+    this.win.off('ready-to-show', this.onReadyToShow);
+    this.host.ui = null;
+    this.win = null;
+  }
+
+  /* show */
+  show = () => {
+    this.win?.show();
+  }
+
   /* open main window */
   open = async (env = 'prod') => {
     await app.whenReady();
@@ -66,11 +83,12 @@ class ProcessManagerUI {
     });
 
     this.win.loadURL(this.getAddress(env));
+
+    this.win.on('closed', this.onClosed);
+
     await new Promise((resolve) => {
       this.win.once('ready-to-show', () => {
-        this.win.show();
-        this.host.pid = this.win.webContents.getOSProcessId();
-        this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
+        this.onReadyToShow();
         resolve();
       });
     });

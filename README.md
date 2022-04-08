@@ -149,21 +149,18 @@ ProcessManager.openWindow();
 
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
 
-* path -- The absolute path to a js file
-```js
-const { BrowserService } = require('electron-re');
-const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
-```
+* path [string] * -- The absolute path to a js file
+* options [object] -- The same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions).
 
-* options -- The same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions)
 ```js
 /* --- main.js --- */
-const myService = new BrowserService('app', 'path/to/app.service.js', options);
+const { BrowserService } = require('electron-re');
+const myService = new BrowserService('app', 'path/to/app.service.js', options);app.service.js'));
 ```
 
 #### 2. Enable service auto reload after code changed
 
-The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity closed and in `dev` mode, service will reload after service code changed.
+The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity closed and in `dev` mode, service will reload when service code changed.
 
 1.Set dev mode in `new BrowserService()` options  
 2.Get webSecurity closed
@@ -171,9 +168,8 @@ The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity 
 /* --- main.js --- */
 const myService = new BrowserService('app', 'path/to/app.service.js', {
   ...options,
-  // set dev mode
+  // set dev mode with webSecurity closed
   dev: true,
-  // with webSecurity closed
   webPreferences: { webSecurity: false }
 });
 
@@ -184,7 +180,6 @@ const myService = new BrowserService('app', 'path/to/app.service.js', {
 The service instance is a customized `BrowserWindow` instance too, initialized by a file worked with `commonJs` module, so you can use `require('name')` and can't use `import some from 'name'` syntax. It has two extension methods:
 
 * `connected()` - return a resolved `Promise` when service is ready.
-
 * `openDevTools` - open an undocked window for debugging.
 
 suggest to put some business-related code into a service.
@@ -362,10 +357,11 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 3. The processes will not affect each other, a thread hanging up will cause the whole process to hang up.
 
 #### 1. Create a childprocess pool
-* path * - the absolute path to a js file.
-* max * - the max count of instance created by pool.
-* env - env variable.
-* strategy - load balance strategy, default is `POLLING`.
+
+* path [string] __*__ - the absolute path to a js file.
+* max [number] __*__ - the max count of instance created by pool.
+* env [object] - env variable object.
+* strategy [enum] - load balance strategy, default is `POLLING`.
   * __POLLING__: pick process one by one.
   * __WEIGHTS__: pick process by process weight.
   * __RANDOM__: pick by random.
@@ -373,7 +369,7 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
   * __WEIGHTS_RANDOM__: pick process by random, Affected by `WEIGHTS`.
   * __MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process.
   * __WEIGHTS_MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process, Affected by `WEIGHTS`.
-* weight - the weight of each process, default is 1.
+* weight [array] - the weight of each process, default is [1...].
 
 ```js
 const { ChildProcessPool, LoadBalancer } = require('electron-re');
@@ -389,12 +385,12 @@ global.ipcUploadProcess = new ChildProcessPool({
 
 #### 2. Send request to a process instance
 
-* 1）params - `taskName`  
-  A task registried with `ProcessHost`, it's neccessary.
-* 2）params - `data`  
-  The data passed to process, neccessary.
-* 3）params - `id`  
-  The unique id bound to a process instance(id will be automatically bound after call `send()`). Sometime you send request to a process with special data, then expect to get callback data from that, you can give a unique id in `send` function, each time pool will send a request to the process bound with this id. If you give an empty/undefined/null id, pool will select a process random.
+* 1）taskName [string] __*__ - a task registried with `ProcessHost`.
+* 2）data [any] __*__ - the data passed to process.
+* 3）id [any] - the unique id bound to a process instance.
+  * The unique id bound to a process instance(id will be automatically bound after call `send()`). 
+  * Sometime you send request to a process with special data, then expect to get callback data from that process. You can provide an unique id in `send` function, each time pool will send a request to the process bound with this id.
+  * If you give an empty/undefined/null id, pool will select a process by load-balance strategy.
 
 ```js
 global.ipcUploadProcess.send(
@@ -403,7 +399,8 @@ global.ipcUploadProcess.send(
     name: 'fileName',
     type: 'fileType',
     size: 'fileSize',
-  }
+  },
+  'id-number' // optional and it's given by you
 )
 .then((rsp) => {
   console.log(rsp);
@@ -412,15 +409,15 @@ global.ipcUploadProcess.send(
 
 #### 3. Send request to all process instances
 
-* 1）params - `taskName`  
-  A task registried with `ProcessHost`(check usage below), it's neccessary.
-* 2）params - `data`  
-  The data passed to process, neccessary.
+All sub processes will receive a request, and you can get a response data array from all sub processes.
+
+* 1）taskName [string] __*__ - a task registried with `ProcessHost`(check usage below).
+* 2）data [any] - the data passed to process.
 
 ```js
 global.ipcUploadProcess.sendToAll(
-  'record-get-all',
-  { data: 'test' }
+  'task-get-all',
+  { key: 'test' }
 )
 .then((rsp) => {
   console.log(rsp);
@@ -436,7 +433,10 @@ global.ipcUploadProcess.sendToAll(
 - It should be noted that the `id` binding operation is automatically performed after the `processPool.send('task-name', params, id)` method is called.
 
 ```js
+// destroy a process with id value
 global.ipcUploadProcess.disconnect(id);
+// destroy all processes
+global.ipcUploadProcess.disconnect();
 ```
 
 #### 5. Set the max instance limitation of pool

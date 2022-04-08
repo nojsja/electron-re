@@ -30,6 +30,7 @@ class ProcessManager extends EventEmitter {
     this.callSymbol = false;
     this.logs = [];
     this.pidMap = {};
+    this.initTemplate();
   }
 
   /* -------------- internal -------------- */
@@ -45,7 +46,7 @@ class ProcessManager extends EventEmitter {
 
   /* ipc listener  */
   ipcSignalsRecorder = (params, e) => {
-    this.ui.sendToWeb(CATCH_SIGNAL, params);
+    this.ui?.sendToWeb(CATCH_SIGNAL, params);
   }
 
   /* updata connections */
@@ -71,7 +72,7 @@ class ProcessManager extends EventEmitter {
               this.pidMap[pid] =  Object.assign(this.pidMap[pid] || {}, records[pid]);
             });
             this.emit('refresh', this.pidMap);
-            this.ui.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
+            this.ui?.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }
           resolve();
         });
@@ -89,12 +90,22 @@ class ProcessManager extends EventEmitter {
     const interval = async () => {
       setTimeout(async () => {
         await this.refreshProcessList()
+        if (this.status === 'stoped') return;
         interval(this.time)
       }, this.time)
     }
 
     this.status = 'started';
     interval()
+  }
+
+  /* stop timer */
+  stopTimer = () => {
+    if (this.status === 'stoped')
+      return console.warn('ProcessManager: the timer is already stoped!');
+
+    console.warn('ProcessManager: the pidusage worker is stopping, ChildProcessPool load-balance may be affected!');
+    this.status = 'stoped';
   }
 
   /* -------------- function -------------- */
@@ -105,7 +116,7 @@ class ProcessManager extends EventEmitter {
       if (!this.callSymbol) {
         this.callSymbol = true;
         setTimeout(() => {
-          this.ui.sendToWeb(LOG_SIGNAL, this.logs)
+          this.ui?.sendToWeb(LOG_SIGNAL, this.logs)
           this.logs = [];
           this.callSymbol = false;
         }, this.time);
@@ -184,7 +195,6 @@ class ProcessManager extends EventEmitter {
   openWindow = async (env = 'prod') => {
     if (!this.ui) {
       this.ui = new ProcessManagerUI(this);
-      this.initTemplate();
       await this.ui.open(env);
     } else {
       this.ui.show();
