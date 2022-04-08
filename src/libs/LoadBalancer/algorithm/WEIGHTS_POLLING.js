@@ -8,7 +8,7 @@ module.exports = function (tasks, weightIndex, weightTotal, context) {
 
   for (let i = 0; i < tasks.length; i++) {
     weight += tasks[i].weight || 0;
-    if (weight >= weightIndex) {
+    if (weight > weightIndex) {
       task = tasks[i];
       break;
     }

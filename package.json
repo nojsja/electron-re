@@ -7,9 +7,12 @@
   "scripts": {
     "start": "cross-env NODE_ENV=prod electron index.js --inspect=5858",
     "start:main": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
+    "start:main:no-sandbox": "cross-env NODE_ENV=dev electron index.js --inspect=5858 --disable-gpu-sandbox",
     "start:renderer": "cd src/ui && npm start",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "test:no-sandbox": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js",
+    "test:src:no-sandbox": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
     "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
     "build:libs": "node ./build.js build:libs",
     "build:ui": "node ./build.js build:ui",
@@ -32,6 +35,7 @@
   "homepage": "https://github.com/nojsja/electron-re#readme",
   "dependencies": {
     "@babel/runtime": "^7.12.5",
+    "@electron/remote": "^2.0.1",
     "pidusage": "^2.0.21"
   },
   "devDependencies": {

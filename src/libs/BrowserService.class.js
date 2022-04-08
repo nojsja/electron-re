@@ -19,6 +19,7 @@ class BrowserService {
     options.webPreferences = options.webPreferences || {};
     options.webPreferences.nodeIntegration = true;
     options.webPreferences.enableRemoteModule = true;
+    options.webPreferences.contextIsolation = false;
 
     this._super = new BrowserWindow({...options, show: false });
 
@@ -128,6 +129,9 @@ class BrowserService {
 
   /* loadURL */
   loadURL(_path, options={}) {
+    if (global["electronre:$remoteMain"]) { // remote polyfill
+      global["electronre:$remoteMain"].enable(this._super.webContents);
+    }
     if (options.webSecurity) {
       return this.loadURL_SAFE(_path);
     } else {

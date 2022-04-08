@@ -11,6 +11,101 @@ const conf = require('../conf/global.json');
   * @return {[String]}
   */
  exports.loadView = ({ webSecurity, src, title, script, base = '.' }) => {
+
+    /* webview internal func1 */
+
+   const compareVersion = `function compareVersion(version1, version2) {
+    const v1s = String(version1).split('.');
+    const v2s = String(version2).split('.');
+  
+    while (v1s.length || v2s.length) {
+      let tmp1 = +(v1s.shift() || 0);
+      let tmp2 = +(v2s.shift() || 0);
+      if (tmp1 > tmp2) {
+        return 1;
+      }
+      if (tmp1 < tmp2) {
+        return -1;
+      }
+    }
+  
+    return 0;
+  }`
+
+   const internalFunc = `function() {
+    const baseUrl = document.querySelector('base').getAttribute('href');
+    const needPolyfill = compareVersion(process.versions.electron, '14') >= 0;
+    global._depends = [];
+    global.$require = require;
+
+    global.require = require = (function(require) {
+      const _require = require;
+      const remote =
+        needPolyfill ?
+          _require('@electron/remote') :
+          _require('electron').remote;
+    
+      return function(_path) {
+        let result;
+        const path = _require('path');
+        if (_path === 'electron') return {
+          ...(needPolyfill ? remote.electron : remote.require('electron')),
+          ..._require('electron'),
+          remote: remote,
+          remoteRequire: (function (name) {
+            if (needPolyfill)
+              return this[name];
+            return this.require(name);
+          }).bind(remote),
+        };
+        try {
+          result = _require(_path);
+        } catch(error) {
+          result =
+            _require(
+              (path.posix.join(path.sep, ...(path.dirname(baseUrl.replace('file:///', ''))).split(path.sep), _path))
+            );
+        }
+        return result;
+      }
+    })(require);
+   }`;
+
+   /* webview internal func2 */
+
+   const internalFunc2 = `function() {
+     const fs = require('fs');
+     const { ipcRenderer }= require('electron');
+     ipcRenderer.once('get-watching-files', (event, { pid }) => {
+       ipcRenderer.send(pid, {
+         depends: (function(_module) {
+           const paths = [];
+           const getPaths = (modu) => {
+             fs.exists(modu.filename, (exists) => {
+               if (exists && !paths.includes(modu.filename)) {
+                 paths.push(modu.filename);
+               }
+             });
+             modu.children.forEach(getPaths);
+           };
+           getPaths(_module);
+           return paths;
+         })(module) });
+     });
+   }`;
+
+  /* script content  */
+  const scriptContent =
+    webSecurity ?
+      `<script> ${ script } </script>` :
+      `<script src='${
+        url.format({
+          pathname: (path.posix.join(...(src).split(path.sep))),
+          protocol: conf.protocolName+':',
+          slashes: true
+        })
+      }'></script>`;
+
   const htmlContent = (`
     <!DOCTYPE html>
     <html>
@@ -21,64 +116,14 @@ const conf = require('../conf/global.json');
       </head>
       <body>
         <script>
-          const baseUrl = document.querySelector('base').getAttribute('href');
-          global._depends = [];
-          global.$require = require;
-          global.require = require = (function(require) {
-            const _require = require;
-          
-            return function(_path) {
-              let result;
-              const path = _require('path');
-              if (_path === 'electron') return {
-                ..._require('electron').remote.require('electron'),
-                remote: _require('electron').remote,
-                desktopCapturer: _require('electron').desktopCapturer,
-                webFrame: _require('electron').webFrame,
-                ipcRenderer: _require('electron').ipcRenderer
-              };
-              try {
-                result = _require(_path);
-              } catch(error) {
-                result =
-                  _require(
-                    (path.posix.join(path.sep, ...(path.dirname(baseUrl.replace('file:///', ''))).split(path.sep), _path))
-                  );
-              }
-              return result;
-            }
-          })(require);
+          ${compareVersion}
         </script>
-
-        ${ webSecurity ? ("<script>" + script + "</script>") : "<script src='"+ (
-          url.format({
-            pathname: (path.posix.join(...(src).split(path.sep))),
-            protocol: conf.protocolName+':',
-            slashes: true
-          })
-        ) + "'></script>" }
-
         <script>
-          (function() {
-            const fs = require('fs');
-            const { ipcRenderer }= require('electron');
-            ipcRenderer.once('get-watching-files', (event, { pid }) => {
-              ipcRenderer.send(pid, {
-                depends: (function(_module) {
-                  const paths = [];
-                  const getPaths = (modu) => {
-                    fs.exists(modu.filename, (exists) => {
-                      if (exists && !paths.includes(modu.filename)) {
-                        paths.push(modu.filename);
-                      }
-                    });
-                    modu.children.forEach(getPaths);
-                  };
-                  getPaths(_module);
-                  return paths;
-                })(module) });
-            });
-          })();
+          (${internalFunc})();
+        </script>
+        ${scriptContent}
+        <script>
+          (${internalFunc2})();
         </script>
       </body>
     </html>
@@ -207,4 +252,23 @@ exports.isValidValue = function(value) {
     value !== null &&
     value !== ''
   );
+};
+
+/* compare versions */
+exports.compareVersion = function compareVersion(version1, version2) {
+  const v1s = String(version1).split('.');
+  const v2s = String(version2).split('.');
+
+  while (v1s.length || v2s.length) {
+    let tmp1 = +(v1s.shift() || 0);
+    let tmp2 = +(v2s.shift() || 0);
+    if (tmp1 > tmp2) {
+      return 1;
+    }
+    if (tmp1 < tmp2) {
+      return -1;
+    }
+  }
+
+  return 0;
 };

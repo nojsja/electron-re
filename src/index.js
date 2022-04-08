@@ -1,7 +1,8 @@
 const { isRenderer, isMain, isForkedChild } = require('./libs/utils');
 const {
   listenerForNewWindow,
-  registryProtocolForService
+  registryProtocolForService,
+  polyfillRemote
 } = require('./tasks/app.init');
 
 exports.ChildProcessPool = require('./libs/ChildProcessPool');
@@ -39,4 +40,7 @@ if (isMain && !isForkedChild) {
   listenerForNewWindow(app, exports);
   /* registry protocol */
   registryProtocolForService(app, exports);
+
+  /* polyfill - remote */
+  polyfillRemote(app, exports);
 }

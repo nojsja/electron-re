@@ -1,4 +1,5 @@
-const { MessageChannel } = require('../../lib');
+const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
+const { MessageChannel } = require(`../../${base}`);
 const { ipcRenderer } = require('electron');
 
 let count = 0;

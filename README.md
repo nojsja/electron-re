@@ -5,11 +5,11 @@
 [>> 功能介绍和使用说明1(中文)](https://nojsja.gitee.io/blogs/2020/12/08/Electron-Node%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B0/)  
 [>> 功能介绍和使用说明2(中文)](https://nojsja.gitee.io/blogs/2020/12/18/Electron%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B02%EF%BC%9A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86UI/#I-%E5%89%8D%E8%A8%80)
 
-###  electron-re
+##  electron-re
 ---------------
 > Test on electron@8.2.0 / 9.3.5
 
-#### Contents
+### Contents
 ```sh
 ├── Contents (you are here!)
 │
@@ -50,36 +50,31 @@
 ├── Examples
 ```
 
-#### Architecture
+### Architecture
 -------
 
 ![architecture](http://nojsja.gitee.io/static-resources/images/electron-re/electron-re_arch.png)
 
-#### I. What can be used for?
+### I. What can be used for?
 -----
 
-1. In Electron Project
-- 1）Servcie
-- 2）MessageChannel
-- 3）ProcessManager
+- 1）__BrowserServcie / MessageChannel__
+  - Using `BrowserServcie` to generate some service processes without UI and put your heavy tasks into them.
+  - `MessageChannel` make it be possible to communicate with each other between `main process`,`render process` and `service`.
+- 2）__ProcessManager__
+  - `ProcessManager` provides a user interface for managing / monitoring processes, includes `BrowserServcie` / `ChildProcess` / `renderer process` / `main process`.
+- 3）__ChildProcessPool / ProcessHost__
+  - `ChildProcessPool` with load-balance support may helps when you need to create and manage several processes on nodejs runtime of electron.
+  - `ProcessHost` let us be focused on the core sub-process logic rather than various async event.
 
-Using `electron-re` to generate some service processs and communicate between `main process`,`render process` and `service`. In some `Best Practices` of electron tutorials, it suggests to put your code that occupying cpu into rendering process instead of in main process, exactly you can use it for. Check usage of `Service` and `MessageChannel` below.
-
-2. In Nodejs/Electron Project
-
-- 1）ChildProcessPool
-- 2）ProcessHost
-
-Besides, If you want to create some sub processes (reference: nodejs `child_process`), there is a process-pool written for `nodejs runtime` and can be used in electron/nodejs both. Check usage of `ChildProcessPool` and `ProcessHost` below, simple and flexible.
-
-#### II. Install
+### II. Install
 -----
 ```bash
 $: npm install electron-re --save
 # or
-$: yarn add electron-re
+$: yarn add electron-re --save
 ```
-#### III. Instruction 1: ProcessManager
+### III. Instruction 1: ProcessManager
 -----------------------
 > Used in Electron project, build for ChildProcessPool/BrowserService.
 
@@ -97,14 +92,17 @@ All functions:
 
 5. Try to use `MessageChannel` for sending/receiving ipc messages, there is a ui pannel area that show activities of it (logger).
 
-##### Require it in main.js(electron)
+#### Require it in main.js(electron)
+
 ```js
 const {
   MessageChannel, // remember to require it in main.js even if you don't use it
   ProcessManager
 } = require('electron-re');
 ```
-##### Open process-manager window
+
+#### Open process-manager window
+
 ```js
 ProcessManager.openWindow();
 ```
@@ -142,27 +140,27 @@ ProcessManager.openWindow();
 
 ![signals](http://nojsja.gitee.io/static-resources/images/electron-re/signals.png)
 
-#### IV. Instruction 2: Service
+### IV. Instruction 2: Service
+
 -----
 >Used in Electron project, working with MessageChannel, remember to check "Instruction 3".
 
-##### 1. The arguments to create a service
+#### 1. The arguments to create a service
+
 The `service` process is a customized render process that works in the background, receiving `path`, `options` as arguments:
 
-* path -- The absolute path to a js file
-```js
-const { BrowserService } = require('electron-re');
-const myServcie = new BrowserService('app', path.join(__dirname, 'path/to/app.service.js'));
-```
+* path [string] * -- The absolute path to a js file
+* options [object] -- The same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions).
 
-* options -- The same as `new BrowserWindow()` [options](https://www.electronjs.org/docs/api/browser-window#new-browserwindowoptions)
 ```js
 /* --- main.js --- */
-const myService = new BrowserService('app', 'path/to/app.service.js', options);
+const { BrowserService } = require('electron-re');
+const myService = new BrowserService('app', 'path/to/app.service.js', options);app.service.js'));
 ```
 
-##### 2. Enable service auto reload after code changed
-The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity closed and in `dev` mode, service will reload after service code changed.
+#### 2. Enable service auto reload after code changed
+
+The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity closed and in `dev` mode, service will reload when service code changed.
 
 1.Set dev mode in `new BrowserService()` options  
 2.Get webSecurity closed
@@ -170,20 +168,18 @@ The `auto-reload` feature is based on nodejs - `fs.watch` api. When webSecurity 
 /* --- main.js --- */
 const myService = new BrowserService('app', 'path/to/app.service.js', {
   ...options,
-  // set dev mode
+  // set dev mode with webSecurity closed
   dev: true,
-  // with webSecurity closed
   webPreferences: { webSecurity: false }
 });
 
 ```
 
-##### 3. The methods of a Service instance
+#### 3. The methods of a Service instance
 
 The service instance is a customized `BrowserWindow` instance too, initialized by a file worked with `commonJs` module, so you can use `require('name')` and can't use `import some from 'name'` syntax. It has two extension methods:
 
 * `connected()` - return a resolved `Promise` when service is ready.
-
 * `openDevTools` - open an undocked window for debugging.
 
 suggest to put some business-related code into a service.
@@ -220,15 +216,15 @@ ipcRenderer.on('channel1', (event, result) => {
 });
 ```
 
-#### V. Instruction 3: MessageChannel
+### V. Instruction 3: MessageChannel
 -----
 >Used in Electron project, working with Service.
 
 When sending data from main/other process to a service you need to use `MesssageChannel`, such as: `MessageChannel.send('service-name', 'channel', 'params')`, And also it can be used to replace other build-in `ipc` methods, more flexible.
 
-##### The methods of MessageChannel
+#### The methods of MessageChannel
 
-1.Public methods，used in Main-Pocess/Renderer-Process/Service
+1.Public methods，used in __Main-Pocess__ / __Renderer-Process__ / __Service__
 ```js
 /* send data to a service - like the build-in ipcMain.send */
 MessageChannel.send('service-name', channel, params);
@@ -247,7 +243,7 @@ MessageChannel.once(channel, func);
 
 ```
 
-2.Only used in Renderer-process/Service
+2.Only used in __Renderer-process__ / __Service__
 ```js
 /* send data to main process - like the build-in ipcRender.send */
 MessageChannel.send('main', channel, params);
@@ -256,7 +252,7 @@ MessageChannel.invoke('main', channel, params);
 
 ```
 
-3.Only used in Main-process/Service
+3.Only used in __Main-process__ / __Service__
 ```js
 /*
   handle a channel signal, extension method,
@@ -265,7 +261,7 @@ MessageChannel.invoke('main', channel, params);
 MessageChannel.handle(channel, processorFunc);
 ```
 
-##### A full usage
+#### Full Usage
 
 - 1）In main process
 ```js
@@ -300,7 +296,7 @@ app.whenReady().then(() => {
 });
 ```
 
-- 2）Send or receive data in a service named app
+- 2）Send or Receive data in a __service__ named app
 ```js
 const { ipcRenderer } = require('electron');
 const { MessageChannel } = require('electron-re');
@@ -321,7 +317,7 @@ MessageChannel.invoke('app2', 'channel3', { value: 'channel3' }).then((event, re
 MessageChannel.send('app2', 'channel4', { value: 'channel4' });
 ```
 
-- 3）Send or receive data in a service named app2
+- 3）Send or receive data in a __service__ named app2
 ```js
 MessageChannel.handle('channel3', (event, result) => {
   console.log(result);
@@ -338,7 +334,7 @@ MessageChannel.invoke('main', 'channel4', { value: 'channel4' });
 
 ```
 
-- 3）Send or receive data in a renderer window
+- 3）Send or receive data in a __renderer__ window
 
 ```js
 const { ipcRenderer } = require('electron');
@@ -350,7 +346,7 @@ MessageChannel.send('main', 'channel3', { value: 'test3' });
 MessageChannel.invoke('main', 'channel4', { value: 'test4' });
 ```
 
-#### VI. Instruction 4: ChildProcessPool
+### VI. Instruction 4: ChildProcessPool
 -----
 >Used in Nodejs/Electron project, working with ProcessHost, remember to check "Instruction 5".
 
@@ -360,31 +356,41 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 2. Processes consume more computer resources than threads.
 3. The processes will not affect each other, a thread hanging up will cause the whole process to hang up.
 
-The `ChildProcessPool` is degisned for those nodejs applications with multi-process architecture. e.g In the demo [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload), I use `ChildProcessPool` to manage thousands of uploading tasks and handle file reading and writing.
+#### 1. Create a childprocess pool
 
-##### 1. Create a childprocess pool
-* path - the absolute path to a js file
-* max - the max count of instance created by pool
-* env - env variable
+* path [string] __*__ - the absolute path to a js file.
+* max [number] __*__ - the max count of instance created by pool.
+* env [object] - env variable object.
+* strategy [enum] - load balance strategy, default is `POLLING`.
+  * __POLLING__: pick process one by one.
+  * __WEIGHTS__: pick process by process weight.
+  * __RANDOM__: pick by random.
+  * __WEIGHTS_POLLING__: pick process one by one, Affected by `WEIGHTS`.
+  * __WEIGHTS_RANDOM__: pick process by random, Affected by `WEIGHTS`.
+  * __MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process.
+  * __WEIGHTS_MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process, Affected by `WEIGHTS`.
+* weight [array] - the weight of each process, default is [1...].
 
 ```js
-const { ChildProcessPool } = require('electron-re');
+const { ChildProcessPool, LoadBalancer } = require('electron-re');
 
 global.ipcUploadProcess = new ChildProcessPool({
   path: path.join(app.getAppPath(), 'app/services/child/upload.js'),
-  max: 6,
-  env: { lang: global.lang, NODE_ENV: nodeEnv }
+  max: 3,
+  env: { lang: global.lang, NODE_ENV: nodeEnv },
+  strategy: LoadBalancer.ALGORITHM.WEIGHTS_POLLING, // loadbalance strategy
+  weights: [1, 2, 3],
 });
 ```
 
-##### 2. Send request to a process instance
+#### 2. Send request to a process instance
 
-* 1）params - `taskName`  
-  A task registried with `ProcessHost`, it's neccessary.
-* 2）params - `data`  
-  The data passed to process, neccessary.
-* 3）params - `id`  
-  The unique id bound to a process instance(id will be automatically bound after call `send()`). Sometime you send request to a process with special data, then expect to get callback data from that, you can give a unique id in `send` function, each time pool will send a request to the process bound with this id. If you give an empty/undefined/null id, pool will select a process random.
+* 1）taskName [string] __*__ - a task registried with `ProcessHost`.
+* 2）data [any] __*__ - the data passed to process.
+* 3）id [any] - the unique id bound to a process instance.
+  * The unique id bound to a process instance(id will be automatically bound after call `send()`). 
+  * Sometime you send request to a process with special data, then expect to get callback data from that process. You can provide an unique id in `send` function, each time pool will send a request to the process bound with this id.
+  * If you give an empty/undefined/null id, pool will select a process by load-balance strategy.
 
 ```js
 global.ipcUploadProcess.send(
@@ -394,31 +400,31 @@ global.ipcUploadProcess.send(
     type: 'fileType',
     size: 'fileSize',
   },
-  uploadId
+  'id-number' // optional and it's given by you
 )
 .then((rsp) => {
   console.log(rsp);
 });
 ```
 
-##### 3. Send request to all process instances
+#### 3. Send request to all process instances
 
-* 1）params - `taskName`  
-  A task registried with `ProcessHost`(check usage below), it's neccessary.
-* 2）params - `data`  
-  The data passed to process, neccessary.
+All sub processes will receive a request, and you can get a response data array from all sub processes.
+
+* 1）taskName [string] __*__ - a task registried with `ProcessHost`(check usage below).
+* 2）data [any] - the data passed to process.
 
 ```js
 global.ipcUploadProcess.sendToAll(
-  'record-get-all',
-  { data: 'test' }
+  'task-get-all',
+  { key: 'test' }
 )
 .then((rsp) => {
   console.log(rsp);
 });
 ```
 
-##### 4. Destroy the child processes of the process pool
+#### 4. Destroy the child processes of the process pool
 
 - If do not specify `id`, all child processes will be destroyed. Specifying the `id` parameter can separately destroy a child process bound to this `id`.
 
@@ -427,10 +433,13 @@ global.ipcUploadProcess.sendToAll(
 - It should be noted that the `id` binding operation is automatically performed after the `processPool.send('task-name', params, id)` method is called.
 
 ```js
+// destroy a process with id value
 global.ipcUploadProcess.disconnect(id);
+// destroy all processes
+global.ipcUploadProcess.disconnect();
 ```
 
-##### 5. Set the max instance limitation of pool
+#### 5. Set the max instance limitation of pool
 
 In addition to using the `max` parameter to specify the maximum number of child process instances created by the process pool, you can also call this method to dynamically set the number of child process instances that need to be created.
 
@@ -438,20 +447,23 @@ In addition to using the `max` parameter to specify the maximum number of child 
 global.ipcUploadProcess.setMaxInstanceLimit(number);
 ```
 
-#### VII. Instruction 5: ProcessHost
+### VII. Instruction 5: ProcessHost
 -----
+
 > Used in Nodejs/Electron project, working with ChildProcessPool.
 
 In `Instruction 4`, We already know how to create a sub-process pool and send request using it. Now let's figure out how to registry a task and handle process messages in a sub process(created by ChildProcessPool constructor with param - `path`).
 
 Using `ProcessHost` we will no longer pay attention to the message sending/receiving between main process and sub processes. Just declaring a task with a unique service-name and put your processing code into a function. And remember that if the code is async, return a Promise instance instead.
 
-##### 1. Require it in a sub process
+#### 1. Require it in a sub process
+
 ```js
 const { ProcessHost } = require('electron-re');
 ```
-##### 2. Registry a task with unique name
+#### 2. Registry a task with unique name
 > Support chain call
+
 ```js
 ProcessHost
   .registry('init-works', (params) => {
@@ -472,7 +484,8 @@ function asyncWorks(params) {
 }
 ```
 
-##### 3. Working with `ChildProcessPool`
+#### 3. Working with `ChildProcessPool`
+
 ```js
 
 /* 1. send a request in main process */
@@ -482,8 +495,7 @@ global.ipcUploadProcess.send(
     name: 'fileName',
     type: 'fileType',
     size: 'fileSize',
-  },
-  uploadId
+  }
 );
 
 ...
@@ -493,7 +505,7 @@ global.ipcUploadProcess.send(
 
 ```
 
-##### 4. Unregistry a task with unique name(if necessary)
+#### 4. Unregistry a task with unique name(if necessary)
 > Support chain call
 
 ```js
@@ -503,7 +515,7 @@ ProcessHost
   ...
 ```
 
-#### VIII. Examples
+### VIII. Examples
 -----
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
