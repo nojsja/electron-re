@@ -44,12 +44,40 @@ const conf = require('../conf/global.json');
         needPolyfill ?
           _require('@electron/remote') :
           _require('electron').remote;
+      const getModule = function(name) {
+        return needPolyfill ? remote[name] : remote.require('electron')[name];
+      };
     
       return function(_path) {
         let result;
         const path = _require('path');
+
         if (_path === 'electron') return {
-          ...(needPolyfill ? remote.electron : remote.require('electron')),
+          BaseWindow: getModule('BaseWindow'),
+          BrowserWindow: getModule('BrowserWindow'),
+          Notification: getModule('Notification'),
+          BrowserView: getModule('BrowserView'),
+          ImageView: getModule('ImageView'),
+          Menu: getModule('Menu'),
+          MenuItem: getModule('MenuItem'),
+          MessageChannelMain: getModule('MessageChannelMain'),
+          ShareMenu: getModule('ShareMenu'),
+          TopLevelWindow: getModule('TopLevelWindow'),
+          TouchBar: getModule('TouchBar'),
+          Tray: getModule('Tray'),
+          View: getModule('View'),
+          WebContentsView: getModule('WebContentsView'),
+          desktopCapturer: getModule('desktopCapturer'),
+          dialog: getModule('dialog'),
+          getCurrentWebContents: getModule('getCurrentWebContents'),
+          getCurrentWindow: getModule('getCurrentWindow'),
+          net: getModule('net'),
+          netLog: getModule('netLog'),
+          nativeTheme: getModule('nativeTheme'),
+          nativeImage: getModule('nativeImage'),
+          ipcMain: getModule('ipcMain'),
+          systemPreferences: getModule('systemPreferences'),
+
           ..._require('electron'),
           remote: remote,
           remoteRequire: (function (name) {
