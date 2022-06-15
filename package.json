@@ -1,5 +1,5 @@
 {
-  "name": "@nojsja/electron-re",
+  "name": "electron-re",
   "version": "1.2.2",
   "description": "Electron Process Manager",
   "main": "./lib/index",
