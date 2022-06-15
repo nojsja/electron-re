@@ -62,13 +62,13 @@ class ChildProcessPool extends EventEmitter {
   /* init events */
   initEvents = () => {
     // let process sleep when no activity in expect time
-    this.lifecycle.on('sleep', (ids) => {
+    /* this.lifecycle.on('sleep', (ids) => {
       ids.forEach(pid => {
         if (this.forkedMap[pid]) {
           this.forkedMap[pid].sleep();
         }
       });
-    });
+    }); */
     // process manager refresh connections
     this.connectionsTimer = setInterval(() => {
       ProcessManager.emit(UPDATE_CONNECTIONS_SIGNAL, this.connectionsMap);
