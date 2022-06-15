@@ -45,7 +45,7 @@ class ForkedProcess {
     });
     this.child.on('exit', (code, signal) => {
       if (code !== 0 && code !== null) {
-        this.host.emit('forked_error', this.pid);
+        this.host.emit('forked_error', code, this.pid);
       } else {
         this.host.emit('forked_exit', this.pid);
       }

@@ -89,10 +89,14 @@ const conf = require('../conf/global.json');
         try {
           result = _require(_path);
         } catch(error) {
+          const dir = path.dirname(baseUrl.replace('file:///', ''));
+          const isWin = dir[0] !== '/';
+          const pathStrs = [path.sep, ...dir.split(path.sep), _path];
+          if (isWin) {
+            pathStrs.shift();
+          }
           result =
-            _require(
-              (path.posix.join(path.sep, ...(path.dirname(baseUrl.replace('file:///', ''))).split(path.sep), _path))
-            );
+            _require((path.posix.join(...pathStrs)));
         }
         return result;
       }
