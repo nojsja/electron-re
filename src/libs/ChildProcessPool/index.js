@@ -145,7 +145,6 @@ class ChildProcessPool extends EventEmitter {
     });
     this.lifecycle.unwatch([pid]);
     ProcessManager.unlisten([pid]);
-    console.log(this.forked.map(f => f.pid), pid, '>>>>>>>>>>>>>>>>>>')
   }
 
   /* Get a process instance from the pool */
