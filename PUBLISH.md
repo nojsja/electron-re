@@ -4,7 +4,7 @@
 
 1. run `npm login --registry=https://registry.npmjs.org`
 
-2. run `npm publish`
+2. run `npm publish --registry=https://registry.npmjs.org`
 
 3. type `npm password` as password
 
