@@ -85,7 +85,7 @@ class LoadBalancer {
   /* calculate index */
   calculateIndex = () => {
     if (this.params.currentIndex >= this.targets.length) {
-      this.params.currentIndex = (ths.params.currentIndex - 1 >= 0) ? (this.params.currentIndex - 1) : 0;
+      this.params.currentIndex = (this.params.currentIndex - 1 >= 0) ? (this.params.currentIndex - 1) : 0;
     }
   }
 
