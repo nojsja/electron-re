@@ -40,52 +40,11 @@ const conf = require('../conf/global.json');
 
     global.require = require = (function(require) {
       const _require = require;
-      const remote =
-        needPolyfill ?
-          _require('@electron/remote') :
-          _require('electron').remote;
-      const getModule = function(name) {
-        return needPolyfill ? remote[name] : remote.require('electron')[name];
-      };
-    
+
       return function(_path) {
         let result;
         const path = _require('path');
 
-        if (_path === 'electron') return {
-          BaseWindow: getModule('BaseWindow'),
-          BrowserWindow: getModule('BrowserWindow'),
-          Notification: getModule('Notification'),
-          BrowserView: getModule('BrowserView'),
-          ImageView: getModule('ImageView'),
-          Menu: getModule('Menu'),
-          MenuItem: getModule('MenuItem'),
-          MessageChannelMain: getModule('MessageChannelMain'),
-          ShareMenu: getModule('ShareMenu'),
-          TopLevelWindow: getModule('TopLevelWindow'),
-          TouchBar: getModule('TouchBar'),
-          Tray: getModule('Tray'),
-          View: getModule('View'),
-          WebContentsView: getModule('WebContentsView'),
-          desktopCapturer: getModule('desktopCapturer'),
-          dialog: getModule('dialog'),
-          getCurrentWebContents: getModule('getCurrentWebContents'),
-          getCurrentWindow: getModule('getCurrentWindow'),
-          net: getModule('net'),
-          netLog: getModule('netLog'),
-          nativeTheme: getModule('nativeTheme'),
-          nativeImage: getModule('nativeImage'),
-          ipcMain: getModule('ipcMain'),
-          systemPreferences: getModule('systemPreferences'),
-
-          ..._require('electron'),
-          remote: remote,
-          remoteRequire: (function (name) {
-            if (needPolyfill)
-              return this[name];
-            return this.require(name);
-          }).bind(remote),
-        };
         try {
           result = _require(_path);
         } catch(error) {
@@ -186,10 +145,7 @@ exports.isMain = (
 );
 
 /* child process check */
-exports.isForkedChild = (
-  process.env.ELECTRON_RUN_AS_NODE === '1' ||
-  process.env.ELECTRON_RUN_AS_NODE === 1
-);
+exports.isForkedChild = Number(process.env.ELECTRON_RUN_AS_NODE) === 1;
 
 /**
    * @param  {Function} fn         [回调函数]

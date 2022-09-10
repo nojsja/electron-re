@@ -21,7 +21,7 @@ class BrowserService {
     options.webPreferences.enableRemoteModule = true;
     options.webPreferences.contextIsolation = false;
 
-    this._super = new BrowserWindow({...options, show: false });
+    this._super = new BrowserWindow({ ...options, show: false });
 
     this.serviceReady = false;
     this.exec= _path;

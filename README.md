@@ -356,6 +356,11 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 2. Processes consume more computer resources than threads.
 3. The processes will not affect each other, a thread hanging up will cause the whole process to hang up.
 
+#### Attention of Electron Bugs !!
+
+**DO NOT USE `require('electron')` in child_process js exec file, this will cause fatal error on the production environment!**
+
+
 #### 1. Create a childprocess pool
 
 * path [string] __*__ - the absolute path to a js file.
@@ -367,8 +372,8 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
   * __RANDOM__: pick by random.
   * __WEIGHTS_POLLING__: pick process one by one, Affected by `WEIGHTS`.
   * __WEIGHTS_RANDOM__: pick process by random, Affected by `WEIGHTS`.
-  * __MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process.
-  * __WEIGHTS_MINIMUM_CONNECTION (not recommend)__: pick process by minimum connection count of per process, Affected by `WEIGHTS`.
+  * __MINIMUM_CONNECTION (not recommend, DO NOT USE)__: pick process by minimum connection count of per process.
+  * __WEIGHTS_MINIMUM_CONNECTION (not recommend, DO NOT USE)__: pick process by minimum connection count of per process, Affected by `WEIGHTS`.
 * weight [array] - the weight of each process, default is [1...].
 
 ```js
