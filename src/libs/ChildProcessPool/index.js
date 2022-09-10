@@ -1,9 +1,9 @@
 const _path = require('path');
 const EventEmitter = require('events');
 
+const EventCenter = require('../EventCenter.class');
 const ForkedProcess = require('./ForkedProcess');
 const ProcessLifeCycle = require('../ProcessLifeCycle.class');
-const ProcessManager = require('../ProcessManager/index');
 const { defaultLifecycle } = require('../ProcessLifeCycle.class');
 const LoadBalancer = require('../LoadBalancer');
 let { inspectStartIndex } = require('../../conf/global.json');
@@ -71,7 +71,7 @@ class ChildProcessPool extends EventEmitter {
     }); */
     // process manager refresh connections
     this.connectionsTimer = setInterval(() => {
-      ProcessManager.emit(UPDATE_CONNECTIONS_SIGNAL, this.connectionsMap);
+      EventCenter.emit(`process-manager:${UPDATE_CONNECTIONS_SIGNAL}`, this.connectionsMap);
     }, 1e3);
     // message from forked process
     this.on('forked_message', ({data, id}) => {
@@ -120,14 +120,14 @@ class ChildProcessPool extends EventEmitter {
     const pidsValue = this.forked.map(f => f.pid);
     const length = this.forked.length;
 
-    ProcessManager.pipe(forked.child);
     this.LB.add({
       id: forked.pid,
       weight: this.weights[length - 1],
     });
     this.forkedMap = convertForkedToMap(this.forked);
     this.lifecycle.watch([forked.pid]);
-    ProcessManager.listen(pidsValue, 'node', this.forkedPath);
+    EventCenter.emit('process-manager:pipe', forked.child);
+    EventCenter.emit('process-manager:listen', pidsValue, 'node', this.forkedPath);
   }
 
   /**
@@ -144,7 +144,7 @@ class ChildProcessPool extends EventEmitter {
       weight: this.weights[length - 1],
     });
     this.lifecycle.unwatch([pid]);
-    ProcessManager.unlisten([pid]);
+    EventCenter.emit('process-manager:unlisten', [pid]);
   }
 
   /* Get a process instance from the pool */

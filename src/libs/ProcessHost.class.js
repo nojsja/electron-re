@@ -1,5 +1,5 @@
 /**
-  * ProcessHost [process tasks-management center]
+  * ProcessHost [process tasks center]
   * @author nojsja
   */
 class ProcessHost {
@@ -77,7 +77,6 @@ class ProcessHost {
     process.exit();
   }
 }
-
 
 if (!('electronre:$processHost' in global)) {
   Object.defineProperty(global, "electronre:$processHost", {

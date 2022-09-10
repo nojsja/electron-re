@@ -1,4 +1,4 @@
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, app } = require('electron');
 const { EventEmitter } = require('stream');
 const pidusage = require('pidusage');
 
@@ -12,6 +12,7 @@ const {
   UPDATE_CONNECTIONS_SIGNAL
 } = require('../consts');
 const ProcessManagerUI = require('./ui');
+const EventCenter = require('../EventCenter.class');
 
 class ProcessManager extends EventEmitter {
   constructor() {
@@ -31,22 +32,54 @@ class ProcessManager extends EventEmitter {
     this.logs = [];
     this.pidMap = {};
     this.initTemplate();
+    this.initAppListeners();
   }
 
   /* -------------- internal -------------- */
 
-  /* template functions */
   initTemplate = () => {
-    this.on(KILL_SIGNAL, (...args) => this.killProcess(...args));
-    this.on(OPEN_DEVTOOLS_SIGNAL, (...args) => this.openDevTools(...args));
-    this.on(CATCH_SIGNAL, (...args) => this.ipcSignalsRecorder(...args));
-    this.on(START_TIMER_SIGNAL, (...args) => this.startTimer(...args));
-    this.on(UPDATE_CONNECTIONS_SIGNAL, (...args) => this.updateConnections(...args));
+    EventCenter.on(`process-manager:${START_TIMER_SIGNAL}`, (...args) => this.startTimer(...args));
+    EventCenter.on(`process-manager:${CATCH_SIGNAL}`, (...args) => this.ipcSignalsRecorder(...args));
+    EventCenter.on(`process-manager:${OPEN_DEVTOOLS_SIGNAL}`, (...args) => this.openDevTools(...args));
+    EventCenter.on(`process-manager:${KILL_SIGNAL}`, (...args) => this.killProcess(...args));
+    EventCenter.on('process-manager:pipe', (child) => {
+      this.pipe(child);
+    });
+    EventCenter.on('process-manager:listen', (...args) => {
+      this.listen(...args);
+    });
+    EventCenter.on('process-manager:unlisten', (...args) => {
+      this.unlisten(...args);
+    });
+    EventCenter.on(`process-manager:${UPDATE_CONNECTIONS_SIGNAL}`, (...args) => this.updateConnections(...args));
+  }
+
+  initAppListeners = () => {
+    /* new renderer-window listen */
+    app.on('web-contents-created', (event, webContents) => {
+      webContents.once('did-finish-load', () => {
+        const pid = webContents.getOSProcessId();
+
+        if (!Number.isInteger(pid)) {
+          return console.warn(`ProcessManager: ${pid} is not a valid pid numbere`);
+        }
+        // ignore processManager window
+        if (this.ui && this.ui.webContents && this.ui.webContents.getOSProcessId() === pid) return;
+        this.listen(pid, 'renderer', webContents.getURL());
+        // window-console listen
+        webContents.on('console-message', (e, level, msg, line, sourceid) => {
+          this.stdout(pid, msg);
+        });
+        webContents.once('closed', function(e) {
+          this.unlisten(this.pid);
+        }.bind({ pid }));
+      });
+    });
   }
 
   /* ipc listener  */
   ipcSignalsRecorder = (params, e) => {
-    this.ui?.sendToWeb(CATCH_SIGNAL, params);
+    this.ui && this.ui.sendToWeb(CATCH_SIGNAL, params);
   }
 
   /* updata connections */
@@ -71,8 +104,8 @@ class ProcessManager extends EventEmitter {
             Object.keys(records).forEach((pid) => {
               this.pidMap[pid] =  Object.assign(this.pidMap[pid] || {}, records[pid]);
             });
-            this.emit('refresh', this.pidMap);
-            this.ui?.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
+            EventCenter.emit('process-manager:refresh', this.pidMap);
+            this.ui && this.ui.sendToWeb(UPDATE_SIGNAL, { records, types: this.typeMap })
           }
           resolve();
         });
@@ -81,7 +114,7 @@ class ProcessManager extends EventEmitter {
       }
     });
   }
-  
+
   /* set timer to refresh */
   startTimer = () => {
     if (this.status === 'started')
@@ -112,17 +145,16 @@ class ProcessManager extends EventEmitter {
 
   /* send stdout to ui-processor */
   stdout = (pid, data) => {
-    if (this.ui) {
-      if (!this.callSymbol) {
-        this.callSymbol = true;
-        setTimeout(() => {
-          this.ui?.sendToWeb(LOG_SIGNAL, this.logs)
-          this.logs = [];
-          this.callSymbol = false;
-        }, this.time);
-      } else {
-        this.logs.push({ pid: pid, data: String.prototype.trim.call(data) });
-      }
+    if (!this.ui) return;
+    if (!this.callSymbol) {
+      this.callSymbol = true;
+      setTimeout(() => {
+        this.ui.sendToWeb(LOG_SIGNAL, this.logs)
+        this.logs = [];
+        this.callSymbol = false;
+      }, this.time);
+    } else {
+      this.logs.push({ pid: pid, data: String.prototype.trim.call(data) });
     }
   }
 
@@ -141,14 +173,16 @@ class ProcessManager extends EventEmitter {
   /* listen processes with pids */
   listen = (pids, mark="renderer", url="") => {
     pids = (pids instanceof Array) ? pids : [pids];
-    pids.forEach((pid) => {
-      if (!this.pidList.includes(pid)) {
-        this.pidList.push(pid);
-      }
-      this.typeMap[pid] = this.typeMap[pid] || {};
-      this.typeMap[pid].type = mark;
-      this.typeMap[pid].url = url;
-    });
+    pids
+      .filter((pid) => Number.isInteger(pid))
+      .forEach((pid) => {
+        if (!this.pidList.includes(pid)) {
+          this.pidList.push(pid);
+        }
+        this.typeMap[pid] = this.typeMap[pid] || {};
+        this.typeMap[pid].type = mark;
+        this.typeMap[pid].url = url;
+      });
   }
 
   /* unlisten processes with pids */

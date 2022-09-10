@@ -10,6 +10,7 @@ const {
   CATCH_SIGNAL,
   START_TIMER_SIGNAL
 } = require('../consts');
+const EventCenter = require('../EventCenter.class');
 
 class ProcessManagerUI {
   constructor(host) {
@@ -21,9 +22,15 @@ class ProcessManagerUI {
 
   /* template functions */
   initTemplate() {
-    ipcMain.on(KILL_SIGNAL, (event, args) => this.host.emit(KILL_SIGNAL, args));
-    ipcMain.on(OPEN_DEVTOOLS_SIGNAL, (event, args) => this.host.emit(OPEN_DEVTOOLS_SIGNAL, args));
-    ipcMain.on(CATCH_SIGNAL, (event, args) => this.host.emit(CATCH_SIGNAL, args || event));
+    ipcMain.on(KILL_SIGNAL, (event, args) => {
+      EventCenter.emit(`process-manager:${KILL_SIGNAL}`, args);
+    });
+    ipcMain.on(OPEN_DEVTOOLS_SIGNAL, (event, args) => {
+      EventCenter.emit(`process-manager:${OPEN_DEVTOOLS_SIGNAL}`, args);
+    });
+    ipcMain.on(CATCH_SIGNAL, (event, args) => {
+      EventCenter.emit(`process-manager:${CATCH_SIGNAL}`, args || event);
+    });
   }
 
   /* get dev/prod ui address */
@@ -52,7 +59,7 @@ class ProcessManagerUI {
   onReadyToShow = () => {
     this.win.show();
     this.host.pid = this.win.webContents.getOSProcessId();
-    this.host.emit(START_TIMER_SIGNAL, conf.uiRefreshInterval)
+    EventCenter.emit(`process-manager:${START_TIMER_SIGNAL}`, conf.uiRefreshInterval);
   }
 
   onClosed = () => {
@@ -63,7 +70,7 @@ class ProcessManagerUI {
 
   /* show */
   show = () => {
-    this.win?.show();
+    this.win && this.win.show();
   }
 
   /* open main window */

@@ -1,29 +1,8 @@
-const conf = require('../conf/global.json');
 const { protocol } = require('electron');
 const path = require('path');
+
+const conf = require('../conf/global.json');
 const { compareVersion } = require('../libs/utils');
-
-/* new renderer-window listen */
-exports.listenerForNewWindow = (app, ep) => {
-  app.on('web-contents-created', (event, webContents) => {
-    webContents.once('did-finish-load', () => {
-      const pid = webContents.getOSProcessId();
-      // ignore processManager window
-      if (ep.ProcessManager.processWindow &&
-        ep.ProcessManager.processWindow.webContents.getOSProcessId() === pid) return;
-
-        ep.ProcessManager.listen(pid, 'renderer', webContents.getURL());
-
-      /* window-console listen */
-      webContents.on('console-message', (e, level, msg, line, sourceid) => {
-        ep.ProcessManager.stdout(pid, msg);
-      });
-      webContents.once('closed', function(e) {
-        ep.ProcessManager.unlisten(this.pid);
-      }.bind({ pid }));
-    })
-  });
-}
 
 /* define protocol for service */
 exports.registryProtocolForService = (app, ep) => {
@@ -38,6 +17,7 @@ exports.registryProtocolForService = (app, ep) => {
 
 /* polyfill - remote */
 exports.polyfillRemote = () => {
+  if (global["electronre:$remoteMain"]) return;
   if (compareVersion(process.versions.electron, '14') >= 0) {
     Object.defineProperty(global, "electronre:$remoteMain", {
       value: require('@electron/remote/main'),

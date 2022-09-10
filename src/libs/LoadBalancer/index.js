@@ -1,5 +1,6 @@
 const CONSTS = require("./consts");
 const Scheduler = require("./scheduler");
+const EventCenter = require('../EventCenter.class');
 const {
   RANDOM,
   POLLING,
@@ -10,7 +11,6 @@ const {
   MINIMUM_CONNECTION,
   WEIGHTS_MINIMUM_CONNECTION,
 } = CONSTS;
-const ProcessManager = require('../ProcessManager');
 
 /* Load Balance Instance */
 class LoadBalancer {
@@ -33,7 +33,7 @@ class LoadBalancer {
     this.scheduler = new Scheduler(this.algorithm);
     this.memoParams = this.memorizedParams();
     this.calculateWeightIndex();
-    ProcessManager.on('refresh', this.refreshParams);
+    EventCenter.on('process-manager:refresh', this.refreshParams);
   }
 
   /* params formatter */

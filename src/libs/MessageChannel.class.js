@@ -1,7 +1,8 @@
-/* depends */
 const { ipcRenderer, ipcMain, BrowserWindow } = require('electron');
-const { isRenderer, isMain, getRandomString } = require('./utils');
 const EventEmitter = require('events');
+
+const { isRenderer, isMain, getRandomString } = require('./utils');
+const EventCenter = require('./EventCenter.class');
 
 /**
   * MessageChannel [消息对象]
@@ -225,6 +226,16 @@ class MessageChannelMain extends MessageChannel {
       const { name, id } = args;
       this.registry(name, id);
       return this.services[name];
+    });
+    /* new service listen */
+    this.event.on('registry', ({ pid, id }) => {
+      const win = BrowserWindow.fromId(id);
+      if (win && pid) {
+        EventCenter.emit('process-manager:listen', pid, 'service', win.webContents.getURL());
+      }
+    });
+    this.event.on('unregistry', ({ pid }) => {
+      EventCenter.emit('process-manager:unlisten', pid);
     });
   }
 

@@ -1,9 +1,4 @@
 const { isRenderer, isMain, isForkedChild } = require('./libs/utils');
-const {
-  listenerForNewWindow,
-  registryProtocolForService,
-  polyfillRemote
-} = require('./tasks/app.init');
 
 exports.ChildProcessPool = require('./libs/ChildProcessPool');
 exports.LoadBalancer = require('./libs/LoadBalancer');
@@ -19,25 +14,16 @@ if (isRenderer) {
 /* -------------- main process -------------- */
 
 if (isMain && !isForkedChild) {
-  const { BrowserWindow, app } = require('electron');
+  const { app } = require('electron');
+  const {
+    registryProtocolForService,
+    polyfillRemote,
+  } = require('./tasks/app.init');
 
   exports.BrowserService = require('./libs/BrowserService.class')
   exports.MessageChannel = require('./libs/MessageChannel.class');
-
   exports.ProcessManager = require('./libs/ProcessManager');
 
-  /* new service listen */
-  exports.MessageChannel.event.on('registry', ({ pid, id }) => {
-    const win = BrowserWindow.fromId(id);
-    if (win && pid)
-      exports.ProcessManager.listen(pid, 'service', win.webContents.getURL());
-  });
-  exports.MessageChannel.event.on('unregistry', ({ pid }) => {
-    exports.ProcessManager.unlisten(pid)
-  });
-
-  /* new renderer-window listen */
-  listenerForNewWindow(app, exports);
   /* registry protocol */
   registryProtocolForService(app, exports);
 
