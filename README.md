@@ -358,7 +358,7 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 
 #### Attention of Electron Bugs !!
 
-**DO NOT USE `require('electron')` in child_process js exec file, this will cause fatal error on the production environment!**
+**DO NOT USE `require('electron')` in child_process js exec file, this will cause fatal error in the production environment!**
 
 
 #### 1. Create a childprocess pool
