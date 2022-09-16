@@ -360,6 +360,18 @@ Multi-process helps to make full use of multi-core CPU, let's see some differenc
 
 **DO NOT USE `require('electron')` in child_process js exec file, this will cause fatal error in the production environment!**
 
+Besides that, In order to use ChildProcessPool, you need to place your child_process exec js file in an external directory such as `~/.config/`. Otherwise, when you packaged your app, Node.js can not find that exec file.
+
+The another way to solve this problem is to set `asar` to false in the electron-builder.json, this is not recommended but works.
+
+```json
+{
+   ...
+   "asar": false,
+   ...
+}
+```
+
 
 #### 1. Create a childprocess pool
 
