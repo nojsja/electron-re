@@ -9,8 +9,8 @@ const path = require('path');
 const EventEmitter = require('events');
 
 const { THREAD_STATUS, THREAD_TYPE } = require('./consts');
-const EvalWorker = require('./EvalWorker');
-const ExecWorker = require('./ExecWorker');
+const EvalWorker = require('./Worker/EvalWorker');
+const ExecWorker = require('./Worker/ExecWorker');
 
 class Thread extends EventEmitter {
   constructor(execContent, type) {
@@ -25,20 +25,49 @@ class Thread extends EventEmitter {
     } else {
       this.execPath = path.resolve(execContent);
     }
-    this.init();
+    this._initWorker();
   }
 
-  init() {
+  _initWorker() {
     if (this.type === THREAD_TYPE.EVAL) {
       this.worker = new EvalWorker(this.execString);
     } else {
       this.worker = new ExecWorker(this.execPath);
     }
+    this.worker.on('response', this._onResponse);
+    this.worker.on('error', this._onError);
+    this.worker.on('exit', this._onExit);
   }
 
-  run() {}
+  runTask(task) {
+    switch (this.status) {
+      case THREAD_STATUS.IDLE:
+        this.status = THREAD_STATUS.WORKING;
+        this.worker.postMessage(task);
+        return true;
+      case THREAD_STATUS.WORKING:
+        return false;
+      case THREAD_STATUS.DEAD:
+        return false;
+      default:
+        return false;
+    }
+  }
 
-  stop() {}
+  _onError = (err) => {
+    console.error('Worker Error: ', err);
+    this.emit('error', err);
+  }
+
+  _onExit = (exitCode) => {
+    console.log(`Worker stopped with exit code ${exitCode}`);
+    this.status = THREAD_STATUS.DEAD;
+    this.emit('exit', exitCode);
+  }
+
+  _onResponse = (msg) => {
+    this.status = THREAD_STATUS.IDLE;
+  }
 }
 
 module.exports = Thread;

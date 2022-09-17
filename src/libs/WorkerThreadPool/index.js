@@ -15,7 +15,6 @@
 const EventEmitter = require('events');
 
 class WorkerThreadPool extends EventEmitter {
-
   static DefaultOptions = {
     lazyLoad: true,
     maxThreads: 50,
@@ -23,17 +22,35 @@ class WorkerThreadPool extends EventEmitter {
     taskTimeout: 30e3,
     taskRetry: 0,
   }
-  static taskMaxRetry = 5
+  static maxTaskRetry = 5
+  static maxTaskTimeout = 100
 
   constructor(options = {}) {
     super();
     this.options = Object.assign(
-      { taskMaxRetry: WorkerThreadPool.taskMaxRetry },
       WorkerThreadPool.DefaultOptions,
+      { taskRetry: options.taskRetry },
       options
     );
     this.taskQueue = [];
     this.taskMap = new WeakMap();
+  }
+
+  paramsCheck(options = {}) {
+    const { taskRetry, taskTimeout, maxThreads, maxTasks } = options;
+
+    if (taskRetry !== undefined && (taskRetry > WorkerThreadPool.maxTaskRetry || taskRetry < 0)) {
+      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${WorkerThreadPool.maxTaskRetry}.`);
+    }
+    if (maxThreads !== undefined && (!Number.isInteger(maxThreads) || maxThreads < 1)) {
+      throw new Error('WorkerThreadPool: param - maxThreads must be an positive integer.');
+    }
+    if (maxTasks !== undefined && (!Number.isInteger(maxTasks) || maxTasks < 1)) {
+      throw new Error('WorkerThreadPool: param - maxTasks must be an positive integer.');
+    }
+    if (taskTimeout !== undefined && (!Number.isInteger(taskTimeout) || taskTimeout < 100)) {
+      throw new Error(`WorkerThreadPool: param - taskTimeout must be an positive integer that no less than ${WorkerThreadPool.maxTaskTimeout}ms.`);
+    }
   }
 
   /**
@@ -47,16 +64,16 @@ class WorkerThreadPool extends EventEmitter {
    * wipeTask [wipe all tasks of queue]
    * @return {Promise}
    */
-  wipeTask() {}
+  wipeTaskQueue() {
+    this.taskQueue = [];
+  }
 
   /**
    * setMaxThreads [set max thread count]
    * @param {Number} maxThreads
    */
   setMaxThreads(maxThreads) {
-    if (!Number.isInteger(maxThreads) || maxThreads < 1) {
-      throw new Error('WorkerThreadPool: param - maxThreads must be an positive integer.');
-    }
+    this.paramsCheck({ maxThreads });
     this.maxThreads = maxThreads;
   }
 
@@ -65,9 +82,7 @@ class WorkerThreadPool extends EventEmitter {
    * @param {Number} maxTasks
    */
   setMaxTasks(maxTasks) {
-    if (!Number.isInteger(maxTasks) || maxTasks < 1) {
-      throw new Error('WorkerThreadPool: param - maxTasks must be an positive integer.');
-    }
+    this.paramsCheck({ maxTasks });
     this.maxTasks = maxTasks;
   }
 
@@ -75,11 +90,18 @@ class WorkerThreadPool extends EventEmitter {
    * setTaskTimeout [set task timeout]
    * @param {Number} timeout
    */
-  setTaskTimeout(timeout) {
-    if (!Number.isInteger(timeout) || timeout < 100) {
-      throw new Error('WorkerThreadPool: param - taskTimeout must be an positive integer that no less than 100ms.');
-    }
+  setTaskTimeout(taskTimeout) {
+    this.paramsCheck({ taskTimeout });
     this.taskTimeout = timeout;
+  }
+
+  /**
+   * setTaskRetry [set task retry count]
+   * @param {Number} taskRetry
+   */
+  setTaskRetry(taskRetry) {
+    this.paramsCheck({ taskRetry });
+    this.taskRetry = taskRetry;
   }
 
 }

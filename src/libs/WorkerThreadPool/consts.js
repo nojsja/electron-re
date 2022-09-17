@@ -9,7 +9,7 @@ module.exports = {
   THREAD_STATUS: {
     IDLE: 0,
     WORKING: 1,
-    STOPPED: 2,
+    DEAD: -1,
   },
   THREAD_TYPE: {
     EVAL: 1,
