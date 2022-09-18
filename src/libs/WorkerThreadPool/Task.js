@@ -13,10 +13,12 @@ class Task {
     return `${symbol}_${getRandomString()}`;
   }
 
-  constructor(payload) {
+  constructor(payload, options = {}) {
     this.taskId = Task.generateTaskId('task');
     this.status = TASK_STATUS.PENDING;
     this.payload = payload;
+    this.taskRetry = 0;
+    this.maxTaskRetry = options.maxTaskRetry || 0;
   }
 
   stop() {
@@ -25,6 +27,19 @@ class Task {
 
   start() {
     this.status = TASK_STATUS.RUNNING;
+  }
+
+  get isRetryable() {
+    return this.taskRetry < this.maxTaskRetry;
+  }
+
+  get isPending() {
+    return this.status === TASK_STATUS.PENDING;
+  }
+
+  retry() {
+    this.taskRetry += 1;
+    this.status = TASK_STATUS.PENDING;
   }
 
   cancel() {

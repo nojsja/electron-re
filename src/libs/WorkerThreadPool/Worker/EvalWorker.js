@@ -10,10 +10,10 @@ class EvalWorker extends EventEmitter {
     this.code = code;
     this.context = context;
     this.worker = null;
-    this.run();
+    this.init();
   }
 
-  run() {
+  init() {
     this.worker = new Worker(
       path.join(__dirname, 'eval-worker-runner.js'), {
         workerData: {

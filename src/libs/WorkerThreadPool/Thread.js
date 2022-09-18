@@ -71,6 +71,7 @@ class Thread extends EventEmitter {
     switch (this.status) {
       case THREAD_STATUS.IDLE:
         this.status = THREAD_STATUS.WORKING;
+        task.start();
         this.worker.postMessage(task);
         return true;
       case THREAD_STATUS.WORKING:

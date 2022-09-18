@@ -23,14 +23,32 @@ class TaskQueue {
   }
 
   pop() {
-    const task = this.queue.shift();
-    if (task) this.taskMap.delete(task.taskId);
+    const length = this.length;
+    for (let i = 0; i < length; i++) {
+      if (this.queue[i].isPending) {
+        return this.queue[i];
+      }
+    }
 
-    return task || null;
+    return null;
   }
 
   getTask(taskId) {
     this.taskMap.get(taskId) || null;
+  }
+
+  retryTask(taskId) {
+    const task = this.taskQueue.getTask(taskId);
+
+    if (!task) {
+      if (this.isFull) return false;
+      this.taskQueue.push(task);
+    } else {
+      this.removeTask(taskId);
+      this.push(removedTask);
+      task.retry();
+    }
+    return true;
   }
 
   /**
@@ -80,11 +98,13 @@ class TaskQueue {
 
   removeTask(taskId) {
     const task = this.getTask(taskId);
-    if (!task) return;
+    if (!task) return null;
     const index = this.queue.indexOf(task);
 
     this.taskMap.delete(taskId);
     if (index > -1) this.queue.splice(index, 1);
+
+    return task;
   }
 
   wipeTask() {

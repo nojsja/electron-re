@@ -7,10 +7,10 @@ class ExecWorker {
       throw new Error('ExecWorker: execPath is required');
     }
     this.execPath = execPath;
-    this.run(execPath);
+    this.init(execPath);
   }
 
-  run() {
+  init() {
     this.worker = new Worker(path.join(__dirname, 'exec-worker-runner.js'), {
       workerData: {
         execPath: this.execPath,
