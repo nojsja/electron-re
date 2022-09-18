@@ -19,6 +19,10 @@ class Task {
     this.payload = payload;
   }
 
+  stop() {
+    this.status = TASK_STATUS.PENDING;
+  }
+
   start() {
     this.status = TASK_STATUS.RUNNING;
   }
@@ -33,6 +37,10 @@ class Task {
 
   succeed() {
     this.status = TASK_STATUS.SUCCESS;
+  }
+
+  setPayload(payload) {
+    this.payload = payload;
   }
 }
 

@@ -13,6 +13,10 @@
 ------------------------------------------------------- */
 
 const EventEmitter = require('events');
+const { THREAD_TYPE } = require('./consts');
+
+const TaskQueue = require('./TaskQueue');
+const Thread = require('./Thread');
 
 class WorkerThreadPool extends EventEmitter {
   static DefaultOptions = {
@@ -21,9 +25,20 @@ class WorkerThreadPool extends EventEmitter {
     maxTasks: 100,
     taskTimeout: 30e3,
     taskRetry: 0,
+    type: THREAD_TYPE.EXEC,
+    execContent: '',
   }
   static maxTaskRetry = 5
   static maxTaskTimeout = 100
+  static generateNewThread(execContent, type) {
+    if (type !== THREAD_TYPE.EVAL || type !== THREAD_TYPE.EXEC) {
+      throw new Error('WorkerThreadPool: param - type must be THREAD_TYPE.EVAL or THREAD_TYPE.EXEC.');
+    }
+    return new Thread(execContent, type);
+  }
+  static generateNewTask(payload) {
+    return new Thread(payload);
+  }
 
   constructor(options = {}) {
     super();
@@ -32,8 +47,14 @@ class WorkerThreadPool extends EventEmitter {
       { taskRetry: options.taskRetry },
       options
     );
-    this.taskQueue = [];
-    this.taskMap = new WeakMap();
+    this.taskQueue = new TaskQueue({
+      maxLength: this.options.maxTasks,
+    });
+    this.threadPool = [];
+  }
+
+  get isFull() {
+    return this.threadPool.length >= this.options.maxThreads;
   }
 
   paramsCheck(options = {}) {
@@ -58,7 +79,36 @@ class WorkerThreadPool extends EventEmitter {
    * @param {*} payload [request payload]
    * @return {Promise}
    */
-  send(payload) {}
+  send(payload) {
+    if (!this.isFull) {
+      const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+      this._handleThreadEvent(thread);
+      this.threadPool.push(thread);
+    } else {
+      if (!this.taskQueue.isFull) {
+        const task = WorkerThreadPool.generateNewTask(payload);
+        this.taskQueue.push(task);
+      } else {
+        throw new Error('WorkerThreadPool: task queue is full.');
+      }
+    }
+  }
+
+  _handleThreadEvent(thread) {
+    if (!thread) return;
+
+    thread.on('message', this._onThreadResponse);
+    thread.on('error', (err) => {
+      this.emit('thread:error', err);
+    });
+    thread.on('exit', (info) => {
+      this.emit('thread:exit', info);
+    });
+  }
+
+  _onThreadResponse = ({ taskId }) => {
+
+  }
 
   /**
    * wipeTask [wipe all tasks of queue]

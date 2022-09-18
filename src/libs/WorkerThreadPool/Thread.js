@@ -18,6 +18,7 @@ class Thread extends EventEmitter {
     this.type = type;
     this.status = THREAD_STATUS.IDLE;
     this.worker = null;
+    this.threadId = null;
     this.execPath = null;
     this.execString = null;
     if (type === THREAD_TYPE.EVAL) {
@@ -34,6 +35,7 @@ class Thread extends EventEmitter {
     } else {
       this.worker = new ExecWorker(this.execPath);
     }
+    this.threadId = worker.threadId;
     this.worker.on('response', this._onResponse);
     this.worker.on('error', this._onError);
     this.worker.on('exit', this._onExit);
@@ -62,11 +64,15 @@ class Thread extends EventEmitter {
   _onExit = (exitCode) => {
     console.log(`Worker stopped with exit code ${exitCode}`);
     this.status = THREAD_STATUS.DEAD;
-    this.emit('exit', exitCode);
+    this.emit('exit', {
+      threadId: this.threadId,
+      exitCode,
+    });
   }
 
-  _onResponse = (msg) => {
+  _onResponse = (info) => {
     this.status = THREAD_STATUS.IDLE;
+    this.emit('response', info);
   }
 }
 

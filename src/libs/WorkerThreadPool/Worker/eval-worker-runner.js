@@ -15,16 +15,17 @@ function evalModuleCode(context, code, filename=__filename) {
 const { context, code } = workerData;
 const mainRunner = evalModuleCode(Object.assign({}, process.env, context), code);
 
-parentPort.on('message', (info) => {
-  Promise.resolve(mainRunner(info))
+parentPort.on('message', (task) => {
+  Promise.resolve(mainRunner(task.payload))
     .then((data) => {
       parentPort.postMessage({
         code: 0,
         data,
-        error: null
+        error: null,
+        taskId: task.taskId,
       });
     })
     .catch((error) => {
-      parentPort.postMessage({ code: 1, data: null, error });
+      parentPort.postMessage({ code: 1, data: null, error, taskId: task.taskId });
     });
 });
