@@ -1,6 +1,5 @@
 const { Task } = require('./Task');
 const { TASK_STATUS } = require('./consts');
-
 class TaskQueue {
   constructor({ maxLength=Infinity }) {
     this.queue = [];
@@ -32,13 +31,6 @@ class TaskQueue {
 
   getTask(taskId) {
     this.taskMap.get(taskId) || null;
-  }
-
-  modifyTask(taskId, attrs) {
-    const task = this.getTask(taskId);
-    if (!task) return;
-
-    Object.assign(task, attrs, { taskId });
   }
 
   /**
@@ -89,9 +81,10 @@ class TaskQueue {
   removeTask(taskId) {
     const task = this.getTask(taskId);
     if (!task) return;
+    const index = this.queue.indexOf(task);
 
     this.taskMap.delete(taskId);
-    this.queue = this.queue.filter((item) => item.taskId !== taskId);
+    if (index > -1) this.queue.splice(index, 1);
   }
 
   wipeTask() {

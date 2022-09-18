@@ -29,6 +29,10 @@ class Thread extends EventEmitter {
     this._initWorker();
   }
 
+  get isIdle() {
+    return this.status === THREAD_STATUS.IDLE;
+  }
+
   _initWorker() {
     if (this.type === THREAD_TYPE.EVAL) {
       this.worker = new EvalWorker(this.execString);
@@ -39,21 +43,6 @@ class Thread extends EventEmitter {
     this.worker.on('response', this._onResponse);
     this.worker.on('error', this._onError);
     this.worker.on('exit', this._onExit);
-  }
-
-  runTask(task) {
-    switch (this.status) {
-      case THREAD_STATUS.IDLE:
-        this.status = THREAD_STATUS.WORKING;
-        this.worker.postMessage(task);
-        return true;
-      case THREAD_STATUS.WORKING:
-        return false;
-      case THREAD_STATUS.DEAD:
-        return false;
-      default:
-        return false;
-    }
   }
 
   _onError = (err) => {
@@ -72,7 +61,25 @@ class Thread extends EventEmitter {
 
   _onResponse = (info) => {
     this.status = THREAD_STATUS.IDLE;
-    this.emit('response', info);
+    this.emit('response', {
+      ...info,
+      threadId: this.threadId,
+    });
+  }
+
+  runTask(task) {
+    switch (this.status) {
+      case THREAD_STATUS.IDLE:
+        this.status = THREAD_STATUS.WORKING;
+        this.worker.postMessage(task);
+        return true;
+      case THREAD_STATUS.WORKING:
+        return false;
+      case THREAD_STATUS.DEAD:
+        return false;
+      default:
+        return false;
+    }
   }
 }
 

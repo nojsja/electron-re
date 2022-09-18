@@ -51,11 +51,62 @@ class WorkerThreadPool extends EventEmitter {
       maxLength: this.options.maxTasks,
     });
     this.threadPool = [];
+    this._callbacks = {};
+    if (!this.options.lazyLoad) {
+      this.fillPoolWithIdleThreads();
+    }
   }
 
   get isFull() {
     return this.threadPool.length >= this.options.maxThreads;
   }
+
+  get IdleThread() {
+    return this.threadPool.find(thread => thread.isIdle);
+  }
+
+  _handleThreadEvent(thread) {
+    if (!thread) return;
+
+    thread.on('message', this._onThreadResponse);
+    thread.on('error', (err) => {
+      this.emit('thread:error', {
+        threadId: thread.threadId,
+        error: err,
+      });
+    });
+    thread.on('exit', this._onThreadExit);
+  }
+
+  _onThreadResponse = ({ taskId, threadId, code, ...others }) => {
+    const task = this.taskQueue.getTask(taskId);
+    if (!task) return;
+
+    const callback = this._callbacks[taskId];
+    delete this._callbacks[taskId];
+    this.taskQueue.removeTask(taskId);
+
+    if (callback) {
+      if (code === 0) {
+        callback.resolve(others);
+      } else {
+        callback.reject(others);
+      }
+    }
+  }
+
+  _onThreadExit = (info) => {
+    const { taskId, threadId } = info;
+    const callback = this._callbacks[taskId];
+
+    this.taskQueue.removeTask(taskId);
+    this.threadPool = this.threadPool.filter((thread) => thread.id !== threadId);
+    if (callback) {
+      delete this._callbacks[taskId];
+      callback.reject(info);
+    }
+    this.emit('thread:exit', info);
+  };
 
   paramsCheck(options = {}) {
     const { taskRetry, taskTimeout, maxThreads, maxTasks } = options;
@@ -74,41 +125,44 @@ class WorkerThreadPool extends EventEmitter {
     }
   }
 
+  fillPoolWithIdleThreads() {
+    const countToFill = this.options.maxThreads - this.threadPool.length;
+    const threads = new Array(countToFill).fill(0).map(() => {
+      const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+      this._handleThreadEvent(thread);
+      return thread;
+    });
+    this.threadPool = this.threadPool.concat(threads);
+  }
+
   /**
    * send [send a request to pool]
    * @param {*} payload [request payload]
    * @return {Promise}
    */
   send(payload) {
-    if (!this.isFull) {
-      const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
-      this._handleThreadEvent(thread);
-      this.threadPool.push(thread);
-    } else {
-      if (!this.taskQueue.isFull) {
-        const task = WorkerThreadPool.generateNewTask(payload);
-        this.taskQueue.push(task);
+    return new Promise((resolve, reject) => {
+      const task = WorkerThreadPool.generateNewTask(payload);
+
+      if (!this.isFull) {
+        const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+        this._handleThreadEvent(thread);
+        this.threadPool.push(thread);
+        thread.runTask(task);
       } else {
-        throw new Error('WorkerThreadPool: task queue is full.');
+        const idleThread = this.IdleThread;
+        if (idleThread) {
+          idleThread.runTask(task);
+        } else if (!this.taskQueue.isFull) {
+          this.taskQueue.push(task);
+        } else {
+          throw new Error('WorkerThreadPool: no idle thread and task queue is full.');
+        }
       }
-    }
-  }
-
-  _handleThreadEvent(thread) {
-    if (!thread) return;
-
-    thread.on('message', this._onThreadResponse);
-    thread.on('error', (err) => {
-      this.emit('thread:error', err);
-    });
-    thread.on('exit', (info) => {
-      this.emit('thread:exit', info);
+      this._callbacks[task.taskId] = { resolve, reject };
     });
   }
 
-  _onThreadResponse = ({ taskId }) => {
-
-  }
 
   /**
    * wipeTask [wipe all tasks of queue]

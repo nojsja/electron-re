@@ -22,8 +22,8 @@ class EvalWorker extends EventEmitter {
         },
       },
     );
-    this.worker.on('message', (...args) => {
-      this.emit('response', ...args);
+    this.worker.on('message', (info) => {
+      this.emit('response', info);
     });
     this.worker.on('error', (err) => {
       this.emit('error', err);
