@@ -6,7 +6,7 @@ const {
   BrowserService,
 } = require(`./${base}/index`);
 
-const test = require('./test/test.js');
+const test = require('./test/');
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
 const otherService = path.join(__dirname, 'test/services/other.service.js');
