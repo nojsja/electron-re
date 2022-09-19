@@ -1,4 +1,4 @@
-const { Task } = require('./Task');
+const Task = require('./Task');
 const { TASK_STATUS } = require('./consts');
 class TaskQueue {
   constructor({ maxLength=Infinity }) {

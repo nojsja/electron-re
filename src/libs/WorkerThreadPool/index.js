@@ -13,11 +13,13 @@
 ------------------------------------------------------- */
 
 const EventEmitter = require('events');
-const { THREAD_TYPE } = require('./consts');
 
 const TaskQueue = require('./TaskQueue');
 const Thread = require('./Thread');
 const Task = require('./Task');
+const {
+  THREAD_TYPE, CODE,
+} = require('./consts');
 
 class WorkerThreadPool extends EventEmitter {
   static DefaultOptions = {
@@ -27,12 +29,11 @@ class WorkerThreadPool extends EventEmitter {
     taskRetry: 0,
     taskTime: 1e3,
     type: THREAD_TYPE.EXEC,
-    execContent: '',
   }
   static maxTaskRetry = 5;
   static minTaskTime = 100;
   static generateNewThread(execContent, type) {
-    if (type !== THREAD_TYPE.EVAL || type !== THREAD_TYPE.EXEC) {
+    if ((type !== THREAD_TYPE.EVAL) && (type !== THREAD_TYPE.EXEC)) {
       throw new Error('WorkerThreadPool: param - type must be THREAD_TYPE.EVAL or THREAD_TYPE.EXEC.');
     }
     return new Thread(execContent, type);
@@ -75,7 +76,15 @@ class WorkerThreadPool extends EventEmitter {
     return this.threadPool.length >= this.options.maxThreads;
   }
 
-  get IdleThread() {
+  get threadLength() {
+    return this.threadPool.length;
+  }
+
+  get taskLength() {
+    return this.taskQueue.length;
+  }
+
+  get idleThread() {
     return this.threadPool.find(thread => thread.isIdle);
   }
 
@@ -96,7 +105,7 @@ class WorkerThreadPool extends EventEmitter {
   _handleThreadEvent(thread) {
     if (!thread) return;
 
-    thread.on('message', this._onThreadResponse);
+    thread.on('response', this._onThreadResponse);
     thread.on('error', (err) => {
       this.emit('thread:error', {
         threadId: thread.threadId,
@@ -110,7 +119,7 @@ class WorkerThreadPool extends EventEmitter {
     const task = this.taskQueue.getTask(taskId);
     const callback = this._callbacks[taskId];
 
-    if (code === 0) {
+    if (code === CODE.SUCCESS) {
       callback && callback.resolve(others);
       this.cleanTask(taskId);
     } else {
@@ -156,7 +165,7 @@ class WorkerThreadPool extends EventEmitter {
   fillPoolWithIdleThreads() {
     const countToFill = this.options.maxThreads - this.threadPool.length;
     const threads = new Array(countToFill).fill(0).map(() => {
-      const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+      const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
       this._handleThreadEvent(thread);
       return thread;
     });
@@ -174,9 +183,9 @@ class WorkerThreadPool extends EventEmitter {
 
   cleanTask(taskId) {
     const task = this.taskQueue.getTask(taskId);
-    delete this._callbacks[task.taskId];
+    delete this._callbacks[taskId];
     if (!task) return;
-    this.taskQueue.removeTask(task.taskId);
+    this.taskQueue.removeTask(taskId);
   }
 
   /**
@@ -187,12 +196,12 @@ class WorkerThreadPool extends EventEmitter {
   consumeTask(task) {
     if (!(task instanceof Task)) return false;
     if (!this.isFull) {
-      const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+      const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
       this._handleThreadEvent(thread);
       this.threadPool.push(thread);
       thread.runTask(task);
     } else {
-      const idleThread = this.IdleThread;
+      const idleThread = this.idleThread;
       if (!idleThread) return false;
       idleThread.runTask(task);
     }
@@ -209,12 +218,12 @@ class WorkerThreadPool extends EventEmitter {
       const task = WorkerThreadPool.generateNewTask(payload);
 
       if (!this.isFull) {
-        const thread = WorkerThreadPool.generateNewThread(this.options.execContent, this.options.type);
+        const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
         this._handleThreadEvent(thread);
         this.threadPool.push(thread);
         thread.runTask(task);
       } else {
-        const idleThread = this.IdleThread;
+        const idleThread = this.idleThread;
         if (idleThread) {
           idleThread.runTask(task);
         } else if (!this.taskQueue.isFull) {

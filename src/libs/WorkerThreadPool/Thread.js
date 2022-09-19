@@ -5,7 +5,6 @@
     - execPath: 执行文件路径
     - status：任务状态
 ------------------------------------------------------- */
-const path = require('path');
 const EventEmitter = require('events');
 
 const { THREAD_STATUS, THREAD_TYPE } = require('./consts');
@@ -24,7 +23,7 @@ class Thread extends EventEmitter {
     if (type === THREAD_TYPE.EVAL) {
       this.execString = execContent;
     } else {
-      this.execPath = path.resolve(execContent);
+      this.execPath = execContent;
     }
     this._initWorker();
   }
@@ -39,7 +38,7 @@ class Thread extends EventEmitter {
     } else {
       this.worker = new ExecWorker(this.execPath);
     }
-    this.threadId = worker.threadId;
+    this.threadId = this.worker.threadId;
     this.worker.on('response', this._onResponse);
     this.worker.on('error', this._onError);
     this.worker.on('exit', this._onExit);

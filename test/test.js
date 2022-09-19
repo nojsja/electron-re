@@ -1,7 +1,15 @@
-const { ipcMain, ipcRenderer } = require('electron');
-const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
-const { MessageChannel, ChildProcessPool, LoadBalancer, ProcessLifeCycle } = require(`../${base}`);
+const { ipcMain } = require('electron');
 const path = require('path');
+
+const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
+const {
+  MessageChannel,
+  ChildProcessPool,
+  LoadBalancer,
+  ProcessLifeCycle,
+  WorkerThreadPool,
+  THREAD_TYPE,
+} = require(`../${base}`);
 
 /* -------------- main <-> renderer -------------- */
 const mainAndRenderer = () => {
@@ -580,7 +588,7 @@ const loadBalancer = () => {
   });
 };
 
-/* process lifecycle */
+/* -------------- process lifecycle -------------- */
 
 const processLifecycle = () => {
   const lifecycle = new ProcessLifeCycle({
@@ -644,9 +652,35 @@ const processLifecycle = () => {
         lifecycle.stop();
       }, 1.5e3);
     });
-
   });
+};
 
+const workerThreadPool = () => {
+  const threadPool = new WorkerThreadPool(
+    path.join(__dirname, './worker_threads/worker1.js'),
+    {
+      lazyLoad: true,
+      maxThreads: 10,
+      maxTasks: 10,
+      taskRetry: 0,
+      taskTime: 1e3,
+      type: THREAD_TYPE.EXEC,
+    }
+  );
+
+  describe('▸ Worker Thread Pool Test', () => {
+    it('run a task with pool and get correct result', (callback) => {
+      threadPool.send(15).then((res) => {
+        if (+(res.data) === 610) {
+          callback();
+        } else {
+          callback('test1 failed!');
+        }
+      }).catch(() => {
+        callback('test1 failed!');
+      });
+    });
+  });
 
 };
 
@@ -659,5 +693,6 @@ module.exports = {
     childProcessPool();
     loadBalancer();
     processLifecycle();
+    workerThreadPool();
   }
 };

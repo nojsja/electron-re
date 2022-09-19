@@ -1,20 +1,22 @@
 const path = require('path');
 const { Worker } = require('worker_threads');
-const EventEmitter = require('events');
 
-class EvalWorker extends EventEmitter {
+const WorkerClass = require('./Worker');
+
+class EvalWorker extends WorkerClass {
   constructor(code, context={}) {
     if (!code) {
       throw new Error('EvalWorker: code is required');
     }
+    super();
     this.code = code;
     this.context = context;
-    this.worker = null;
+    this.runner = null;
     this.init();
   }
 
   init() {
-    this.worker = new Worker(
+    this.runner = new Worker(
       path.join(__dirname, 'eval-worker-runner.js'), {
         workerData: {
           code: this.code,
@@ -22,13 +24,13 @@ class EvalWorker extends EventEmitter {
         },
       },
     );
-    this.worker.on('message', (info) => {
+    this.runner.on('message', (info) => {
       this.emit('response', info);
     });
-    this.worker.on('error', (err) => {
+    this.runner.on('error', (err) => {
       this.emit('error', err);
     });
-    this.worker.on('exit', (exitCode) => {
+    this.runner.on('exit', (exitCode) => {
       this.emit('exit', exitCode);
     });
   }

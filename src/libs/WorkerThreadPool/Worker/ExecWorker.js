@@ -1,28 +1,32 @@
 const path = require('path');
 const { Worker } = require('worker_threads');
 
-class ExecWorker {
-  constructor(execPath, context={}) {
+const WorkerClass = require('./Worker');
+
+class ExecWorker extends WorkerClass {
+  constructor(execPath) {
     if (!execPath) {
       throw new Error('ExecWorker: execPath is required');
     }
+    super();
     this.execPath = execPath;
-    this.init(execPath);
+    this.runner = null;
+    this.init();
   }
 
   init() {
-    this.worker = new Worker(path.join(__dirname, 'exec-worker-runner.js'), {
+    this.runner = new Worker(path.join(__dirname, 'exec-worker-runner.js'), {
       workerData: {
         execPath: this.execPath,
       },
     });
-    this.worker.on('message', (info) => {
+    this.runner.on('message', (info) => {
       this.emit('response', info);
     });
-    this.worker.on('error', (err) => {
+    this.runner.on('error', (err) => {
       this.emit('error', err);
     });
-    this.worker.on('exit', (exitCode) => {
+    this.runner.on('exit', (exitCode) => {
       this.emit('exit', exitCode);
     });
   }
