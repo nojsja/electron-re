@@ -7,15 +7,20 @@ const {
 } = require(`../${base}`);
 
 const workerThreadPool = () => {
+  const CONF_MAX_THREADS = 10;
+  const CONF_MAX_TASKS = 10;
+  const CONF_TASK_RETRY = 0;
+  const CONF_THREAD_TYPE = THREAD_TYPE.EXEC;
+
   const threadPool = new WorkerThreadPool(
-    path.join(__dirname, './worker_threads/worker1.js'),
+    path.join(__dirname, './worker_threads/worker-static.js'),
     {
       lazyLoad: true,
-      maxThreads: 10,
-      maxTasks: 10,
-      taskRetry: 0,
+      maxThreads: CONF_MAX_THREADS,
+      maxTasks: CONF_MAX_TASKS,
+      taskRetry: CONF_TASK_RETRY,
       taskTime: 1e3,
-      type: THREAD_TYPE.EXEC,
+      type: CONF_THREAD_TYPE,
     }
   );
 
@@ -34,7 +39,7 @@ const workerThreadPool = () => {
 
     it('fill pool with idle threads', (callback) => {
       threadPool.fillPoolWithIdleThreads();
-      if (threadPool.threadLength === 10) {
+      if (threadPool.threadLength === CONF_MAX_THREADS) {
         callback();
       } else {
         callback('test2 failed!');
@@ -58,9 +63,43 @@ const workerThreadPool = () => {
           callback('test3 failed!');
         });
 
-      if (threadPool.threadLength !== 10 || threadPool.taskLength !== 1) {
+      if (threadPool.threadLength !== CONF_MAX_THREADS || threadPool.taskLength !== 1) {
         callback('test3 failed!');
       }
+    });
+
+    it('run a dynamic task (exec) with pool and get correct result', (callback) => {
+      threadPool
+        .send('test', {
+          execPath: path.join(__dirname, './worker_threads/worker-dynamic.js')
+        })
+        .then((value) => {
+          if (value.data === 'dynamic:test') {
+            callback();
+          } else {
+            callback('test4 failed!');
+          }
+        })
+        .catch(() => {
+          callback('test4 failed!');
+        });
+    });
+
+    it('run a dynamic task (eval) with pool and get correct result', (callback) => {
+      threadPool
+        .send('test', {
+          execString: "module.exports = (value) => { return `dynamic:${value}`; };"
+        })
+        .then((value) => {
+          if (value.data === 'dynamic:test') {
+            callback();
+          } else {
+            callback('test4 failed!');
+          }
+        })
+        .catch(() => {
+          callback('test4 failed!');
+        });
     });
   });
 

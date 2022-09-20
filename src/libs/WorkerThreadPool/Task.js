@@ -6,9 +6,13 @@
     - status：任务状态
 ------------------------------------------------------- */
 const { getRandomString } = require('../utils');
-const { TASK_STATUS } = require('./consts');
+const { TASK_STATUS, TASK_TYPE } = require('./consts');
 
 class Task {
+  static defaultOptions = {
+    maxTaskRetry: 0,
+    type: TASK_TYPE.STATIC,
+  }
   static generateTaskId(symbol) {
     return `${symbol}_${getRandomString()}`;
   }
@@ -18,7 +22,10 @@ class Task {
     this.status = TASK_STATUS.PENDING;
     this.payload = payload;
     this.taskRetry = 0;
-    this.maxTaskRetry = options.maxTaskRetry || 0;
+    this.taskType = options.taskType || TASK_TYPE.STATIC;
+    this.execPath = options.execPath || null;
+    this.execString = options.execString || null;
+    this.maxTaskRetry = options.maxTaskRetry || Task.defaultOptions.maxTaskRetry;
   }
 
   stop() {

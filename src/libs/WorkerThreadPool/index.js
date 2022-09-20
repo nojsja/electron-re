@@ -18,11 +18,11 @@ const TaskQueue = require('./TaskQueue');
 const Thread = require('./Thread');
 const Task = require('./Task');
 const {
-  THREAD_TYPE, CODE,
+  THREAD_TYPE, CODE, TASK_TYPE,
 } = require('./consts');
 
 class WorkerThreadPool extends EventEmitter {
-  static DefaultOptions = {
+  static defaultOptions = {
     lazyLoad: true,
     maxThreads: 50,
     maxTasks: 100,
@@ -39,6 +39,10 @@ class WorkerThreadPool extends EventEmitter {
     return new Thread(execContent, type);
   }
   static generateNewTask(payload, options={}) {
+    const { execPath, execString } = options;
+    if (execPath || execString) {
+      options.taskType = TASK_TYPE.DYNAMIC;
+    }
     return new Task(payload, options);
   }
 
@@ -56,7 +60,7 @@ class WorkerThreadPool extends EventEmitter {
     super();
     this.execContent = execContent;
     this.options = Object.assign(
-      WorkerThreadPool.DefaultOptions,
+      WorkerThreadPool.defaultOptions,
       options
     );
     this.paramsCheck(this.options);
@@ -211,11 +215,14 @@ class WorkerThreadPool extends EventEmitter {
   /**
    * send [send a request to pool]
    * @param {*} payload [request payload]
+   * @param {Object} options [options to create a task]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString]
+   *  - @param {String} execString [execution file content, conflict with option - execPath]
    * @return {Promise}
    */
-  send(payload) {
+  send(payload, options={}) {
     return new Promise((resolve, reject) => {
-      const task = WorkerThreadPool.generateNewTask(payload);
+      const task = WorkerThreadPool.generateNewTask(payload, options);
 
       if (!this.isFull) {
         const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);

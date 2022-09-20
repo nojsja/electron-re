@@ -1,12 +1,21 @@
 const { parentPort, workerData } = require('worker_threads');
 
-const { CODE } = require('../consts');
+const { CODE, TASK_TYPE } = require('../consts');
+const { evalModuleCode } = require('./utils');
 
 const { execPath } = workerData;
 const mainRunner = require(execPath);
 
 parentPort.on('message', (task) => {
-  Promise.resolve(mainRunner(task.payload))
+  let currentRunner;
+
+  if (task.taskType === TASK_TYPE.DYNAMIC) {
+    currentRunner = task.execPath ? require(task.execPath) : evalModuleCode('.', task.execString);
+  } else {
+    currentRunner = mainRunner;
+  }
+
+  Promise.resolve(currentRunner(task.payload))
     .then((data) => {
       parentPort.postMessage({
         code: CODE.SUCCESS,

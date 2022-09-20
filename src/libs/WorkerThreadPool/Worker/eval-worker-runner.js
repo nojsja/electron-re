@@ -2,22 +2,22 @@ const {
   parentPort, workerData
 } = require('worker_threads');
 const { CODE } = require('../consts');
+const { evalModuleCode } = require('./utils');
+
 const { context, code } = workerData;
 
-function evalModuleCode(context, code, filename=__filename) {
-  const _module = new NativeModule(filename, context);
-
-  _module.paths = NativeModule._nodeModulePaths(context);
-  _module.filename = filename;
-  _module.compile(code, filename);
-
-  return _module.exports;
-}
-
-const mainRunner = evalModuleCode(Object.assign({}, process.env, context), code);
+const mainRunner = evalModuleCode('.', code);
 
 parentPort.on('message', (task) => {
-  Promise.resolve(mainRunner(task.payload))
+  let currentRunner;
+
+  if (task.taskType === TASK_TYPE.DYNAMIC) {
+    currentRunner = task.execPath ? require(task.execPath) : evalModuleCode('.', task.execString);
+  } else {
+    currentRunner = mainRunner;
+  }
+
+  Promise.resolve(currentRunner(task.payload))
     .then((data) => {
       parentPort.postMessage({
         code: CODE.SUCCESS,
