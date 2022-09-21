@@ -27,11 +27,11 @@ class WorkerThreadPool extends EventEmitter {
     maxThreads: 50,
     maxTasks: 100,
     taskRetry: 0,
-    taskTime: 1e3,
+    taskLoopTime: 1e3,
     type: THREAD_TYPE.EXEC,
   }
   static maxTaskRetry = 5;
-  static minTaskTime = 100;
+  static minTaskLoopTime = 100;
   static generateNewThread(execContent, type) {
     if ((type !== THREAD_TYPE.EVAL) && (type !== THREAD_TYPE.EXEC)) {
       throw new Error('WorkerThreadPool: param - type must be THREAD_TYPE.EVAL or THREAD_TYPE.EXEC.');
@@ -39,11 +39,23 @@ class WorkerThreadPool extends EventEmitter {
     return new Thread(execContent, type);
   }
   static generateNewTask(payload, options={}) {
-    const { execPath, execString } = options;
+    const { execPath, execString, defaultTaskRetry, taskRetry } = options;
+
     if (execPath || execString) {
       options.taskType = TASK_TYPE.DYNAMIC;
     }
-    return new Task(payload, options);
+    if (taskRetry !== undefined) {
+      options.taskRetry = taskRetry;
+    } else {
+      options.taskRetry = defaultTaskRetry
+    }
+
+    return new Task(payload, {
+      execPath,
+      execString,
+      taskRetry: options.taskRetry,
+      taskType: options.taskType,
+    });
   }
 
   /**
@@ -53,7 +65,7 @@ class WorkerThreadPool extends EventEmitter {
    *  - @param {Number} maxThreads [max threads count]
    *  - @param {Number} maxTasks [max tasks count]
    *  - @param {Number} taskRetry [task retry count]
-   *  - @param {Number} taskTime [task queue refresh time]
+   *  - @param {Number} taskLoopTime [task queue refresh time]
    *  - @param {Enum} type [thread type - THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
    */
   constructor(execContent, options = {}) {
@@ -98,7 +110,7 @@ class WorkerThreadPool extends EventEmitter {
       while(task && this.consumeTask(task)) {
         task = this.taskQueue.pop();
       }
-    }, this.options.taskTime);
+    }, this.options.taskLoopTime);
   }
 
   _cancelTaskTimer() {
@@ -150,7 +162,7 @@ class WorkerThreadPool extends EventEmitter {
   };
 
   paramsCheck(options = {}) {
-    const { taskRetry, maxThreads, maxTasks, taskTime } = options;
+    const { taskRetry, maxThreads, maxTasks, taskLoopTime } = options;
 
     if (taskRetry !== undefined && (taskRetry > WorkerThreadPool.maxTaskRetry || taskRetry < 0)) {
       throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${WorkerThreadPool.maxTaskRetry}.`);
@@ -161,8 +173,8 @@ class WorkerThreadPool extends EventEmitter {
     if (maxTasks !== undefined && (!Number.isInteger(maxTasks) || maxTasks < 1)) {
       throw new Error('WorkerThreadPool: param - maxTasks must be an positive integer.');
     }
-    if (taskTime !== undefined && (!Number.isInteger(taskTime) || taskTime < WorkerThreadPool.minTaskTime)) {
-      throw new Error(`WorkerThreadPool: param - taskTimer must be an positive integer that no less than ${WorkerThreadPool.minTaskTime}ms.`);
+    if (taskLoopTime !== undefined && (!Number.isInteger(taskLoopTime) || taskLoopTime < WorkerThreadPool.minTaskLoopTime)) {
+      throw new Error(`WorkerThreadPool: param - taskTimer must be an positive integer that no less than ${WorkerThreadPool.minTaskLoopTime}ms.`);
     }
   }
 
@@ -221,8 +233,14 @@ class WorkerThreadPool extends EventEmitter {
    * @return {Promise}
    */
   send(payload, options={}) {
+    this.paramsCheck({ taskRetry: options.taskRetry });
+
     return new Promise((resolve, reject) => {
-      const task = WorkerThreadPool.generateNewTask(payload, options);
+      const task = WorkerThreadPool.generateNewTask(payload, {
+        ...options,
+        defaultTaskRetry: this.options.taskRetry,
+        taskRetry: options.taskRetry,
+      });
 
       if (!this.isFull) {
         const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
@@ -278,12 +296,12 @@ class WorkerThreadPool extends EventEmitter {
   }
 
   /**
-   * setTaskTimeout [set task timeout]
-   * @param {Number} timeout
+   * setTaskLoopTime [set task loop time]
+   * @param {Number} taskLoopTime
    */
-  setTaskTimeout(taskTimeout) {
-    this.paramsCheck({ taskTimeout });
-    this.taskTimeout = timeout;
+   setTaskLoopTime(taskLoopTime) {
+    this.paramsCheck({ taskLoopTime });
+    this.options.taskLoopTime = taskLoopTime;
   }
 
   /**
@@ -292,7 +310,7 @@ class WorkerThreadPool extends EventEmitter {
    */
   setTaskRetry(taskRetry) {
     this.paramsCheck({ taskRetry });
-    this.taskRetry = taskRetry;
+    this.options.taskRetry = taskRetry;
   }
 
 }

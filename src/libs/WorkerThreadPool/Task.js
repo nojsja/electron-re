@@ -25,7 +25,7 @@ class Task {
     this.taskType = options.taskType || TASK_TYPE.STATIC;
     this.execPath = options.execPath || null;
     this.execString = options.execString || null;
-    this.maxTaskRetry = options.maxTaskRetry || Task.defaultOptions.maxTaskRetry;
+    this.maxTaskRetry = options.taskRetry || Task.defaultOptions.maxTaskRetry;
   }
 
   stop() {
