@@ -20,6 +20,7 @@ class ExecWorker extends WorkerClass {
         execPath: this.execPath,
       },
     });
+    this.threadId = this.runner.threadId;
     this.runner.on('message', (info) => {
       this.emit('response', info);
     });

@@ -245,11 +245,18 @@ class WorkerThreadPool extends EventEmitter {
 
 
   /**
-   * wipeTask [wipe all tasks of queue]
-   * @return {Promise}
+   * @name wipeTask [wipe all tasks of queue]
    */
   wipeTaskQueue() {
-    this.taskQueue = [];
+    this.taskQueue.wipeTask();
+  }
+
+  /**
+   * @name wipeThreadPool [wipe all threads of pool]
+   */
+  wipeThreadPool() {
+    this.threadPool = [];
+    this._callbacks = {};
   }
 
   /**
@@ -258,7 +265,7 @@ class WorkerThreadPool extends EventEmitter {
    */
   setMaxThreads(maxThreads) {
     this.paramsCheck({ maxThreads });
-    this.maxThreads = maxThreads;
+    this.options.maxThreads = maxThreads;
   }
 
   /**
@@ -267,7 +274,7 @@ class WorkerThreadPool extends EventEmitter {
    */
   setMaxTasks(maxTasks) {
     this.paramsCheck({ maxTasks });
-    this.maxTasks = maxTasks;
+    this.taskQueue.setMaxLength(maxTasks);
   }
 
   /**

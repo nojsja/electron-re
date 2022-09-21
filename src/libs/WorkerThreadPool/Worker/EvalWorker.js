@@ -12,6 +12,7 @@ class EvalWorker extends WorkerClass {
     this.code = code;
     this.context = context;
     this.runner = null;
+    this.threadId = null;
     this.init();
   }
 
@@ -24,6 +25,7 @@ class EvalWorker extends WorkerClass {
         },
       },
     );
+    this.threadId = this.runner.threadId;
     this.runner.on('message', (info) => {
       this.emit('response', info);
     });

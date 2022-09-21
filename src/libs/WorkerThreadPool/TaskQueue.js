@@ -111,6 +111,14 @@ class TaskQueue {
     this.taskMap.clear();
     this.queue = [];
   }
+
+  /**
+   * setMaxLength [set max task queue length]
+   * @param {Number} length
+   */
+   setMaxLength(length) {
+    this.maxLength = length;
+  }
 }
 
 module.exports = TaskQueue;

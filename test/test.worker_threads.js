@@ -27,7 +27,7 @@ const workerThreadPool = () => {
   describe('▸ Worker Thread Pool Test', () => {
     it('run a task with pool and get correct result', (callback) => {
       threadPool.send(15).then((res) => {
-        if (+(res.data) === 610) {
+        if ((+(res.data) === 610) && (threadPool.threadLength === 1)) {
           callback();
         } else {
           callback('test1 failed!');
@@ -100,6 +100,41 @@ const workerThreadPool = () => {
         .catch(() => {
           callback('test4 failed!');
         });
+    });
+
+    it('fill pool and queue with tasks', (callback) => {
+      new Array(CONF_MAX_TASKS + CONF_MAX_THREADS + 10).fill(0).forEach(() => {
+        threadPool.send(15);
+      });
+      if (threadPool.isFull && threadPool.taskQueue.isFull) {
+        callback();
+      } else {
+        callback('test5 failed!');
+      }
+    });
+
+    it('invoke setMaxThreads() method and get corrent thread count', (callback) => {
+      threadPool.wipeThreadPool();
+      threadPool.setMaxThreads(5);
+      threadPool.fillPoolWithIdleThreads();
+      if (threadPool.threadLength === 5) {
+        callback();
+      } else {
+        callback('test6 failed!');
+      }
+    });
+
+    it('invoke setMaxTasks() method and get correct task count', (callback) => {
+      threadPool.wipeTaskQueue();
+      threadPool.setMaxTasks(5);
+      new Array(11).fill(0).forEach(() => {
+        threadPool.send(2);
+      });
+      if (threadPool.taskLength === 5) {
+        callback();
+      } else {
+        callback('test7 failed!');
+      }
     });
   });
 

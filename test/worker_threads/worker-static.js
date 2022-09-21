@@ -6,5 +6,9 @@ const fibonaccis = (n) => {
 }
 
 module.exports = (value) => {
-  return fibonaccis(value);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      return resolve(fibonaccis(value));
+    }, 1.5e3);
+  });
 }
