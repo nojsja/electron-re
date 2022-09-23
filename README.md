@@ -2,9 +2,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/nojsja/electron-re)](https://github.com/nojsja/electron-re/issues)
 [![GitHub stars](https://img.shields.io/github/stars/nojsja/electron-re)](https://github.com/nojsja/electron-re/stargazers)
 
-[>> 功能介绍和使用说明1(中文)](https://nojsja.gitee.io/blogs/2020/12/08/Electron-Node%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B0/)  
-[>> 功能介绍和使用说明2(中文)](https://nojsja.gitee.io/blogs/2020/12/18/Electron%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B02%EF%BC%9A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86UI/#I-%E5%89%8D%E8%A8%80)
-
 ##  electron-re
 ---------------
 > Test on electron@8.2.0 / 9.3.5
@@ -528,3 +525,56 @@ ProcessHost
 2. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
 
 3. Also you can check the `index.dev.js` and `test` dir in root, there are some cases for a full usage.
+
+### IX. Test Coverage
+
+```bash
+----------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+File                              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                           
+----------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+All files                         |   70.89 |       50 |   63.34 |   74.92 |                                                                                             
+ lib                              |   96.87 |    66.66 |     100 |   96.87 |                                                                                             
+  index.js                        |   96.87 |    66.66 |     100 |   96.87 | 27                                                                                          
+ lib/libs                         |   67.16 |    45.38 |   59.12 |      73 |                                                                                             
+  BrowserService.class.js         |   78.76 |    60.52 |   55.17 |    79.2 | 61-64,69-92,106-108,172,184-185,191,231,235                                                 
+  EventCenter.class.js            |      80 |    58.33 |   83.33 |     100 | 15-35                                                                                       
+  FileWatcher.class.js            |      60 |    41.66 |   42.85 |   66.66 | 29-49                                                                                       
+  MessageChannel.class.js         |   52.11 |    32.35 |    46.8 |   58.49 | 60-61,75-256,292-297,312-313,394-409,540-547                                                
+  ProcessHost.class.js            |   70.73 |    35.71 |    62.5 |   76.31 | 27,51-59,80,92-108                                                                          
+  ProcessLifeCycle.class.js       |   88.46 |    67.64 |   94.11 |   98.36 | 95                                                                                          
+  consts.js                       |     100 |      100 |     100 |     100 |                                                                                             
+  utils.js                        |   65.16 |    45.83 |      60 |   68.67 | 75-93,107-114,120-131,180,188                                                               
+ lib/libs/ChildProcessPool        |   84.84 |       62 |      80 |   89.91 |                                                                                             
+  ForkedProcess.js                |   78.33 |       50 |   72.72 |   82.45 | 22,64-75,97,103-105                                                                         
+  index.js                        |   86.76 |    65.78 |   82.35 |   92.39 | 119,141,219-223,231-233,287,306-315                                                         
+ lib/libs/LoadBalancer            |   80.29 |       50 |   84.37 |   80.91 |                                                                                             
+  consts.js                       |     100 |      100 |     100 |     100 |                                                                                             
+  index.js                        |   77.58 |       50 |   82.14 |   78.18 | 63-69,83,97,103,113,126,153,158-162,178-193,203                                             
+  scheduler.js                    |      95 |       50 |     100 |      95 | 28                                                                                          
+ lib/libs/LoadBalancer/algorithm  |   94.79 |     67.3 |     100 |     100 |                                                                                             
+  MINIMUM_CONNECTION.js           |    92.3 |    64.28 |     100 |     100 | 5-6,19                                                                                      
+  POLLING.js                      |   85.71 |       50 |     100 |     100 | 5-9                                                                                         
+  RANDOM.js                       |     100 |       50 |     100 |     100 | 7                                                                                           
+  SPECIFY.js                      |     100 |       75 |     100 |     100 | 14                                                                                          
+  WEIGHTS.js                      |   92.85 |    66.66 |     100 |     100 | 5-11                                                                                        
+  WEIGHTS_MINIMUM_CONNECTION.js   |   94.11 |       80 |     100 |     100 | 5,15                                                                                        
+  WEIGHTS_POLLING.js              |    92.3 |    66.66 |     100 |     100 | 5-10                                                                                        
+  WEIGHTS_RANDOM.js               |     100 |    66.66 |     100 |     100 | 9,17                                                                                        
+  index.js                        |     100 |      100 |     100 |     100 |                                                                                             
+ lib/libs/ProcessManager          |   51.08 |       25 |   38.46 |   51.77 |                                                                                             
+  index.js                        |   57.21 |    31.39 |      48 |    58.6 | 66,71,76,81,110,123,132,143,150-169,175-224,228-230,236-245,285-287,295-298,303-306,311-336 
+  ui.js                           |   32.35 |        0 |    6.66 |   32.83 | 34-122,130-137                                                                              
+ lib/libs/WorkerThreadPool        |   71.35 |    60.58 |   68.29 |   73.39 |                                                                                             
+  Task.js                         |   76.47 |    91.66 |   41.66 |   76.47 | 40,50,60-81                                                                                 
+  TaskQueue.js                    |   45.58 |    23.07 |   69.23 |   48.38 | 63-137                                                                                      
+  Thread.js                       |   78.65 |    57.14 |   70.58 |   83.87 | 54-56,60-63,85,104,125-131                                                                  
+  consts.js                       |     100 |      100 |     100 |     100 |                                                                                             
+  index.js                        |   75.87 |     67.3 |      75 |   77.97 | 82,102-107,117-127,145,176-177,187,204,208,212,216,237-242,251,265-270,382-398,404,423      
+ lib/libs/WorkerThreadPool/Worker |   65.24 |    47.36 |   59.25 |   75.26 |                                                                                             
+  EvalWorker.js                   |   40.74 |    31.25 |      30 |   47.36 | 34-49,55-71                                                                                 
+  ExecWorker.js                   |   80.39 |    58.33 |      70 |   91.42 | 37,64,67                                                                                    
+  Worker.js                       |   80.55 |       60 |   85.71 |     100 | 15-17                                                                                       
+ lib/tasks                        |   83.33 |       50 |     100 |   88.23 |                                                                                             
+  app.init.js                     |   83.33 |       50 |     100 |   88.23 | 33-39                                                                                       
+----------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+```

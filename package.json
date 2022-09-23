@@ -9,14 +9,15 @@
     "start:main": "cross-env NODE_ENV=dev electron index.js --inspect=5858",
     "start:main:no-sandbox": "cross-env NODE_ENV=dev electron index.js --inspect=5858 --disable-gpu-sandbox",
     "start:renderer": "cd src/ui && npm start",
+    "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
+    "build:libs": "node ./build.js build:libs",
+    "build:ui": "node ./build.js build:ui",
+    "build": "npm run build:libs && npm run build:ui",
     "test": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js --inspect=5858",
     "test:no-sandbox": "cross-env NODE_ENV=test ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
     "test:src": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js  --inspect=5858",
     "test:src:no-sandbox": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
-    "watch": "onchange 'src/*.js' 'src/libs/*/*/*.js' 'src/libs/*/*.js' 'src/libs/*.js' 'src/index.js' 'src/conf/*' -- npm run build:libs",
-    "build:libs": "node ./build.js build:libs",
-    "build:ui": "node ./build.js build:ui",
-    "build": "npm run build:libs && npm run build:ui"
+    "coverage": "nyc npm run test"
   },
   "keywords": [
     "electron",
@@ -51,6 +52,7 @@
     "electron": "9.3.5",
     "electron-mocha": "^9.3.2",
     "istanbul": "^0.4.5",
+    "nyc": "^15.1.0",
     "onchange": "^7.1.0",
     "shx": "^0.3.3"
   },
