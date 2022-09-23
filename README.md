@@ -2,9 +2,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/nojsja/electron-re)](https://github.com/nojsja/electron-re/issues)
 [![GitHub stars](https://img.shields.io/github/stars/nojsja/electron-re)](https://github.com/nojsja/electron-re/stargazers)
 
-[>> 功能介绍和使用说明1(中文)](https://nojsja.gitee.io/blogs/2020/12/08/Electron-Node%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B0/)  
-[>> 功能介绍和使用说明2(中文)](https://nojsja.gitee.io/blogs/2020/12/18/Electron%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%B7%A5%E5%85%B7%E5%BC%80%E5%8F%91%E6%97%A5%E8%AE%B02%EF%BC%9A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86UI/#I-%E5%89%8D%E8%A8%80)
-
 ##  electron-re
 ---------------
 > Test on electron@8.2.0 / 9.3.5
