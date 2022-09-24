@@ -80,7 +80,7 @@ class Thread extends EventEmitter {
       case THREAD_STATUS.IDLE:
         this.status = THREAD_STATUS.WORKING;
         task.start();
-        this.worker.postMessage(task);
+        this.worker.postMessage(task, task.transferList);
         this.taskId = task.taskId;
         return true;
       case THREAD_STATUS.WORKING:

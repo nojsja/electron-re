@@ -21,6 +21,7 @@ class Task {
     this.taskId = Task.generateTaskId('task');
     this.status = TASK_STATUS.PENDING;
     this.payload = payload;
+    this.transferList = options.transferList;
     this.taskRetry = 0;
     this.taskType = options.taskType || TASK_TYPE.STATIC;
     this.execPath = options.execPath || null;

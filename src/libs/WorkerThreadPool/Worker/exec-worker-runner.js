@@ -1,16 +1,30 @@
 const { parentPort, workerData } = require('worker_threads');
 
 const { CODE, TASK_TYPE } = require('../consts');
-const { evalModuleCode } = require('./utils');
+const { evalModuleCode } = require('../utils');
 
 const { execPath } = workerData;
-const mainRunner = require(execPath);
+let mainRunner;
+
+function errorRunner(err) {
+  throw new Error(`ExecWorkerError: ${err}`);
+}
+
+try {
+  mainRunner = require(execPath);
+} catch (error) {
+  mainRunner = () => errorRunner(error);
+}
 
 parentPort.on('message', (task) => {
   let currentRunner;
 
   if (task.taskType === TASK_TYPE.DYNAMIC) {
-    currentRunner = task.execPath ? require(task.execPath) : evalModuleCode('.', task.execString);
+    try {
+      currentRunner = task.execPath ? require(task.execPath) : evalModuleCode('.', task.execString);
+    } catch (error) {
+      currentRunner = () => errorRunner(error);
+    }
   } else {
     currentRunner = mainRunner;
   }

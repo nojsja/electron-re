@@ -9,3 +9,14 @@ exports.evalModuleCode = function (context, code, filename='eval') {
 
   return _module.exports;
 };
+
+exports.funcStringify = function(func) {
+  if (func instanceof Function) {
+    return (
+      `module.exports = ${
+        Function.prototype.toString.call(execFunction)
+      }`
+    );
+  }
+  throw new Error('funcStringify: params must be a function');
+};

@@ -1,20 +1,15 @@
 const { isRenderer, isMain, isForkedChild } = require('./libs/utils');
-const {
-  THREAD_TYPE, CODE,
-  THREAD_STATUS, TASK_STATUS, TASK_TYPE,
-} = require('./libs/WorkerThreadPool/consts');
+
+const { THREAD_TYPE, StaticThreadPool, DynamicThreadPool } = require('./libs/WorkerThreadPool');
 
 exports.ChildProcessPool = require('./libs/ChildProcessPool');
 exports.LoadBalancer = require('./libs/LoadBalancer');
 exports.ProcessHost = require('./libs/ProcessHost.class');
 exports.ProcessLifeCycle = require('./libs/ProcessLifeCycle.class');
-exports.WorkerThreadPool = require('./libs/WorkerThreadPool');
 
+exports.StaticThreadPool = StaticThreadPool;
+exports.DynamicThreadPool = DynamicThreadPool;
 exports.THREAD_TYPE = THREAD_TYPE;
-exports.THREAD_STATUS = THREAD_STATUS;
-exports.THREAD_TASK_STATUS = TASK_STATUS;
-exports.THREAD_TASK_TYPE = TASK_TYPE,
-exports.CODE = CODE;
 
 /* -------------- renderer process -------------- */
 

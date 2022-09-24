@@ -2,7 +2,7 @@ const path = require('path');
 
 const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
 const {
-  WorkerThreadPool,
+  StaticThreadPool,
   THREAD_TYPE,
 } = require(`../${base}`);
 
@@ -12,7 +12,7 @@ const workerThreadPool = () => {
   const CONF_TASK_RETRY = 0;
   const CONF_THREAD_TYPE = THREAD_TYPE.EXEC;
 
-  const threadPool = new WorkerThreadPool(
+  const threadPool = new StaticThreadPool(
     path.join(__dirname, './worker_threads/worker-static.js'),
     {
       lazyLoad: true,
@@ -26,7 +26,7 @@ const workerThreadPool = () => {
 
   describe('▸ Worker Thread Pool Test', () => {
     it('run a task with pool and get correct result', (callback) => {
-      threadPool.send(15).then((res) => {
+      threadPool.exec(15).then((res) => {
         if ((+(res.data) === 610) && (threadPool.threadLength === 1)) {
           callback();
         } else {
@@ -49,7 +49,7 @@ const workerThreadPool = () => {
     it('put tasks into queue when no idle thread', (callback) => {
       Promise
         .all(
-          new Array(11).fill(0).map(() => threadPool.send(15))
+          new Array(11).fill(0).map(() => threadPool.exec(15))
         )
         .then((results) => {
           const isAllTaskSuccess = results.every((res) => +(res.data) === 610);
@@ -70,7 +70,7 @@ const workerThreadPool = () => {
 
     it('run a dynamic task (exec) with pool and get correct result', (callback) => {
       threadPool
-        .send('test', {
+        .exec('test', {
           execPath: path.join(__dirname, './worker_threads/worker-dynamic.js')
         })
         .then((value) => {
@@ -87,7 +87,7 @@ const workerThreadPool = () => {
 
     it('run a dynamic task (eval) with pool and get correct result', (callback) => {
       threadPool
-        .send('test', {
+        .exec('test', {
           execString: "module.exports = (value) => { return `dynamic:${value}`; };"
         })
         .then((value) => {
@@ -104,7 +104,7 @@ const workerThreadPool = () => {
 
     it('fill pool and queue with tasks', (callback) => {
       new Array(CONF_MAX_TASKS + CONF_MAX_THREADS + 10).fill(0).forEach(() => {
-        threadPool.send(15);
+        threadPool.exec(15);
       });
       if (threadPool.isFull && threadPool.taskQueue.isFull) {
         callback();
@@ -128,7 +128,7 @@ const workerThreadPool = () => {
       threadPool.wipeTaskQueue();
       threadPool.setMaxTasks(5);
       new Array(11).fill(0).forEach(() => {
-        threadPool.send(2);
+        threadPool.exec(2);
       });
       if (threadPool.taskLength === 5) {
         callback();
