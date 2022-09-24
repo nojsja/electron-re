@@ -4,24 +4,23 @@ const { Worker } = require('worker_threads');
 const WorkerClass = require('./Worker');
 
 class EvalWorker extends WorkerClass {
-  constructor(code, context={}) {
+  constructor(code, options={}) {
     if (!code) {
       throw new Error('EvalWorker: code is required');
     }
     super();
     this.code = code;
-    this.context = context;
     this.runner = null;
     this.threadId = null;
-    this.init();
+    this.init(options);
   }
 
-  init() {
+  init(options) {
     this.runner = new Worker(
       path.join(__dirname, 'eval-worker-runner.js'), {
+        ...options,
         workerData: {
           code: this.code,
-          context: this.context,
         },
       },
     );

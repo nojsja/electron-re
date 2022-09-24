@@ -32,49 +32,51 @@ class WorkerThreadPool extends EventEmitter {
   }
   static maxTaskRetry = 5;
   static minTaskLoopTime = 100;
-  static generateNewThread(execContent, type) {
+  static generateNewThread(execContent, type, options) {
     if ((type !== THREAD_TYPE.EVAL) && (type !== THREAD_TYPE.EXEC)) {
       throw new Error('WorkerThreadPool: param - type must be THREAD_TYPE.EVAL or THREAD_TYPE.EXEC.');
     }
-    return new Thread(execContent, type);
+    return new Thread(execContent, type, options);
   }
   static generateNewTask(payload, options={}) {
-    const { execPath, execString, defaultTaskRetry, taskRetry } = options;
+    const {
+      execPath, execFunction, defaultTaskRetry, ...others
+    } = options;
+    let { execString, taskRetry } = options;
+    let taskType = TASK_TYPE.STATIC;
+    taskRetry = taskRetry !== undefined ? taskRetry : defaultTaskRetry;
 
-    if (execPath || execString) {
-      options.taskType = TASK_TYPE.DYNAMIC;
-    }
-    if (taskRetry !== undefined) {
-      options.taskRetry = taskRetry;
-    } else {
-      options.taskRetry = defaultTaskRetry
+    if (execPath || execString || execFunction) {
+      taskType = TASK_TYPE.DYNAMIC;
+      if (execFunction) {
+        execString = `module.exports = ${
+          Function.prototype.toString.call(execFunction)
+        }`;
+      }
     }
 
-    return new Task(payload, {
-      execPath,
-      execString,
-      taskRetry: options.taskRetry,
-      taskType: options.taskType,
-    });
+    return new Task(payload, { ...others, execPath, execString, taskRetry, taskType });
   }
 
   /**
    * @param {String} execContent [thread executable js file path or file content, work with `options.type`]
-   * @param {Object} options
+   * @param {Object} options [options to create pool]
    *  - @param {Boolean} lazyLoad [whether to create threads lazily when the thread pool is initialized]
    *  - @param {Number} maxThreads [max threads count]
    *  - @param {Number} maxTasks [max tasks count]
    *  - @param {Number} taskRetry [task retry count]
    *  - @param {Number} taskLoopTime [task queue refresh time]
    *  - @param {Enum} type [thread type - THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
+   * @param {Object} threadOptions [options to create worker threads, the same as options in original `new Worker(filename, [options])`]
    */
-  constructor(execContent, options = {}) {
+  constructor(execContent, options = {}, threadOptions = {}) {
     super();
     this.execContent = execContent;
     this.options = Object.assign(
       WorkerThreadPool.defaultOptions,
       options
     );
+    this.threadOptions = threadOptions;
     this.paramsCheck(this.options);
     this.taskQueue = new TaskQueue({
       maxLength: this.options.maxTasks,
@@ -181,7 +183,9 @@ class WorkerThreadPool extends EventEmitter {
   fillPoolWithIdleThreads() {
     const countToFill = this.options.maxThreads - this.threadPool.length;
     const threads = new Array(countToFill).fill(0).map(() => {
-      const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
+      const thread = WorkerThreadPool.generateNewThread(
+        this.execContent, this.options.type, this.threadOptions
+      );
       this._handleThreadEvent(thread);
       return thread;
     });
@@ -212,7 +216,9 @@ class WorkerThreadPool extends EventEmitter {
   consumeTask(task) {
     if (!(task instanceof Task)) return false;
     if (!this.isFull) {
-      const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
+      const thread = WorkerThreadPool.generateNewThread(
+        this.execContent, this.options.type, this.threadOptions
+      );
       this._handleThreadEvent(thread);
       this.threadPool.push(thread);
       thread.runTask(task);
@@ -228,8 +234,9 @@ class WorkerThreadPool extends EventEmitter {
    * send [send a request to pool]
    * @param {*} payload [request payload]
    * @param {Object} options [options to create a task]
-   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString]
-   *  - @param {String} execString [execution file content, conflict with option - execPath]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
    * @return {Promise}
    */
   send(payload, options={}) {
@@ -243,7 +250,9 @@ class WorkerThreadPool extends EventEmitter {
       });
 
       if (!this.isFull) {
-        const thread = WorkerThreadPool.generateNewThread(this.execContent, this.options.type);
+        const thread = WorkerThreadPool.generateNewThread(
+          this.execContent, this.options.type, this.threadOptions
+        );
         this._handleThreadEvent(thread);
         this.threadPool.push(thread);
         thread.runTask(task);

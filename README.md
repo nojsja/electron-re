@@ -524,6 +524,6 @@ ProcessHost
 
 2. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
 
-3. Also you can check the `index.dev.js` and `test` dir in root, there are some cases for a full usage.
+3. Also you can check the `index.dev.js` and `test` dir in root, there are some useful cases.
 
 ### IX. Test Coverage

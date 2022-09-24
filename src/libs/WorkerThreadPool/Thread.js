@@ -12,14 +12,22 @@ const EvalWorker = require('./Worker/EvalWorker');
 const ExecWorker = require('./Worker/ExecWorker');
 
 class Thread extends EventEmitter {
-  constructor(execContent, type) {
+  /**
+   * @name constructor
+   * @param {String} execContent [executable js path or executable code string]
+   * @param {Enum} type [THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
+   * @param {Object} options [options to create worker threads, the same as options in original `new Worker(filename, [options])`]
+   */
+  constructor(execContent, type, options = {}) {
     super();
     this.type = type;
     this.status = THREAD_STATUS.IDLE;
     this.worker = null;
     this.threadId = null;
+    this.taskId = null;
     this.execPath = null;
     this.execString = null;
+    this.options = options;
     if (type === THREAD_TYPE.EVAL) {
       this.execString = execContent;
     } else {
@@ -34,9 +42,9 @@ class Thread extends EventEmitter {
 
   _initWorker() {
     if (this.type === THREAD_TYPE.EVAL) {
-      this.worker = new EvalWorker(this.execString);
+      this.worker = new EvalWorker(this.execString, this.options);
     } else {
-      this.worker = new ExecWorker(this.execPath);
+      this.worker = new ExecWorker(this.execPath, this.options);
     }
     this.threadId = this.worker.threadId;
     this.worker.on('response', this._onResponse);
@@ -54,6 +62,7 @@ class Thread extends EventEmitter {
     this.status = THREAD_STATUS.DEAD;
     this.emit('exit', {
       threadId: this.threadId,
+      taskId: this.taskId,
       exitCode,
     });
   }
@@ -72,6 +81,7 @@ class Thread extends EventEmitter {
         this.status = THREAD_STATUS.WORKING;
         task.start();
         this.worker.postMessage(task);
+        this.taskId = task.taskId;
         return true;
       case THREAD_STATUS.WORKING:
         return false;

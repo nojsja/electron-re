@@ -4,8 +4,7 @@ const {
 const { CODE } = require('../consts');
 const { evalModuleCode } = require('./utils');
 
-const { context, code } = workerData;
-
+const { code } = workerData;
 const mainRunner = evalModuleCode('.', code);
 
 parentPort.on('message', (task) => {
