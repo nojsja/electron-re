@@ -1,4 +1,5 @@
 const ThreadPool = require('./ThreadPool');
+const DynamicExecutor = require('../Executor/DynamicExecutor');
 
 class DynamicThreadPool extends ThreadPool {
   /**
@@ -53,7 +54,7 @@ class DynamicThreadPool extends ThreadPool {
   }
 
   createExecutor(options) {
-    return new StaticExecutor(this, options);
+    return new DynamicExecutor(this, options);
   }
 
 }

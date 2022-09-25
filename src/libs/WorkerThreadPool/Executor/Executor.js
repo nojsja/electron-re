@@ -1,4 +1,12 @@
 class Executor {
+  static paramsCheck({ taskRetry, taskTimeout }) {
+    if (taskRetry !== undefined && (taskRetry > ThreadPool.maxTaskRetry || taskRetry < 0)) {
+      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${ThreadPool.maxTaskRetry}.`);
+    }
+    if (taskTimeout !== undefined && (taskTimeout < 0)) {
+      throw new Error(`WorkerThreadPool: param - taskTimeout must be an positive integer.`);
+    }
+  }
   static defaultOptions = {
     taskRetry: 0,
     taskTimeout: 60e3,
@@ -13,21 +21,10 @@ class Executor {
     this.taskTimeout = taskTimeout;
     this.transferList = transferList;
     this.taskRetry = taskRetry;
-    this.paramsCheck({
+    Executor.paramsCheck({
       taskRetry: this.taskRetry,
       taskTimeout: this.taskTimeout,
     });
-  }
-
-  paramsCheck(options = {}) {
-    const { taskRetry, taskTimeout } = options;
-
-    if (taskRetry !== undefined && (taskRetry > ThreadPool.maxTaskRetry || taskRetry < 0)) {
-      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${ThreadPool.maxTaskRetry}.`);
-    }
-    if (taskTimeout !== undefined && (taskTimeout < 0)) {
-      throw new Error(`WorkerThreadPool: param - taskTimeout must be an positive integer.`);
-    }
   }
 
   /**
@@ -35,7 +32,7 @@ class Executor {
    * @param {Number} taskRetry
    */
   setTaskRetry(taskRetry) {
-    this.paramsCheck({ taskRetry });
+    Executor.paramsCheck({ taskRetry });
     this.options.taskRetry = taskRetry;
 
     return this;
@@ -46,7 +43,7 @@ class Executor {
    * @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
    */
   setTransferList(transferList) {
-    this.threadOptions.transferList = transferList;
+    this.transferList = transferList;
 
     return this;
   }

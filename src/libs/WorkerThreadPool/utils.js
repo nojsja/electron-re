@@ -14,7 +14,7 @@ exports.funcStringify = function(func) {
   if (func instanceof Function) {
     return (
       `module.exports = ${
-        Function.prototype.toString.call(execFunction)
+        Function.prototype.toString.call(func)
       }`
     );
   }

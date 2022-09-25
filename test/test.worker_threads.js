@@ -135,6 +135,8 @@ const dynamicWorkerThreadPool = () => {
     }
   );
 
+  const executor = threadPool.createExecutor({ execString: `module.exports = (value) => 'excutor:'+value` });
+
   describe('▹ Dynamic Worker Thread Pool Test', () => {
     it('run a task with pool and get correct result', (callback) => {
       threadPool.exec('test', {
@@ -193,6 +195,53 @@ const dynamicWorkerThreadPool = () => {
             callback();
           } else {
             callback('test4 failed!');
+          }
+        })
+        .catch((err) => {
+          callback(err.toString());
+        });
+    });
+
+    it('run a task with DynamicExecutor instance and get correct result', (callback) => {
+      executor.exec('test').then((res) => {
+        if (res.data === 'excutor:test') {
+          callback();
+        } else {
+          callback('test7 failed!');
+        }
+      })
+      .catch((err) => {
+        callback(err.toString());
+      });
+    });
+
+    it('run a task with DynamicExecutor instance and get correct result', (callback) => {
+      executor
+        .setExecFunction((value) => {
+          return `excutor:${value}`;
+        })
+        .exec('test2')
+        .then((res) => {
+          if (res.data === 'excutor:test2') {
+            callback();
+          } else {
+            callback('test8 failed!');
+          }
+        })
+        .catch((err) => {
+          callback(err.toString());
+        });
+    });
+
+    it('run a task with DynamicExecutor instance and get correct result', (callback) => {
+      executor
+        .setExecPath(path.join(__dirname, './worker_threads/worker-static.js'))
+        .exec(15)
+        .then((res) => {
+          if (+(res.data) === 610) {
+            callback();
+          } else {
+            callback('test8 failed!');
           }
         })
         .catch((err) => {
