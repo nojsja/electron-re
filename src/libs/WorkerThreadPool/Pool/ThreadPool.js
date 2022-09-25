@@ -47,6 +47,23 @@ class ThreadPool extends EventEmitter {
     );
   }
 
+  static paramsCheck(options = {}) {
+    const { taskRetry, maxThreads, maxTasks, taskLoopTime } = options;
+
+    if (taskRetry !== undefined && (taskRetry > ThreadPool.maxTaskRetry || taskRetry < 0)) {
+      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${ThreadPool.maxTaskRetry}.`);
+    }
+    if (maxThreads !== undefined && (!Number.isInteger(maxThreads) || maxThreads < 1)) {
+      throw new Error('WorkerThreadPool: param - maxThreads must be an positive integer.');
+    }
+    if (maxTasks !== undefined && (!Number.isInteger(maxTasks) || maxTasks < 1)) {
+      throw new Error('WorkerThreadPool: param - maxTasks must be an positive integer.');
+    }
+    if (taskLoopTime !== undefined && (!Number.isInteger(taskLoopTime) || taskLoopTime < ThreadPool.minTaskLoopTime)) {
+      throw new Error(`WorkerThreadPool: param - taskTimer must be an positive integer that no less than ${ThreadPool.minTaskLoopTime}ms.`);
+    }
+  }
+
   /**
    * @param {Object} options [options to create pool]
    *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
@@ -80,7 +97,7 @@ class ThreadPool extends EventEmitter {
     }
 
     this.threadOptions = threadOptions;
-    this.paramsCheck(this.options);
+    ThreadPool.paramsCheck(this.options);
     this.taskQueue = new TaskQueue({
       maxLength: this.options.maxTasks,
     });
@@ -166,23 +183,6 @@ class ThreadPool extends EventEmitter {
     this.emit('thread:exit', info);
   };
 
-  paramsCheck(options = {}) {
-    const { taskRetry, maxThreads, maxTasks, taskLoopTime } = options;
-
-    if (taskRetry !== undefined && (taskRetry > ThreadPool.maxTaskRetry || taskRetry < 0)) {
-      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${ThreadPool.maxTaskRetry}.`);
-    }
-    if (maxThreads !== undefined && (!Number.isInteger(maxThreads) || maxThreads < 1)) {
-      throw new Error('WorkerThreadPool: param - maxThreads must be an positive integer.');
-    }
-    if (maxTasks !== undefined && (!Number.isInteger(maxTasks) || maxTasks < 1)) {
-      throw new Error('WorkerThreadPool: param - maxTasks must be an positive integer.');
-    }
-    if (taskLoopTime !== undefined && (!Number.isInteger(taskLoopTime) || taskLoopTime < ThreadPool.minTaskLoopTime)) {
-      throw new Error(`WorkerThreadPool: param - taskTimer must be an positive integer that no less than ${ThreadPool.minTaskLoopTime}ms.`);
-    }
-  }
-
   fillPoolWithIdleThreads() {
     const countToFill = this.options.maxThreads - this.threadPool.length;
     const threads = new Array(countToFill).fill(0).map(() => {
@@ -251,7 +251,7 @@ class ThreadPool extends EventEmitter {
    * @return {Promise}
    */
   exec(payload, options={}) {
-    this.paramsCheck(options);
+    ThreadPool.paramsCheck(options);
 
     return new Promise((resolve, reject) => {
       const poolOptions = this.options;
@@ -318,7 +318,7 @@ class ThreadPool extends EventEmitter {
    * @param {Number} maxThreads
    */
   setMaxThreads(maxThreads) {
-    this.paramsCheck({ maxThreads });
+    ThreadPool.paramsCheck({ maxThreads });
     this.options.maxThreads = maxThreads;
 
     return this;
@@ -329,7 +329,7 @@ class ThreadPool extends EventEmitter {
    * @param {Number} maxTasks
    */
   setMaxTasks(maxTasks) {
-    this.paramsCheck({ maxTasks });
+    ThreadPool.paramsCheck({ maxTasks });
     this.taskQueue.setMaxLength(maxTasks);
 
     return this;
@@ -340,7 +340,7 @@ class ThreadPool extends EventEmitter {
    * @param {Number} taskLoopTime
    */
   setTaskLoopTime(taskLoopTime) {
-    this.paramsCheck({ taskLoopTime });
+    ThreadPool.paramsCheck({ taskLoopTime });
     this.options.taskLoopTime = taskLoopTime;
 
     return this;
@@ -351,7 +351,7 @@ class ThreadPool extends EventEmitter {
    * @param {Number} taskRetry
    */
   setTaskRetry(taskRetry) {
-    this.paramsCheck({ taskRetry });
+    ThreadPool.paramsCheck({ taskRetry });
     this.options.taskRetry = taskRetry;
 
     return this;
