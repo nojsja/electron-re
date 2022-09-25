@@ -7,7 +7,7 @@ const {
 
 /* -------------- main <-> renderer -------------- */
 const mainAndRenderer = () => {
-  describe('▸ Communication between main and renderer with [MessageChannel]', () => {
+  describe('▹ Communication between main and renderer with [MessageChannel]', () => {
     it('main send data to renderer using [sendTo]', (callback) => {
       MessageChannel.sendTo(global.mainWindow.id, 'mainAndRenderer:test1', { value: 'test1' });
 
@@ -109,7 +109,7 @@ const mainAndRenderer = () => {
 
 /* -------------- main <-> service -------------- */
 const mainAndService = () => {
-  describe('▸ Communication between main and service with [MessageChannel]', () => {
+  describe('▹ Communication between main and service with [MessageChannel]', () => {
     it('main send data to service using [send]', (callback) => {
       MessageChannel.send('app', 'mainAndService:test1', { value: 'test1' });
       ipcMain.once('mainAndService:test1', (event, result) => {
@@ -220,7 +220,7 @@ const mainAndService = () => {
 
 /* -------------- renderer <-> service -------------- */
 const rendererAndService = () => {
-  describe('▸ Communication between renderer and service with [MessageChannel]', () => {
+  describe('▹ Communication between renderer and service with [MessageChannel]', () => {
     it('renderer send data to service using [send]', (callback) => {
       global.mainWindow.webContents.send('rendererAndService:test1', { value: 'test1' });
 
@@ -273,7 +273,7 @@ const rendererAndService = () => {
 
 /* -------------- service <-> service -------------- */
 const serviceAndService = () => {
-  describe('▸ Communication between service and service with [MessageChannel]', () => {
+  describe('▹ Communication between service and service with [MessageChannel]', () => {
     it('service send data to service using [send]', (callback) => {
       global.appService.webContents.send('serviceAndService:test1', { value: 'test1' });
 
@@ -289,7 +289,7 @@ const serviceAndService = () => {
 
     it('service send data to service using [invoke]', (callback) => {
       global.appService.webContents.send('serviceAndService:test2', { value: 'test2' });
-      
+
       ipcMain.once('serviceAndService:test2', (event, result) => {
         if (result && result.value === 'test2') {
           callback();
@@ -325,8 +325,10 @@ const serviceAndService = () => {
 }
 
 module.exports = () => {
-  mainAndRenderer();
-  mainAndService();
-  rendererAndService();
-  serviceAndService();
+  describe('▸ BrowserService Test', () => {
+    mainAndRenderer();
+    mainAndService();
+    rendererAndService();
+    serviceAndService();
+  });
 };

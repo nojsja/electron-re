@@ -171,11 +171,7 @@
 <a name='L106'></a><a href='#L106'>106</a>
 <a name='L107'></a><a href='#L107'>107</a>
 <a name='L108'></a><a href='#L108'>108</a>
-<a name='L109'></a><a href='#L109'>109</a>
-<a name='L110'></a><a href='#L110'>110</a>
-<a name='L111'></a><a href='#L111'>111</a>
-<a name='L112'></a><a href='#L112'>112</a>
-<a name='L113'></a><a href='#L113'>113</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L109'></a><a href='#L109'>109</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -231,20 +227,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">53x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
 <span class="cline-any cline-yes">53x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -267,21 +274,6 @@
 <span class="cline-any cline-yes">53x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -343,22 +335,33 @@ var StaticThreadPool = /*#__PURE__*/function (_ThreadPool) {
 &nbsp;
     _this.exec = function (payload) {
       var options = arguments.length &gt; 1 &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >arguments[1] !== undefined </span>? <span class="branch-0 cbranch-no" title="branch not covered" >arguments[1] </span>: {};
-&nbsp;
-      _this._paramsCheckForExec(options);
-&nbsp;
+      StaticThreadPool.paramsCheckForExec(options);
       return (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(StaticThreadPool.prototype)), "exec", _thisSuper).call((0, _assertThisInitialized2["default"])(_this), payload, options);
     };
 &nbsp;
     _this.type = 'static';
-&nbsp;
-    _this._paramsCheckForSetup(_options);
-&nbsp;
+    StaticThreadPool.paramsCheckForSetup(_options);
     return _this;
   }
+  /**
+   * @name exec [send a request to pool]
+   * @param {*} payload [request payload data to send]
+   * @param {Object} options [options to create a task]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
+&nbsp;
 &nbsp;
   (0, _createClass2["default"])(StaticThreadPool, [{
-    key: "_paramsCheckForSetup",
-    value: function _paramsCheckForSetup() {
+    key: "createExecutor",
+    value: function <span class="fstat-no" title="function not covered" >createExecutor(</span>options) {
+<span class="cstat-no" title="statement not covered" >      return new StaticExecutor(this, options);</span>
+    }
+  }], [{
+    key: "paramsCheckForSetup",
+    value: function paramsCheckForSetup() {
       var options = arguments.length &gt; 0 &amp;&amp; arguments[0] !== undefined ? arguments[0] : <span class="branch-1 cbranch-no" title="branch not covered" >{};</span>
       var execPath = options.execPath,
           execString = options.execString,
@@ -369,8 +372,8 @@ var StaticThreadPool = /*#__PURE__*/function (_ThreadPool) {
       }
     }
   }, {
-    key: "_paramsCheckForExec",
-    value: function _paramsCheckForExec() {
+    key: "paramsCheckForExec",
+    value: function paramsCheckForExec() {
       var options = arguments.length &gt; 0 &amp;&amp; arguments[0] !== undefined ? arguments[0] : <span class="branch-1 cbranch-no" title="branch not covered" >{};</span>
       var execPath = options.execPath,
           execString = options.execString,
@@ -379,21 +382,6 @@ var StaticThreadPool = /*#__PURE__*/function (_ThreadPool) {
       <span class="missing-if-branch" title="if path not taken" >I</span>if (execPath || execString || execFunction) {
 <span class="cstat-no" title="statement not covered" >        throw new Error("StaticThreadPool: param - execPath, execString and execFunction are not allowed in StaticThreadPool!");</span>
       }
-    }
-    /**
-     * @name exec [send a request to pool]
-     * @param {*} payload [request payload data to send]
-     * @param {Object} options [options to create a task]
-     *  - @param {Number} taskTimeout [task timeout in milliseconds]
-     *  - @param {Number} taskRetry [task retry count]
-     *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
-     * @return {Promise}
-     */
-&nbsp;
-  }, {
-    key: "createExecutor",
-    value: function <span class="fstat-no" title="function not covered" >createExecutor(</span>options) {
-<span class="cstat-no" title="statement not covered" >      return new StaticExecutor(this, options);</span>
     }
   }]);
   return StaticThreadPool;
@@ -406,7 +394,7 @@ module.exports = StaticThreadPool;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-09-25T05:35:08.404Z
+                at 2022-09-25T13:32:38.024Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

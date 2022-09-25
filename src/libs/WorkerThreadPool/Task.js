@@ -22,6 +22,9 @@ class Task {
     this.status = TASK_STATUS.PENDING;
     this.payload = payload;
     this.transferList = options.transferList;
+    this.timeStart = null;
+    this.taskTimeout = options.taskTimeout;
+    this.timeEnd = null;
     this.taskRetry = 0;
     this.taskType = options.taskType || TASK_TYPE.STATIC;
     this.execPath = options.execPath || null;
@@ -31,10 +34,16 @@ class Task {
 
   stop() {
     this.status = TASK_STATUS.PENDING;
+    this.timeEnd = Date.now();
   }
 
   start() {
     this.status = TASK_STATUS.RUNNING;
+    this.timeStart = Date.now();
+  }
+
+  get isTimeout() {
+    return Date.now() - this.timeStart > this.taskTimeout;
   }
 
   get isRetryable() {

@@ -15,9 +15,19 @@ class TaskQueue {
     return this.queue.length >= this.maxLength;
   }
 
-  push(task) {
+  remember(task) {
     if (task instanceof Task) {
       this.taskMap.set(task.taskId, task);
+    }
+  }
+
+  forget(taskId) {
+    this.taskMap.delete(taskId)
+  }
+
+  push(task) {
+    if (task instanceof Task) {
+      this.remember(task);
       this.queue.push(task);
     }
   }
@@ -34,7 +44,7 @@ class TaskQueue {
   }
 
   getTask(taskId) {
-    this.taskMap.get(taskId) || null;
+    return this.taskMap.get(taskId) || null;
   }
 
   retryTask(taskId) {
@@ -101,7 +111,7 @@ class TaskQueue {
     if (!task) return null;
     const index = this.queue.indexOf(task);
 
-    this.taskMap.delete(taskId);
+    this.forget(taskId);
     if (index > -1) this.queue.splice(index, 1);
 
     return task;

@@ -40,6 +40,10 @@ class WorkerRunner extends EventEmitter {
   postMessage(...messages) {
     this.runner.postMessage(...messages);
   }
+
+  terminate() {
+    return this.runner.terminate();
+  }
 }
 
 module.exports = WorkerRunner;

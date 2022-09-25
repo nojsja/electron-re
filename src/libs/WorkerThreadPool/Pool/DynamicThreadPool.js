@@ -2,6 +2,22 @@ const ThreadPool = require('./ThreadPool');
 const DynamicExecutor = require('../Executor/DynamicExecutor');
 
 class DynamicThreadPool extends ThreadPool {
+  static paramsCheckForSetup(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (execPath || execString || execFunction) {
+      throw new Error(`DynamicThreadPool: param - execPath, execString and execFunction are not allowed in DynamicThreadPool!`);
+    }
+  }
+
+  static paramsCheckForExec(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (!execPath && !execString && !execFunction) {
+      throw new Error(`DynamicThreadPool: exec param - execPath/execString/execFunction is required!`);
+    }
+  }
+
   /**
    * @param {Object} options [options to create pool]
    *  - @param {Boolean} lazyLoad [whether to create threads lazily when the thread pool is initialized]
@@ -17,23 +33,7 @@ class DynamicThreadPool extends ThreadPool {
   constructor(options = {}, threadOptions = {}) {
     super(options, threadOptions);
     this.type = 'dynamic';
-    this._paramsCheckForSetup(options);
-  }
-
-  _paramsCheckForSetup(options = {}) {
-    const { execPath, execString, execFunction } = options;
-
-    if (execPath || execString || execFunction) {
-      throw new Error(`DynamicThreadPool: param - execPath, execString and execFunction are not allowed in DynamicThreadPool!`);
-    }
-  }
-
-  _paramsCheckForExec(options = {}) {
-    const { execPath, execString, execFunction } = options;
-
-    if (!execPath && !execString && !execFunction) {
-      throw new Error(`DynamicThreadPool: exec param - execPath/execString/execFunction is required!`);
-    }
+    DynamicThreadPool.paramsCheckForSetup(options);
   }
 
   /**
@@ -49,7 +49,7 @@ class DynamicThreadPool extends ThreadPool {
    * @return {Promise}
    */
   exec = (payload, options={}) => {
-    this._paramsCheckForExec(options);
+    DynamicThreadPool.paramsCheckForExec(options);
     return super.exec.call(this, payload, options);
   }
 

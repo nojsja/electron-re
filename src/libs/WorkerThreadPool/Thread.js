@@ -11,6 +11,11 @@ const { THREAD_STATUS, THREAD_TYPE } = require('./consts');
 const Worker = require('./Worker');
 
 class Thread extends EventEmitter {
+  static checkParams({ type }) {
+    if (!type) {
+      throw new Error('Thread: params - execPath/execString is required');
+    }
+  }
   /**
    * @name constructor
    * @param {String} execContent [executable js path or executable code string]
@@ -35,7 +40,7 @@ class Thread extends EventEmitter {
       this.type = THREAD_TYPE.EXEC;
       this.execString = options.execPath;
     }
-    this._checkParams();
+    Thread.checkParams(this);
     this._initWorker();
   }
 
@@ -43,10 +48,8 @@ class Thread extends EventEmitter {
     return this.status === THREAD_STATUS.IDLE;
   }
 
-  _checkParams() {
-    if (!this.type) {
-      throw new Error('Thread: params - execPath/execString is required');
-    }
+  get isWorking() {
+    return this.status === THREAD_STATUS.WORKING;
   }
 
   _initWorker() {
@@ -82,6 +85,10 @@ class Thread extends EventEmitter {
       ...info,
       threadId: this.threadId,
     });
+  }
+
+  terminate() {
+    return this.worker.terminate();
   }
 
   runTask(task) {

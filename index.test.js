@@ -30,7 +30,7 @@ async function createWindow() {
 
 /* prepare to test */
 describe('app ready => ', function() {
-  this.timeout(30e3);
+  this.timeout(60e3);
   before(async () => {
     await app.whenReady().then(() => {
       ipcMain.on('console', (event, info)  => console.log('console => ', info));

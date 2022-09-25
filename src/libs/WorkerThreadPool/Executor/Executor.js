@@ -47,6 +47,16 @@ class Executor {
 
     return this;
   }
+
+  /**
+   * @name setTaskTimeout [set task timeout]
+   * @param {Number} taskTimeout [timeout time in milliseconds]
+   */
+  setTaskTimeout(taskTimeout) {
+    this.taskTimeout = taskTimeout;
+
+    return this;
+  }
 }
 
 module.exports = Executor;

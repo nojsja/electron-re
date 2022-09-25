@@ -249,6 +249,19 @@ const dynamicWorkerThreadPool = () => {
         });
     });
 
+    it('run a task with DynamicExecutor instance and execute timeout', (callback) => {
+      executor
+        .setExecPath(path.join(__dirname, './worker_threads/worker-static.js'))
+        .setTaskTimeout(2e3)
+        .exec(100)
+        .then(() => {
+          callback('test9 failed!');
+        })
+        .catch((err) => {
+          callback();
+        });
+    });
+
   });
 };
 

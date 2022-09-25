@@ -2,6 +2,22 @@ const ThreadPool = require('./ThreadPool');
 const StaticExecutor = require('../Executor/StaticExecutor');
 
 class StaticThreadPool extends ThreadPool {
+  static paramsCheckForSetup(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (!execPath && !execString && !execFunction) {
+      throw new Error(`StaticThreadPool: param - execPath/execString/execFunction is required!`);
+    }
+  }
+
+  static paramsCheckForExec(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (execPath || execString || execFunction) {
+      throw new Error(`StaticThreadPool: param - execPath, execString and execFunction are not allowed in StaticThreadPool!`);
+    }
+  }
+
   /**
    * @param {Object} options [options to create pool]
    *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
@@ -19,23 +35,7 @@ class StaticThreadPool extends ThreadPool {
   constructor(options = {}, threadOptions = {}) {
     super(options, threadOptions);
     this.type = 'static';
-    this._paramsCheckForSetup(options);
-  }
-
-  _paramsCheckForSetup(options = {}) {
-    const { execPath, execString, execFunction } = options;
-
-    if (!execPath && !execString && !execFunction) {
-      throw new Error(`StaticThreadPool: param - execPath/execString/execFunction is required!`);
-    }
-  }
-
-  _paramsCheckForExec(options = {}) {
-    const { execPath, execString, execFunction } = options;
-
-    if (execPath || execString || execFunction) {
-      throw new Error(`StaticThreadPool: param - execPath, execString and execFunction are not allowed in StaticThreadPool!`);
-    }
+    StaticThreadPool.paramsCheckForSetup(options);
   }
 
   /**
@@ -48,7 +48,7 @@ class StaticThreadPool extends ThreadPool {
    * @return {Promise}
    */
   exec = (payload, options={}) => {
-    this._paramsCheckForExec(options);
+    StaticThreadPool.paramsCheckForExec(options);
     return super.exec.call(this, payload, options);
   }
 

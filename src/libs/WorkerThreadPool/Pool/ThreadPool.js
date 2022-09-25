@@ -26,7 +26,7 @@ class ThreadPool extends EventEmitter {
     maxThreads: 50,
     maxTasks: 100,
     taskRetry: 0,
-    taskLoopTime: 1e3,
+    taskLoopTime: 2e3,
     taskTimeout: 60e3,
   }
   static maxTaskRetry = 5;
@@ -128,11 +128,27 @@ class ThreadPool extends EventEmitter {
 
   _initTaskTimer = () => {
     this.taskTimer = setInterval(() => {
+      this._checkTaskTimeout();
       let task = this.taskQueue.pop();
       while(task && this.consumeTask(task)) {
         task = this.taskQueue.pop();
       }
     }, this.options.taskLoopTime);
+  }
+
+  _checkTaskTimeout() {
+    const threads = this.threadPool;
+    const length = threads.length;
+    let task;
+
+    for (let i = 0; i < length; i++) {
+      if (!threads[i].isWorking) continue;
+      task = this.taskQueue.getTask(threads[i].taskId);
+      if (!task) continue;
+      if (task.isTimeout) {
+        threads[i].terminate();
+      }
+    }
   }
 
   _cancelTaskTimer() {
@@ -278,10 +294,12 @@ class ThreadPool extends EventEmitter {
         });
         this._handleThreadEvent(thread);
         this.threadPool.push(thread);
+        this.taskQueue.remember(task);
         thread.runTask(task);
       } else {
         const idleThread = this.idleThread;
         if (idleThread) {
+          this.taskQueue.remember(task);
           idleThread.runTask(task);
         } else if (!this.taskQueue.isFull) {
           this.taskQueue.push(task);
