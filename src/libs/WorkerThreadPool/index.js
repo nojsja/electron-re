@@ -4,8 +4,7 @@ const ThreadPool = require('./Pool/ThreadPool');
 const Task = require('./Task');
 const TaskQueue = require('./TaskQueue');
 const Thread = require('./Thread');
-const EvalWorker = require('./Worker/EvalWorker');
-const ExecWorker = require('./Worker/ExecWorker');
+const Worker = require('./Worker');
 
 const {
   THREAD_TYPE, THREAD_STATUS,
@@ -22,8 +21,7 @@ exports.CODE = CODE;
 exports.TaskQueue = TaskQueue;
 exports.Task = Task;
 exports.Thread = Thread;
-exports.EvalWorker = EvalWorker;
-exports.ExecWorker = ExecWorker;
+exports.Worker = Worker;
 exports.StaticThreadPool = StaticThreadPool;
 exports.DynamicThreadPool = DynamicThreadPool;
 exports.ThreadPool = ThreadPool;

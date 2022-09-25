@@ -8,8 +8,7 @@
 const EventEmitter = require('events');
 
 const { THREAD_STATUS, THREAD_TYPE } = require('./consts');
-const EvalWorker = require('./Worker/EvalWorker');
-const ExecWorker = require('./Worker/ExecWorker');
+const Worker = require('./Worker');
 
 class Thread extends EventEmitter {
   /**
@@ -18,9 +17,9 @@ class Thread extends EventEmitter {
    * @param {Enum} type [THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
    * @param {Object} options [options to create worker threads, the same as options in original `new Worker(filename, [options])`]
    */
-  constructor(execContent, type, options = {}) {
+  constructor(options = {}) {
     super();
-    this.type = type;
+    this.type = null;
     this.status = THREAD_STATUS.IDLE;
     this.worker = null;
     this.threadId = null;
@@ -28,11 +27,15 @@ class Thread extends EventEmitter {
     this.execPath = null;
     this.execString = null;
     this.options = options;
-    if (type === THREAD_TYPE.EVAL) {
-      this.execString = execContent;
-    } else {
-      this.execPath = execContent;
+    if (options.execString) {
+      this.type = THREAD_TYPE.EVAL;
+      this.execString = options.execString;
     }
+    if (options.execPath) {
+      this.type = THREAD_TYPE.EXEC;
+      this.execString = options.execPath;
+    }
+    this._checkParams();
     this._initWorker();
   }
 
@@ -40,12 +43,18 @@ class Thread extends EventEmitter {
     return this.status === THREAD_STATUS.IDLE;
   }
 
-  _initWorker() {
-    if (this.type === THREAD_TYPE.EVAL) {
-      this.worker = new EvalWorker(this.execString, this.options);
-    } else {
-      this.worker = new ExecWorker(this.execPath, this.options);
+  _checkParams() {
+    if (!this.type) {
+      throw new Error('Thread: params - execPath/execString is required');
     }
+  }
+
+  _initWorker() {
+    this.worker = new Worker({
+      execPath: this.execString,
+      execString: this.execString,
+      ...this.options,
+    });
     this.threadId = this.worker.threadId;
     this.worker.on('response', this._onResponse);
     this.worker.on('error', this._onError);

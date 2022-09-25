@@ -9,6 +9,6 @@ module.exports = (value) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       return resolve(fibonaccis(value));
-    }, 1.5e3);
+    }, .5e3);
   });
 }

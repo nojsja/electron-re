@@ -3,21 +3,39 @@ const StaticExecutor = require('../Executor/StaticExecutor');
 
 class StaticThreadPool extends ThreadPool {
   /**
-   * @param {String} execContent [thread executable js file path or file content, work with `options.type`]
    * @param {Object} options [options to create pool]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
    *  - @param {Boolean} lazyLoad [whether to create threads lazily when the thread pool is initialized]
    *  - @param {Number} maxThreads [max threads count]
    *  - @param {Number} maxTasks [max tasks count]
    *  - @param {Number} taskRetry [task retry count]
    *  - @param {Number} taskLoopTime [task queue refresh time]
-   *  - @param {Enum} type [thread type - THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
    * @param {Object} threadOptions [options to create worker threads, the same as options in original `new Worker(filename, [options])`]
    *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
    *  ...
    */
-  constructor(execContent, options = {}, threadOptions = {}) {
-    super(execContent, options, threadOptions);
+  constructor(options = {}, threadOptions = {}) {
+    super(options, threadOptions);
     this.type = 'static';
+    this._paramsCheckForSetup(options);
+  }
+
+  _paramsCheckForSetup(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (!execPath && !execString && !execFunction) {
+      throw new Error(`StaticThreadPool: param - execPath/execString/execFunction is required!`);
+    }
+  }
+
+  _paramsCheckForExec(options = {}) {
+    const { execPath, execString, execFunction } = options;
+
+    if (execPath || execString || execFunction) {
+      throw new Error(`StaticThreadPool: param - execPath, execString and execFunction are not allowed in StaticThreadPool!`);
+    }
   }
 
   /**
@@ -30,6 +48,7 @@ class StaticThreadPool extends ThreadPool {
    * @return {Promise}
    */
   exec = (payload, options={}) => {
+    this._paramsCheckForExec(options);
     return super.exec.call(this, payload, options);
   }
 

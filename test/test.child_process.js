@@ -22,7 +22,7 @@ const childProcessPool = () => {
     }
   });
   
-  describe('▸ ChildProcessPool/ProcessHost test', () => {
+  describe('▹ ChildProcessPool/ProcessHost test', () => {
     it('send request to a process in processPool and get response data', (callback) => {
       const results = [];
       for (let i = 0; i < maxProcessCount; i++) {
@@ -128,7 +128,7 @@ const loadBalancer = () => {
     algorithm: LoadBalancer.ALGORITHM.WEIGHTS,
   });
 
-  describe('▸ LoadBalancer Test', () => {
+  describe('▹ LoadBalancer Test', () => {
     it('create a loadbalancer instance which has 10 targets', (callback) => {
       if (loadBalancer.targets.length === 10) {
         callback();
@@ -281,7 +281,7 @@ const processLifecycle = () => {
 
   lifecycle.watch(processes);
   
-  describe('▸ Process LifeCycle Test', () => {
+  describe('▹ Process LifeCycle Test', () => {
     it('create a lifecycle instance which has 5 targets', (callback) => {
       if (lifecycle.params.activities.size === 5) {
         callback();
@@ -333,7 +333,9 @@ const processLifecycle = () => {
 };
 
 module.exports = () => {
-  childProcessPool();
-  loadBalancer();
-  processLifecycle();
+  describe('▸ ChildProcessPool Test', () => {
+    childProcessPool();
+    loadBalancer();
+    processLifecycle();
+  });
 };

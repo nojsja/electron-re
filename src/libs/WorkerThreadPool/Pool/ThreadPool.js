@@ -9,9 +9,7 @@
       - taskRetry - 失败任务重试次数，默认0，不重试，最大可设置值5。
       - taskTime - 任务队列刷新时间间隔，默认1000ms。
       - taskQueue - 任务队列，目前没有空闲线程时，任务排队等待。
-      - type - 线程池类型，可选值为 THREAD_TYPE.EVAL 或 THREAD_TYPE.EXEC，默认 THREAD_TYPE.EXEC。
 ------------------------------------------------------- */
-
 const EventEmitter = require('events');
 
 const TaskQueue = require('../TaskQueue');
@@ -30,44 +28,30 @@ class ThreadPool extends EventEmitter {
     taskRetry: 0,
     taskLoopTime: 1e3,
     taskTimeout: 60e3,
-    type: THREAD_TYPE.EXEC,
   }
   static maxTaskRetry = 5;
   static minTaskLoopTime = 100;
-  static generateNewThread(execContent, type, options) {
-    if ((type !== THREAD_TYPE.EVAL) && (type !== THREAD_TYPE.EXEC)) {
-      throw new Error('WorkerThreadPool: param - type must be THREAD_TYPE.EVAL or THREAD_TYPE.EXEC.');
-    }
-    return new Thread(execContent, type, options);
+  static generateNewThread(options) {
+    return new Thread(options);
   }
   static generateNewTask(payload, options={}) {
-    const {
-      execPath, execFunction,
-      transferList,
-      ...others
-    } = options;
-    let { execString } = options;
     let taskType = TASK_TYPE.STATIC;
 
-    if (execPath || execString || execFunction) {
+    if (options.execPath || options.execString) {
       taskType = TASK_TYPE.DYNAMIC;
-      if (execFunction) {
-        execString = funcStringify(execFunction);
-      }
     }
 
     return new Task(
       payload,
-      {
-        ...others, execPath, execString,
-        taskType, transferList
-      },
+      { taskType, ...options },
     );
   }
 
   /**
-   * @param {String} execContent [thread executable js file path or file content, work with `options.type`]
    * @param {Object} options [options to create pool]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
    *  - @param {Boolean} lazyLoad [whether to create threads lazily when the thread pool is initialized]
    *  - @param {Number} maxThreads [max threads count]
    *  - @param {Number} maxTasks [max tasks count]
@@ -79,13 +63,22 @@ class ThreadPool extends EventEmitter {
    *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
    *  ...
    */
-  constructor(execContent, options = {}, threadOptions = {}) {
+  constructor(options = {}, threadOptions = {}) {
     super();
-    this.execContent = execContent;
     this.options = Object.assign(
       ThreadPool.defaultOptions,
       options
     );
+
+    if (options.execFunction || options.execString) {
+      this.options.type = THREAD_TYPE.EVAL;
+      this.execString = options.execString || funcStringify(execFunction);
+    }
+    if (options.execPath) {
+      this.options.type = THREAD_TYPE.EXEC;
+      this.execPath = options.execPath;
+    }
+
     this.threadOptions = threadOptions;
     this.paramsCheck(this.options);
     this.taskQueue = new TaskQueue({
@@ -193,9 +186,11 @@ class ThreadPool extends EventEmitter {
   fillPoolWithIdleThreads() {
     const countToFill = this.options.maxThreads - this.threadPool.length;
     const threads = new Array(countToFill).fill(0).map(() => {
-      const thread = ThreadPool.generateNewThread(
-        this.execContent, this.options.type, this.threadOptions
-      );
+      const thread = ThreadPool.generateNewThread({
+        ...this.threadOptions,
+        execPath: this.execPath,
+        execString: this.execString,
+      });
       this._handleThreadEvent(thread);
       return thread;
     });
@@ -226,9 +221,14 @@ class ThreadPool extends EventEmitter {
   consumeTask(task) {
     if (!(task instanceof Task)) return false;
     if (!this.isFull) {
-      const thread = ThreadPool.generateNewThread(
-        this.execContent, this.options.type, this.threadOptions
-      );
+      const isDynamic = task.execPath || task.execString;
+      const execString = isDynamic ? task.execString : this.execString;
+      const execPath = isDynamic ? task.execPath : this.execPath;
+      const thread = ThreadPool.generateNewThread({
+        ...this.threadOptions,
+        execString,
+        execPath,
+      });
       this._handleThreadEvent(thread);
       this.threadPool.push(thread);
       thread.runTask(task);
@@ -256,10 +256,14 @@ class ThreadPool extends EventEmitter {
     return new Promise((resolve, reject) => {
       const poolOptions = this.options;
       const threadOptions = this.threadOptions;
+      const isDynamic = options.execFunction || options.execPath || options.execString;
+      const execString = isDynamic ? (options.execFunction ? funcStringify(options.execFunction) : options.execString) : this.execString;
+      const execPath = isDynamic ? options.execPath : this.execPath;
       const task = ThreadPool.generateNewTask(
         payload,
         {
-          ...options,
+          execPath,
+          execString,
           taskRetry: options.taskRetry || poolOptions.taskRetry,
           transferList: options.transferList || threadOptions.transferList,
           taskTimeout: options.taskTimeout || poolOptions.taskTimeout
@@ -267,9 +271,11 @@ class ThreadPool extends EventEmitter {
       );
 
       if (!this.isFull) {
-        const thread = ThreadPool.generateNewThread(
-          this.execContent, this.options.type, this.threadOptions
-        );
+        const thread = ThreadPool.generateNewThread({
+          ...this.threadOptions,
+          execString,
+          execPath,
+        });
         this._handleThreadEvent(thread);
         this.threadPool.push(thread);
         thread.runTask(task);

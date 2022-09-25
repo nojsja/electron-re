@@ -1,26 +1,27 @@
 const path = require('path');
+const EventEmitter = require('events');
 const { Worker } = require('worker_threads');
 
-const WorkerClass = require('./Worker');
-
-class EvalWorker extends WorkerClass {
-  constructor(code, options={}) {
-    if (!code) {
-      throw new Error('EvalWorker: code is required');
-    }
+class WorkerRunner extends EventEmitter {
+  constructor(options={}) {
     super();
-    this.code = code;
+    this.execString = options.execString;
+    this.execPath = options.execPath;
     this.runner = null;
     this.threadId = null;
+    if (!this.execString && !this.execPath) {
+      throw new Error('WorkerRunner: code or execPath is required.');
+    }
     this.init(options);
   }
 
   init(options) {
     this.runner = new Worker(
-      path.join(__dirname, 'eval-worker-runner.js'), {
+      path.join(__dirname, 'worker-runner.js'), {
         ...options,
         workerData: {
-          code: this.code,
+          execString: this.execString,
+          execPath: this.execPath,
         },
       },
     );
@@ -35,6 +36,10 @@ class EvalWorker extends WorkerClass {
       this.emit('exit', exitCode);
     });
   }
+
+  postMessage(...messages) {
+    this.runner.postMessage(...messages);
+  }
 }
 
-module.exports = EvalWorker;
+module.exports = WorkerRunner;

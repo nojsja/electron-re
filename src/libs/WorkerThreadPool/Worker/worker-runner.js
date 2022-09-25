@@ -1,17 +1,26 @@
-const { parentPort, workerData } = require('worker_threads');
-
+const {
+  parentPort, workerData
+} = require('worker_threads');
 const { CODE, TASK_TYPE } = require('../consts');
 const { evalModuleCode } = require('../utils');
 
-const { execPath } = workerData;
+const { code, execPath } = workerData;
 let mainRunner;
 
 function errorRunner(err) {
-  throw new Error(`ExecWorkerError: ${err}`);
+  throw new Error(`EvalWorkerError: ${err}`);
 }
 
 try {
-  mainRunner = require(execPath);
+  if (code) {
+    mainRunner = evalModuleCode('.', code);
+  }
+  if (execPath) {
+    mainRunner = require(execPath);
+  }
+  if (!mainRunner) {
+    mainRunner = () => errorRunner(new Error('Worker: No execString or execPath provided'));
+  }
 } catch (error) {
   mainRunner = () => errorRunner(error);
 }
@@ -39,11 +48,6 @@ parentPort.on('message', (task) => {
       });
     })
     .catch((error) => {
-      parentPort.postMessage({
-        code: CODE.FAILED,
-        data: null,
-        error,
-        taskId: task.taskId,
-      });
+      parentPort.postMessage({ code: CODE.FAILED, data: null, error, taskId: task.taskId });
     });
 });

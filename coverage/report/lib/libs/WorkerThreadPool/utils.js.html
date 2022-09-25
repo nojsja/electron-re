@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for lib/libs/LoadBalancer/consts.js</title>
+    <title>Code coverage report for lib/libs/WorkerThreadPool/utils.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">lib/libs/LoadBalancer</a> consts.js</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">lib/libs/WorkerThreadPool</a> utils.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>3/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>3/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -82,44 +82,56 @@
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
 <a name='L19'></a><a href='#L19'>19</a>
-<a name='L20'></a><a href='#L20'>20</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
 &nbsp;
-module.exports = {
-  POLLING: 'POLLING',
-  // 轮询
-  WEIGHTS: 'WEIGHTS',
-  // 权重
-  RANDOM: 'RANDOM',
-  // 随机
-  SPECIFY: 'SPECIFY',
-  // 声明绑定
-  WEIGHTS_POLLING: 'WEIGHTS_POLLING',
-  // 权重轮询
-  WEIGHTS_RANDOM: 'WEIGHTS_RANDOM',
-  // 权重随机
-  MINIMUM_CONNECTION: 'MINIMUM_CONNECTION',
-  // 最小连接数
-  WEIGHTS_MINIMUM_CONNECTION: 'WEIGHTS_MINIMUM_CONNECTION' // 权重最小连接数
+var NativeModule = require('module');
 &nbsp;
+exports.evalModuleCode = <span class="fstat-no" title="function not covered" >fu</span>nction (context, code) {
+  var filename = <span class="cstat-no" title="statement not covered" >arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : 'eval';</span>
+&nbsp;
+  var _module = <span class="cstat-no" title="statement not covered" >new NativeModule(filename, context);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  _module.paths = NativeModule._nodeModulePaths(context);</span>
+<span class="cstat-no" title="statement not covered" >  _module.filename = filename;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  _module._compile(code, filename);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return _module.exports;</span>
+};
+&nbsp;
+exports.funcStringify = <span class="fstat-no" title="function not covered" >fu</span>nction (func) {
+<span class="cstat-no" title="statement not covered" >  if (func instanceof Function) {</span>
+<span class="cstat-no" title="statement not covered" >    return "module.exports = ".concat(Function.prototype.toString.call(execFunction));</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  throw new Error('funcStringify: params must be a function');</span>
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

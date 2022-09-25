@@ -3,28 +3,26 @@ const path = require('path');
 const base = (process.env.NODE_ENV === 'test:src') ? 'src' : 'lib';
 const {
   StaticThreadPool,
-  THREAD_TYPE,
+  DynamicThreadPool,
 } = require(`../${base}`);
 
-const workerThreadPool = () => {
+const staticWorkerThreadPool = () => {
   const CONF_MAX_THREADS = 10;
   const CONF_MAX_TASKS = 10;
   const CONF_TASK_RETRY = 0;
-  const CONF_THREAD_TYPE = THREAD_TYPE.EXEC;
 
   const threadPool = new StaticThreadPool(
-    path.join(__dirname, './worker_threads/worker-static.js'),
     {
+      execPath: path.join(__dirname, './worker_threads/worker-static.js'),
       lazyLoad: true,
       maxThreads: CONF_MAX_THREADS,
       maxTasks: CONF_MAX_TASKS,
       taskRetry: CONF_TASK_RETRY,
       taskTime: 1e3,
-      type: CONF_THREAD_TYPE,
     }
   );
 
-  describe('▸ Worker Thread Pool Test', () => {
+  describe('▹ Static Worker Thread Pool Test', () => {
     it('run a task with pool and get correct result', (callback) => {
       threadPool.exec(15).then((res) => {
         if ((+(res.data) === 610) && (threadPool.threadLength === 1)) {
@@ -32,8 +30,8 @@ const workerThreadPool = () => {
         } else {
           callback('test1 failed!');
         }
-      }).catch(() => {
-        callback('test1 failed!');
+      }).catch((err) => {
+        callback(err.toString());
       });
     });
 
@@ -59,13 +57,113 @@ const workerThreadPool = () => {
             callback('test3 failed!');
           }
         })
-        .catch(() => {
-          callback('test3 failed!');
+        .catch((err) => {
+          callback(err.toString());
         });
 
       if (threadPool.threadLength !== CONF_MAX_THREADS || threadPool.taskLength !== 1) {
         callback('test3 failed!');
       }
+    });
+
+    it('fill pool and queue with tasks', (callback) => {
+      new Array(CONF_MAX_TASKS + CONF_MAX_THREADS + 10).fill(0).forEach(() => {
+        threadPool.exec(15);
+      });
+      if (threadPool.isFull && threadPool.taskQueue.isFull) {
+        callback();
+      } else {
+        callback('test4 failed!');
+      }
+    });
+
+    it('invoke setMaxThreads() method and get corrent thread count', (callback) => {
+      threadPool.wipeThreadPool();
+      threadPool.setMaxThreads(5);
+      threadPool.fillPoolWithIdleThreads();
+      if (threadPool.threadLength === 5) {
+        callback();
+      } else {
+        callback('test5 failed!');
+      }
+    });
+
+    it('invoke setMaxTasks() method and get correct task count', (callback) => {
+      threadPool.wipeTaskQueue();
+      threadPool.setMaxTasks(5);
+      new Array(11).fill(0).forEach(() => {
+        threadPool.exec(2);
+      });
+      if (threadPool.taskLength === 5) {
+        callback();
+      } else {
+        callback('test6 failed!');
+      }
+    });
+  });
+
+};
+
+const dynamicWorkerThreadPool = () => {
+  const CONF_MAX_THREADS = 10;
+  const CONF_MAX_TASKS = 10;
+  const CONF_TASK_RETRY = 0;
+  const execString = `
+    const fibonaccis = (n) => {
+      if (n < 2) {
+        return n;
+      }
+      return fibonaccis(n - 1) + fibonaccis(n - 2);
+    }
+
+    module.exports = (value) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          return resolve(fibonaccis(value));
+        }, .5e3);
+      });
+    }
+  `;
+
+  const threadPool = new DynamicThreadPool(
+    {
+      lazyLoad: true,
+      maxThreads: CONF_MAX_THREADS,
+      maxTasks: CONF_MAX_TASKS,
+      taskRetry: CONF_TASK_RETRY,
+      taskTime: 1e3,
+    }
+  );
+
+  describe('▹ Dynamic Worker Thread Pool Test', () => {
+    it('run a task with pool and get correct result', (callback) => {
+      threadPool.exec('test', {
+        execString: `module.exports = (value) => {
+          return 'dynamic:' + value;
+        };`,
+      }).then((res) => {
+        if ((res.data === 'dynamic:test') && (threadPool.threadLength === 1)) {
+          callback();
+        } else {
+          callback('test1 failed!');
+        }
+      }).catch((err) => {
+        callback(err.toString());
+      });
+    });
+
+    it('run a task with pool and get correct result', (callback) => {
+      threadPool.exec(15, {
+        execString,
+      }).then((res) => {
+        if ((+(res.data) === 610) && (threadPool.threadLength === 2)) {
+          callback();
+        } else {
+          callback('test2 failed!');
+        }
+      }).catch((err) => {
+        callback(err.toString());
+      });
     });
 
     it('run a dynamic task (exec) with pool and get correct result', (callback) => {
@@ -77,11 +175,11 @@ const workerThreadPool = () => {
           if (value.data === 'dynamic:test') {
             callback();
           } else {
-            callback('test4 failed!');
+            callback('test3 failed!');
           }
         })
-        .catch(() => {
-          callback('test4 failed!');
+        .catch((err) => {
+          callback(err.toString());
         });
     });
 
@@ -97,49 +195,17 @@ const workerThreadPool = () => {
             callback('test4 failed!');
           }
         })
-        .catch(() => {
-          callback('test4 failed!');
+        .catch((err) => {
+          callback(err.toString());
         });
     });
 
-    it('fill pool and queue with tasks', (callback) => {
-      new Array(CONF_MAX_TASKS + CONF_MAX_THREADS + 10).fill(0).forEach(() => {
-        threadPool.exec(15);
-      });
-      if (threadPool.isFull && threadPool.taskQueue.isFull) {
-        callback();
-      } else {
-        callback('test5 failed!');
-      }
-    });
-
-    it('invoke setMaxThreads() method and get corrent thread count', (callback) => {
-      threadPool.wipeThreadPool();
-      threadPool.setMaxThreads(5);
-      threadPool.fillPoolWithIdleThreads();
-      if (threadPool.threadLength === 5) {
-        callback();
-      } else {
-        callback('test6 failed!');
-      }
-    });
-
-    it('invoke setMaxTasks() method and get correct task count', (callback) => {
-      threadPool.wipeTaskQueue();
-      threadPool.setMaxTasks(5);
-      new Array(11).fill(0).forEach(() => {
-        threadPool.exec(2);
-      });
-      if (threadPool.taskLength === 5) {
-        callback();
-      } else {
-        callback('test7 failed!');
-      }
-    });
   });
-
 };
 
 module.exports = () => {
-  workerThreadPool();
+  describe('▸ Worker Thread Pool Test', () => {
+    staticWorkerThreadPool();
+    dynamicWorkerThreadPool();
+  });
 };
