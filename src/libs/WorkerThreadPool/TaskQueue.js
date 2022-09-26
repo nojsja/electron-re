@@ -48,13 +48,13 @@ class TaskQueue {
   }
 
   retryTask(taskId) {
-    const task = this.taskQueue.getTask(taskId);
+    const task = this.getTask(taskId);
 
     if (!task) {
       if (this.isFull) return false;
-      this.taskQueue.push(task);
+      this.queue.push(task);
     } else {
-      this.removeTask(taskId);
+      const removedTask = this.removeTask(taskId);
       this.push(removedTask);
       task.retry();
     }

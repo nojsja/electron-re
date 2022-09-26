@@ -52,7 +52,7 @@ class StaticThreadPool extends ThreadPool {
     return super.exec.call(this, payload, options);
   }
 
-  createExecutor(options) {
+  createExecutor(options={}) {
     return new StaticExecutor(this, options);
   }
 

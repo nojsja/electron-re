@@ -1,7 +1,9 @@
+const { CONF } = require('../consts');
+
 class Executor {
   static paramsCheck({ taskRetry, taskTimeout }) {
-    if (taskRetry !== undefined && (taskRetry > ThreadPool.maxTaskRetry || taskRetry < 0)) {
-      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${ThreadPool.maxTaskRetry}.`);
+    if (taskRetry !== undefined && (taskRetry > CONF.MAX_TASK_RETRY || taskRetry < 0)) {
+      throw new Error(`WorkerThreadPool: param - taskRetry must be an positive integer that no more than ${CONF.MAX_TASK_RETRY}.`);
     }
     if (taskTimeout !== undefined && (taskTimeout < 0)) {
       throw new Error(`WorkerThreadPool: param - taskTimeout must be an positive integer.`);
@@ -33,7 +35,7 @@ class Executor {
    */
   setTaskRetry(taskRetry) {
     Executor.paramsCheck({ taskRetry });
-    this.options.taskRetry = taskRetry;
+    this.taskRetry = taskRetry;
 
     return this;
   }

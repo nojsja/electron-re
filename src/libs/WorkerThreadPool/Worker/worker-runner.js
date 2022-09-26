@@ -4,16 +4,20 @@ const {
 const { CODE, TASK_TYPE } = require('../consts');
 const { evalModuleCode } = require('../utils');
 
-const { code, execPath } = workerData;
+const { execString, execPath } = workerData;
 let mainRunner;
 
 function errorRunner(err) {
-  throw new Error(`EvalWorkerError: ${err}`);
+  if (err instanceof Error) {
+    return Promise.reject(err);
+  } else {
+    return Promise.reject(new Error(`WorkerError: ${err}`));
+  }
 }
 
 try {
-  if (code) {
-    mainRunner = evalModuleCode('.', code);
+  if (execString) {
+    mainRunner = evalModuleCode('.', execString);
   }
   if (execPath) {
     mainRunner = require(execPath);
@@ -27,6 +31,7 @@ try {
 
 parentPort.on('message', (task) => {
   let currentRunner;
+  let currentValue;
 
   if (task.taskType === TASK_TYPE.DYNAMIC) {
     try {
@@ -38,7 +43,13 @@ parentPort.on('message', (task) => {
     currentRunner = mainRunner;
   }
 
-  Promise.resolve(currentRunner(task.payload))
+  try {
+    currentValue = currentRunner(task.payload);
+  } catch (error) {
+    currentValue = Promise.reject(error);
+  }
+
+  Promise.resolve(currentValue)
     .then((data) => {
       parentPort.postMessage({
         code: CODE.SUCCESS,

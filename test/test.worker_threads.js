@@ -22,6 +22,8 @@ const staticWorkerThreadPool = () => {
     }
   );
 
+  const executor = threadPool.createExecutor();
+
   describe('▹ Static Worker Thread Pool Test', () => {
     it('run a task with pool and get correct result', (callback) => {
       threadPool.exec(15).then((res) => {
@@ -78,9 +80,10 @@ const staticWorkerThreadPool = () => {
     });
 
     it('invoke setMaxThreads() method and get corrent thread count', (callback) => {
-      threadPool.wipeThreadPool();
-      threadPool.setMaxThreads(5);
-      threadPool.fillPoolWithIdleThreads();
+      threadPool
+        .wipeThreadPool()
+        .setMaxThreads(5)
+        .fillPoolWithIdleThreads();
       if (threadPool.threadLength === 5) {
         callback();
       } else {
@@ -89,16 +92,60 @@ const staticWorkerThreadPool = () => {
     });
 
     it('invoke setMaxTasks() method and get correct task count', (callback) => {
-      threadPool.wipeTaskQueue();
-      threadPool.setMaxTasks(5);
-      new Array(11).fill(0).forEach(() => {
-        threadPool.exec(2);
+      threadPool
+        .wipeTaskQueue()
+        .setMaxTasks(5);
+      const promise = Promise.all(new Array(10).fill(0).map(() => threadPool.exec(2)))
+      const condition = threadPool.taskLength === 5;
+      promise.then((results) => {
+        if (condition && results.every((result) => +(result.data) === 1)) {
+          callback();
+        } else {
+          callback('test6 failed!');
+        }
+      }).catch((err) => callback(err.toString()));
+    });
+
+    it('run a task with StaticExecutor instance and get correct result', (callback) => {
+      executor.exec(15).then((res) => {
+        if (+(res.data) === 610) {
+          callback();
+        } else {
+          callback('test7 failed!');
+        }
+      })
+      .catch((err) => {
+        callback(err.toString());
       });
-      if (threadPool.taskLength === 5) {
-        callback();
-      } else {
-        callback('test6 failed!');
-      }
+    });
+
+    it('run a task with StaticExecutor instance and execute timeout', (callback) => {
+      executor
+        .setTaskTimeout(1e3)
+        .exec(100)
+        .then(() => {
+          callback('test9 failed!')
+        })
+        .catch(() => {
+          callback();
+        });
+    });
+
+    it('run a task with StaticExecutor instance and get correct result', (callback) => {
+      executor
+        .setTransferList([new ArrayBuffer(1)])
+        .setTaskTimeout(60e3)
+        .exec(15)
+        .then((res) => {
+          if ((+(res.data) === 610)) {
+            callback();
+          } else {
+            callback('test10 failed!');
+          }
+        })
+        .catch((err) => {
+          callback(err.toString());
+        });
     });
   });
 
@@ -239,6 +286,29 @@ const dynamicWorkerThreadPool = () => {
         .exec(15)
         .then((res) => {
           if (+(res.data) === 610) {
+            callback();
+          } else {
+            callback('test8 failed!');
+          }
+        })
+        .catch((err) => {
+          callback(err.toString());
+        });
+    });
+
+    it('run a task with DynamicExecutor instance and get correct result', (callback) => {
+      executor
+        .setExecFunction((value) => {
+          if (!global.success) {
+            global.success = true;
+            throw new Error('failed');
+          }
+          return `success:${value}`;
+        })
+        .setTaskRetry(1)
+        .exec('just')
+        .then((res) => {
+          if (res.data === 'success:just') {
             callback();
           } else {
             callback('test8 failed!');

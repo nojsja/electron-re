@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.35% </span>
+                <span class="strong">81.08% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>19/37</span>
+                <span class='fraction'>30/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>5/10</span>
+                <span class='fraction'>6/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">42.85% </span>
+                <span class="strong">85.71% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/7</span>
+                <span class='fraction'>6/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.42% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/21</span>
+                <span class='fraction'>21/21</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -139,17 +139,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -173,7 +173,7 @@ var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime
 &nbsp;
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 &nbsp;
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function <span class="fstat-no" title="function not covered" >_createSuperInternal(</span>) { var Super = <span class="cstat-no" title="statement not covered" >(0, _getPrototypeOf2["default"])(Derived),</span> result; <span class="cstat-no" title="statement not covered" >if (hasNativeReflectConstruct) { var NewTarget = <span class="cstat-no" title="statement not covered" >(0, _getPrototypeOf2["default"])(this).constructor;</span> <span class="cstat-no" title="statement not covered" >result = Reflect.construct(Super, arguments, NewTarget); </span>} else { <span class="cstat-no" title="statement not covered" >result = Super.apply(this, arguments); </span>} <span class="cstat-no" title="statement not covered" ></span>return (0, _possibleConstructorReturn2["default"])(this, result); </span>}; }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; <span class="missing-if-branch" title="else path not taken" >E</span>if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { <span class="cstat-no" title="statement not covered" >result = Super.apply(this, arguments); </span>} return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 &nbsp;
 function _isNativeReflectConstruct() { <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof Reflect === "undefined" || !Reflect.construct) <span class="cstat-no" title="statement not covered" >return false; <span class="missing-if-branch" title="if path not taken" >I</span></span>if (Reflect.construct.sham) <span class="cstat-no" title="statement not covered" >return false; <span class="missing-if-branch" title="else path not taken" >E</span></span>if (typeof Proxy === "function") return true; <span class="cstat-no" title="statement not covered" >try { <span class="cstat-no" title="statement not covered" >Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], <span class="fstat-no" title="function not covered" >fu</span>nction () {})); <span class="cstat-no" title="statement not covered" ></span>return true; </span>} catch (e) { <span class="cstat-no" title="statement not covered" >return false; </span>} </span>}
 &nbsp;
@@ -184,20 +184,20 @@ var StaticExecutor = /*#__PURE__*/function (_Executor) {
 &nbsp;
   var _super = _createSuper(StaticExecutor);
 &nbsp;
-  function <span class="fstat-no" title="function not covered" >StaticExecutor(</span>parentPool, options) {
+  function StaticExecutor(parentPool, options) {
     var _this;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    (0, _classCallCheck2["default"])(this, StaticExecutor);</span>
-<span class="cstat-no" title="statement not covered" >    _this = _super.call(this, options);</span>
-<span class="cstat-no" title="statement not covered" >    _this.parentPool = parentPool;</span>
-<span class="cstat-no" title="statement not covered" >    _this.type = 'static';</span>
-<span class="cstat-no" title="statement not covered" >    return _this;</span>
+    (0, _classCallCheck2["default"])(this, StaticExecutor);
+    _this = _super.call(this, options);
+    _this.parentPool = parentPool;
+    _this.type = 'static';
+    return _this;
   }
 &nbsp;
   (0, _createClass2["default"])(StaticExecutor, [{
     key: "exec",
-    value: function <span class="fstat-no" title="function not covered" >exec(</span>payload) {
-<span class="cstat-no" title="statement not covered" >      return this.parentPool.exec(payload, {</span>
+    value: function exec(payload) {
+      return this.parentPool.exec(payload, {
         taskTimeout: this.taskTimeout,
         transferList: this.transferList,
         taskRetry: this.taskRetry
@@ -214,7 +214,7 @@ module.exports = StaticExecutor;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-09-25T13:32:38.024Z
+                at 2022-09-26T07:35:30.596Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

@@ -17,20 +17,20 @@ const Thread = require('../Thread');
 const Task = require('../Task');
 const { funcStringify } = require('../utils');
 const {
-  THREAD_TYPE, CODE, TASK_TYPE,
+  THREAD_TYPE, CODE, TASK_TYPE, CONF,
 } = require('../consts');
 
 class ThreadPool extends EventEmitter {
   static defaultOptions = {
-    lazyLoad: true,
-    maxThreads: 50,
-    maxTasks: 100,
-    taskRetry: 0,
-    taskLoopTime: 2e3,
-    taskTimeout: 60e3,
+    lazyLoad: CONF.DEFAULT_LAZYLOAD,
+    maxThreads: CONF.DEFAULT_MAX_THREADS,
+    maxTasks: CONF.DEFAULT_MAX_TASKS,
+    taskRetry: CONF.DEFAULT_TASK_RETRY,
+    taskLoopTime: CONF.DEFAULT_TASK_LOOP_TIME,
+    taskTimeout: CONF.DEFAULT_TASK_TIMEOUT,
   }
-  static maxTaskRetry = 5;
-  static minTaskLoopTime = 100;
+  static maxTaskRetry = CONF.MAX_TASK_RETRY;
+  static minTaskLoopTime = CONF.MIN_TASK_LOOP_TIME;
   static generateNewThread(options) {
     return new Thread(options);
   }
@@ -211,6 +211,8 @@ class ThreadPool extends EventEmitter {
       return thread;
     });
     this.threadPool = this.threadPool.concat(threads);
+
+    return this;
   }
 
   retryTask(taskId, others) {
