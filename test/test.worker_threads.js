@@ -254,12 +254,30 @@ const dynamicWorkerThreadPool = () => {
         if (res.data === 'excutor:test') {
           callback();
         } else {
-          callback('test7 failed!');
+          callback('test5 failed!');
         }
       })
       .catch((err) => {
         callback(err.toString());
       });
+    });
+
+    it('run a task with DynamicExecutor instance and set transferList as payload', (callback) => {
+      const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+
+      executor
+        .setTransferList([uint8Array.buffer])
+        .exec(uint8Array)
+        .then((res) => {
+          if (res.data === 'excutor:1,2,3,4') {
+            callback();
+          } else {
+            callback('test6 failed!');
+          }
+        })
+        .catch((err) => {
+          callback(err.toString());
+        });
     });
 
     it('run a task with DynamicExecutor instance and get correct result', (callback) => {
@@ -272,7 +290,7 @@ const dynamicWorkerThreadPool = () => {
           if (res.data === 'excutor:test2') {
             callback();
           } else {
-            callback('test8 failed!');
+            callback('test7 failed!');
           }
         })
         .catch((err) => {
@@ -311,7 +329,7 @@ const dynamicWorkerThreadPool = () => {
           if (res.data === 'success:just') {
             callback();
           } else {
-            callback('test8 failed!');
+            callback('test9 failed!');
           }
         })
         .catch((err) => {
@@ -325,7 +343,7 @@ const dynamicWorkerThreadPool = () => {
         .setTaskTimeout(2e3)
         .exec(100)
         .then(() => {
-          callback('test9 failed!');
+          callback('test10 failed!');
         })
         .catch((err) => {
           callback();
