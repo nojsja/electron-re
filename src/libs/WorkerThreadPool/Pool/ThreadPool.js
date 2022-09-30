@@ -75,7 +75,6 @@ class ThreadPool extends EventEmitter {
    *  - @param {Number} taskRetry [task retry count]
    *  - @param {Number} taskTimeout [task timeout time]
    *  - @param {Number} taskLoopTime [task queue refresh time]
-   *  - @param {Enum} type [thread type - THREAD_TYPE.EXEC or THREAD_TYPE.EVAL]
    * @param {Object} threadOptions [options to create worker threads, the same as options in original `new Worker(filename, [options])`]
    *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
    *  ...
@@ -390,16 +389,22 @@ class ThreadPool extends EventEmitter {
   setExecPath(execPath) {
     this.execContent = execPath;
     this.options.type = THREAD_TYPE.EXEC;
+
+    return this;
   }
 
   setExecString(execString) {
     this.execContent = execString;
     this.options.type = THREAD_TYPE.EVAL;
+
+    return this;
   }
 
   setExecFunction(execFunction) {
     this.execContent = funcStringify(execFunction);
     this.options.type = THREAD_TYPE.EVAL;
+
+    return this;
   }
 
 }
