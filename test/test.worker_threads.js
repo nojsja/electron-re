@@ -18,7 +18,7 @@ const staticWorkerThreadPool = () => {
       maxThreads: CONF_MAX_THREADS,
       maxTasks: CONF_MAX_TASKS,
       taskRetry: CONF_TASK_RETRY,
-      taskTime: 1e3,
+      taskLoopTime: 1e3,
     }
   );
 
@@ -174,11 +174,10 @@ const dynamicWorkerThreadPool = () => {
 
   const threadPool = new DynamicThreadPool(
     {
-      lazyLoad: true,
       maxThreads: CONF_MAX_THREADS,
       maxTasks: CONF_MAX_TASKS,
       taskRetry: CONF_TASK_RETRY,
-      taskTime: 1e3,
+      taskLoopTime: 1e3,
     }
   );
 

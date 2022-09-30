@@ -3,10 +3,16 @@ const DynamicExecutor = require('../Executor/DynamicExecutor');
 
 class DynamicThreadPool extends ThreadPool {
   static paramsCheckForSetup(options = {}) {
-    const { execPath, execString, execFunction } = options;
+    const {
+      execPath, execString, execFunction, lazyLoad,
+    } = options;
 
     if (execPath || execString || execFunction) {
       throw new Error(`DynamicThreadPool: param - execPath, execString and execFunction are not allowed in DynamicThreadPool!`);
+    }
+
+    if ((lazyLoad !== undefined) && (!!lazyLoad === false)) {
+      throw new Error(`DynamicThreadPool: param - lazyLoad is not allowed in DynamicThreadPool!`);
     }
   }
 
@@ -20,7 +26,6 @@ class DynamicThreadPool extends ThreadPool {
 
   /**
    * @param {Object} options [options to create pool]
-   *  - @param {Boolean} lazyLoad [whether to create threads lazily when the thread pool is initialized]
    *  - @param {Number} maxThreads [max threads count]
    *  - @param {Number} maxTasks [max tasks count]
    *  - @param {Number} taskRetry [task retry count]
@@ -31,7 +36,10 @@ class DynamicThreadPool extends ThreadPool {
    *  ...
    */
   constructor(options = {}, threadOptions = {}) {
-    super(options, threadOptions);
+    super({
+      ...options,
+      lazyLoad: true,
+    }, threadOptions);
     this.type = 'dynamic';
     DynamicThreadPool.paramsCheckForSetup(options);
   }
@@ -51,6 +59,10 @@ class DynamicThreadPool extends ThreadPool {
   exec = (payload, options={}) => {
     DynamicThreadPool.paramsCheckForExec(options);
     return super.exec.call(this, payload, options);
+  }
+
+  fillPoolWithIdleThreads() {
+    throw new Error(`DynamicThreadPool: function - fillPoolWithIdleThreads() is not allowed in DynamicThreadPool!`)
   }
 
   createExecutor(options={}) {
