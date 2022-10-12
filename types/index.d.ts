@@ -125,10 +125,12 @@ declare module electronReModule {
       transferList?: Transferable[];
       taskTimeout?: Number;
     }) => Task
+
     constructor(
       options: ThreadPoolOptions,
       threadOptions: WorkerOptions
     ): void
+
     isFull: Boolean
     threadLength: Number
     taskLength: Number
@@ -161,6 +163,7 @@ declare module electronReModule {
       taskTimeout: Number;
     }
     static maxTaskRetry: Number;
+
     constructor(options: {
       taskTimeout: Number;
       transferList: Transferable[];
@@ -174,18 +177,20 @@ declare module electronReModule {
 
   export class StaticExcutor extends Excutor {
     constructor(parentPool: StaticThreadPool, options: StaticExcutorOptions): void
+
     exec: (payload: any) => Promise<{ data: any; error: null | Error }>
   }
 
   export class DynamicExcutor extends Excutor {
     constructor(parentPool: DynamicThreadPool, options: DynamicExcutorOptions): void
+
     setExecPath: (execPath: String) => DynamicExcutor
     setExecString: (execString: String) => DynamicExcutor
     setExecFunction: (execFunction: Function) => DynamicExcutor
     exec: (payload: any) => Promise<{ data: any; error: null | Error }>
   }
 
-  export export class StaticThreadPool extends ThreadPool {
+  export class StaticThreadPool extends ThreadPool {
     constructor(
       options: ThreadPoolOptions,
       threadOptions?: WorkerOptions

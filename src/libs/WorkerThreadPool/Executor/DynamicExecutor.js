@@ -3,7 +3,7 @@ const Executor = require('./Executor');
 class DynamicExecutor extends Executor {
   static paramsCheck({ execFunction, execPath, execString }) {
     if ((!execFunction) && (!execPath) && (!execString)) {
-      throw new Error('DynamicExecutor: params - execPath/execString/execFunction is required');
+      throw new Error('DynamicExecutor: params - execPath/execString/execFunction is not set!');
     }
   }
 
