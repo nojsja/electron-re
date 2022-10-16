@@ -44,6 +44,12 @@
 │   ├── Working with ChildProcessPool
 │   └── Unregistry a task with unique name
 │
+├── * Instruction6: WorkerThreadPool
+│   ├── Create a static WorkerThreadPool pool
+│   ├── Create a static WorkerThreadPool excutor
+│   ├── Create a dynamic WorkerThreadPool pool
+│   └── Create a dynamic WorkerThreadPool excutor
+│
 ├── Examples
 ```
 
@@ -517,7 +523,49 @@ ProcessHost
   ...
 ```
 
-### VIII. Examples
+### VIII. WorkerThreadPool
+-----
+
+Multi Process helps to make full use of cpu, Multi Thread improves task parallelism ability of Node.js.
+
+In Node.js, there is only one main process which has single main thread, the main thread run event loops and executes macro/micro tasks. In theory, macro/micro task should be short and quick, if we use main thread for some cpu-sensitive heavy tasks, this will block event loop on main thread.
+
+So, try to put your heavy tasks into worker threads will be better in Node.js. The worker thread pool is effective for creating and managing threads, besides, it provides us a task queue. When pool has no idle thread, more coming tasks are placed in queue and be taken out from queue after while to be excuted by new idle thread.
+
+#### Create a static WorkerThreadPool pool
+
+Options of StaticThreadPool:
+
+- execPath [string]: path to an executable commonjs module file.
+- execString [string]: executable code string.
+- execFunction [function]: js function.
+- lazyLoad [boolean]: if diabled, all threads will be created when init pool.
+- maxThreads [number]: max thread count of pool.
+- maxTasks [number]: max task count of pool.
+- taskRetry [number]: number of task retries.
+- taskLoopTime [number]: time of task loop.
+
+```js
+const staticPool = new StaticThreadPool(
+    {
+      execPath: 'path/to/worker-static.js',
+      lazyLoad: true,
+      maxThreads: 24,
+      maxTasks: 48,
+      taskRetry: 1,
+      taskLoopTime: 1e3,
+    }
+  );
+
+```
+
+#### Create a static WorkerThreadPool excutor
+
+#### Create a dynamic WorkerThreadPool pool
+
+#### Create a dynamic WorkerThreadPool excutor
+
+### IX. Examples
 -----
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
@@ -526,4 +574,4 @@ ProcessHost
 
 3. Also you can check the `index.dev.js` and `test` dir in root, there are some useful cases.
 
-### IX. Test Coverage
+### X. Test Coverage
