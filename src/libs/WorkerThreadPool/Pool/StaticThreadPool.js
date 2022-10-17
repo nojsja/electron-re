@@ -52,6 +52,14 @@ class StaticThreadPool extends ThreadPool {
     return super.exec.call(this, payload, options);
   }
 
+  /**
+   * @name createExecutor [Create an executor to execute tasks]
+   * @param {Object} options [options to create a task]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
   createExecutor(options={}) {
     return new StaticExecutor(this, options);
   }

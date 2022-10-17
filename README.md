@@ -526,44 +526,229 @@ ProcessHost
 ### VIII. WorkerThreadPool
 -----
 
-Multi Process helps to make full use of cpu, Multi Thread improves task parallelism ability of Node.js.
+Multi Processes help to make full use of cpu, Multi Threads improve task parallelism ability of Node.js.
 
 In Node.js, there is only one main process which has single main thread, the main thread run event loops and executes macro/micro tasks. In theory, macro/micro task should be short and quick, if we use main thread for some cpu-sensitive heavy tasks, this will block event loop on main thread.
 
-So, try to put your heavy tasks into worker threads will be better in Node.js. The worker thread pool is effective for creating and managing threads, besides, it provides us a task queue. When pool has no idle thread, more coming tasks are placed in queue and be taken out from queue after while to be excuted by new idle thread.
+So, try to put your heavy tasks into worker threads will be better in Node.js. The worker thread pool is effective for creating and managing threads, besides, it provides a task queue. When pool has no idle thread, more coming tasks are placed in queue and be taken out from queue after while to be excuted by new idle thread.
 
 #### Create a static WorkerThreadPool pool
 
-Options of StaticThreadPool:
+1. Options of StaticThreadPool:
 
-- execPath [string]: path to an executable commonjs module file.
-- execString [string]: executable code string.
-- execFunction [function]: js function.
-- lazyLoad [boolean]: if diabled, all threads will be created when init pool.
-- maxThreads [number]: max thread count of pool.
-- maxTasks [number]: max task count of pool.
-- taskRetry [number]: number of task retries.
-- taskLoopTime [number]: time of task loop.
+- `constructor(options, threadOptions)`
+- @param {_Object_} `opitons`: the options to create a static thread pool:
+  - One of follow params is required and unique:
+    - `execPath` {_String_}: path to an executable commonjs module file.
+    - `execString` {_String_}: executable code string.
+    - `execFunction` {_Function_}: js function.
+  - `lazyLoad` {_Boolean_}: if diabled, all threads will be created when init pool.
+  - `maxThreads` {_Number_}: max thread count of pool.
+  - `maxTasks` {_Number_}: max task count of pool.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskLoopTime` {_Number_}: time of task loop.
+  - `taskTimeout` {_Number_}: timeout time.
+- @param {_Object_} `threadOpitions`: Some origin options for node.js worker_threads.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
 
 ```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
 const staticPool = new StaticThreadPool(
-    {
-      execPath: 'path/to/worker-static.js',
-      lazyLoad: true,
-      maxThreads: 24,
-      maxTasks: 48,
-      taskRetry: 1,
-      taskLoopTime: 1e3,
-    }
-  );
+  {
+    execPath: 'path/to/executable.js',
+    // execString: `module.exports = (payload) => payload`,
+    // execFunction: (payload) => payload,
+    lazyLoad: true,
+    maxThreads: 24,
+    maxTasks: 48,
+    taskRetry: 1,
+    taskLoopTime: 1e3,
+    taskTimeout: 5e3,
+  },
+  {
+    transferList: [uint8Array.buffer]
+  }
+);
 
 ```
 
+2. Attributes of a StaticThreadPool instance
+
+- `isFull` {_Boolean_}: whether the pool is full of threads, related to this param - maxThreads.
+- `threadLength` {_Number_}: current thread count of pool.
+- `taskLength` {_Number_}: current task count of pool.
+
+3. Methods of a StaticThreadPool instance
+
+- `fillPoolWithIdleThreads()`: fill pool with idle threads, this is effective when pool is not full.
+- `exec(payload, options)`: Send a task request to pool.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `createExecutor(options={})`: Create an static executor to execute tasks.
+  - @param {_Object_} `options`: Options to create a executor:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `wipeTaskQueue()`: Wipe all tasks in queue.
+- `wipeThreadPool()`: Wipe all threads in pool.
+- `setMaxThreads(maxThreads)`: Set max thread count of pool.
+    - @param {_Number_} `maxThreads`：max thread count.
+- `setMaxTasks(maxTasks)`: Set max task count of pool.
+    - @param {_Number_} `maxTasks`：max task count.
+- `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
+    - @param {_Number_} `taskLoopTime`：task loop time.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+    - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+    - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+    - @param {_String_} `execPath`：path to an executable commonjs module file.
+- `setExecString(execString)`: Set executable code string.
+    - @param {_String_} `execString`：executable code string.
+- `setExecFunction(execFunction)`: Set js function.
+    - @param {_Function_} `execFunction`：js function.
+
 #### Create a static WorkerThreadPool excutor
+
+1. Options of StaticThreadPool Executor
+
+- @params {_Object_} options
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskTimeout` {_Number_}: timeout time.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+const staticExecutor = staticPool.createExecutor({
+  taskRetry: 2,
+  taskTimeout: 2e3,
+  transferList: [unit8Array.buffer]
+});
+```
+
+2. Methods of a StaticThreadPool Executor
+
+- `exec(payload)`: Send a task request to pool from excutor.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+    - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+    - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
 
 #### Create a dynamic WorkerThreadPool pool
 
+1. Options of DynamicThreadPool:
+
+- `constructor(options, threadOptions)`
+- @param {_Object_} `opitions`: the options to create a static thread pool:
+  - `maxThreads` {_Number_}: max thread count of pool.
+  - `maxTasks` {_Number_}: max task count of pool.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskLoopTime` {_Number_}: time of task loop.
+  - `taskTimeout` {_Number_}: timeout time.
+- @param {_Object_} `threadOptions`: Some origin options for node.js worker_threads.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const dynamicPool = new DynamicThreadPool({
+  maxThreads: 24,
+  maxTasks: 48,
+  taskRetry: 1,
+  taskLoopTime: 1e3,
+  taskTimeout: 5e3,
+});
+```
+
+2. Attributes of a DynamicThreadPool instance
+
+- `isFull` {_Boolean_}: whether the pool is full of threads, related to this param - maxThreads.
+- `threadLength` {_Number_}: current thread count of pool.
+- `taskLength` {_Number_}: current task count of pool.
+
+3. Methods of a DynamicThreadPool instance
+
+- `exec(payload, options)`: Send a task request to pool.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - One of follow params is required and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - `taskTimeout` {_Number_}：The task timeout in milliseconds
+    - `taskRetry` {_Number_}：Number of task retries.
+    - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `createExecutor(options={})`: Create a dynamic executor to execute tasks.
+  - @param {_Object_} `options`: Options to create a executor:
+    - One of follow params is optional and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - `taskTimeout` {_Number_}：The task timeout in milliseconds
+    - `taskRetry` {_Number_}：Number of task retries.
+    - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `wipeTaskQueue()`: Wipe all tasks in queue.
+- `wipeThreadPool()`: Wipe all threads in pool.
+- `setMaxThreads(maxThreads)`: Set max thread count of pool.
+    - @param {_Number_} `maxThreads`：max thread count.
+- `setMaxTasks(maxTasks)`: Set max task count of pool.
+    - @param {_Number_} `maxTasks`：max task count.
+- `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
+    - @param {_Number_} `taskLoopTime`：task loop time.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+    - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+    - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+    - @param {_String_} `execPath`：path to an executable commonjs module file.
+- `setExecString(execString)`: Set executable code string.
+    - @param {_String_} `execString`：executable code string.
+- `setExecFunction(execFunction)`: Set js function.
+    - @param {_Function_} `execFunction`：js function.
+
 #### Create a dynamic WorkerThreadPool excutor
+
+1. Options of DynamicThreadPool Executor
+
+- @params {_Object_} options
+  - One of follow params is optional and unique:
+    - `execPath` {_String_}: path to an executable commonjs module file.
+    - `execString` {_String_}: executable code string.
+    - `execFunction` {_Function_}: js function.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskTimeout` {_Number_}: timeout time.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+const dynamicExecutor = dynamicPool.createExecutor({
+  execString: `module.exports = (payload) => payload`,
+  // execFunction: (payload) => payload,
+  // execPath: 'path/to/executable.js',
+  taskRetry: 2,
+  taskTimeout: 2e3,
+  transferList: [unit8Array.buffer]
+});
+```
+
+2. Methods of a DynamicThreadPool Executor
+
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+    - @param {_String_} `execPath`：path to an executable commonjs module file.
+- `setExecString(execString)`: Set executable code string.
+    - @param {_String_} `execString`：executable code string.
+- `setExecFunction(execFunction)`: Set js function.
+    - @param {_Function_} `execFunction`：js function.
+- `exec(payload)`: Send a task request to pool from excutor.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+    - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+    - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
 
 ### IX. Examples
 -----
