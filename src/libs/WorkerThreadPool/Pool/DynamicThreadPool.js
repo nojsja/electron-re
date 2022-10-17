@@ -8,11 +8,11 @@ class DynamicThreadPool extends ThreadPool {
     } = options;
 
     if (execPath || execString || execFunction) {
-      throw new Error(`DynamicThreadPool: param - execPath, execString and execFunction are not allowed in DynamicThreadPool!`);
+      throw new Error(`DynamicThreadPool: option - execPath/execString/execFunction is not allowed in constructor of DynamicThreadPool!`);
     }
 
     if ((lazyLoad !== undefined) && (!!lazyLoad === false)) {
-      throw new Error(`DynamicThreadPool: param - lazyLoad is not allowed in DynamicThreadPool!`);
+      throw new Error(`DynamicThreadPool: option - lazyLoad is not allowed in DynamicThreadPool!`);
     }
   }
 
@@ -20,7 +20,7 @@ class DynamicThreadPool extends ThreadPool {
     const { execPath, execString, execFunction } = options;
 
     if (!execPath && !execString && !execFunction) {
-      throw new Error(`DynamicThreadPool: exec param - execPath/execString/execFunction is required!`);
+      throw new Error(`DynamicThreadPool: necessary param - execPath/execString/execFunction is not found! use setExecPath/setExecString/setExecFunction to set it!`);
     }
   }
 
@@ -57,7 +57,7 @@ class DynamicThreadPool extends ThreadPool {
    * @return {Promise}
    */
   exec = (payload, options={}) => {
-    DynamicThreadPool.paramsCheckForExec(options);
+    DynamicThreadPool.paramsCheckForExec(Object.assign({}, options, this));
     return super.exec.call(this, payload, options);
   }
 

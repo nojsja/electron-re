@@ -555,8 +555,8 @@ So, try to put your heavy tasks into worker threads will be better in Node.js. T
 const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
 const staticPool = new StaticThreadPool(
   {
-    execPath: 'path/to/executable.js',
-    // execString: `module.exports = (payload) => payload`,
+    // execPath: 'path/to/executable.js',
+    execString: 'module.exports = (payload) => `res:${payload}`',
     // execFunction: (payload) => payload,
     lazyLoad: true,
     maxThreads: 24,
@@ -569,7 +569,6 @@ const staticPool = new StaticThreadPool(
     transferList: [uint8Array.buffer]
   }
 );
-
 ```
 
 2. Attributes of a StaticThreadPool instance
@@ -604,12 +603,18 @@ const staticPool = new StaticThreadPool(
     - @param {_Number_} `taskRetry`：Number of task retries.
 - `setTransferList(transferList)`: Set transfer-list data of task.
     - @param {_Array_} `transferList`：transfer-list data.
-- `setExecPath(execPath)`: Set path of an executable commonjs module file.
-    - @param {_String_} `execPath`：path to an executable commonjs module file.
-- `setExecString(execString)`: Set executable code string.
-    - @param {_String_} `execString`：executable code string.
-- `setExecFunction(execFunction)`: Set js function.
-    - @param {_Function_} `execFunction`：js function.
+
+```js
+staticPool
+  .setTaskRetry(1)
+  .exec('payload-data', {
+    taskTimeout: 5e3,
+    taskRetry: 1,
+  })
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
 
 #### Create a static WorkerThreadPool excutor
 
@@ -637,7 +642,17 @@ const staticExecutor = staticPool.createExecutor({
     - @param {_Number_} `taskRetry`：Number of task retries.
 - `setTransferList(transferList)`: Set transfer-list data of task.
     - @param {_Array_} `transferList`：transfer-list data.
-- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+- `setTaskTimeout(taskTimeout)`: Set timeout time of task.
+    - @param {_Number_} `taskTimeout`：timeout time.
+
+```js
+staticExecutor
+  .setTaskRetry(2)
+  .exec('test')
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
 
 #### Create a dynamic WorkerThreadPool pool
 
@@ -674,7 +689,7 @@ const dynamicPool = new DynamicThreadPool({
 - `exec(payload, options)`: Send a task request to pool.
   - @param {_Any_} `payload` __*__: The request payload data.
   - @param {_Object_} `options`: Options to create a task:
-    - One of follow params is required and unique:
+    - One of follow params is optional and unique:
       - `execPath` {_String_}: path to an executable commonjs module file.
       - `execString` {_String_}: executable code string.
       - `execFunction` {_Function_}: js function.
@@ -708,6 +723,19 @@ const dynamicPool = new DynamicThreadPool({
     - @param {_String_} `execString`：executable code string.
 - `setExecFunction(execFunction)`: Set js function.
     - @param {_Function_} `execFunction`：js function.
+
+```js
+dynamicPool
+  .setExecString(`module.exports = (payload) => console.log(payload);`)
+  .setTaskRetry(1)
+  .exec('payload-data', {
+    taskTimeout: 5e3,
+    taskRetry: 1,
+  })
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
 
 #### Create a dynamic WorkerThreadPool excutor
 

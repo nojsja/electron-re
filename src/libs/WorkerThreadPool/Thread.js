@@ -38,7 +38,7 @@ class Thread extends EventEmitter {
     }
     if (options.execPath) {
       this.type = THREAD_TYPE.EXEC;
-      this.execString = options.execPath;
+      this.execPath = options.execPath;
     }
     Thread.checkParams(this);
     this._initWorker();
@@ -54,7 +54,7 @@ class Thread extends EventEmitter {
 
   _initWorker() {
     this.worker = new Worker({
-      execPath: this.execString,
+      execPath: this.execPath,
       execString: this.execString,
       ...this.options,
     });

@@ -14,7 +14,7 @@ class StaticThreadPool extends ThreadPool {
     const { execPath, execString, execFunction } = options;
 
     if (execPath || execString || execFunction) {
-      throw new Error(`StaticThreadPool: param - execPath, execString and execFunction are not allowed in StaticThreadPool!`);
+      throw new Error(`StaticThreadPool: param - execPath/execString/execFunction is not allowed in StaticThreadPool!`);
     }
   }
 
@@ -36,6 +36,18 @@ class StaticThreadPool extends ThreadPool {
     super(options, threadOptions);
     this.type = 'static';
     StaticThreadPool.paramsCheckForSetup(options);
+  }
+
+  setExecPath() {
+    throw new Error(`StaticThreadPool: function - setExecPath() is not allowed in StaticThreadPool!`)
+  }
+
+  setExecString() {
+    throw new Error(`StaticThreadPool: function - setExecString() is not allowed in StaticThreadPool!`)
+  }
+
+  setExecFunction() {
+    throw new Error(`StaticThreadPool: function - setExecFunction() is not allowed in StaticThreadPool!`)
   }
 
   /**

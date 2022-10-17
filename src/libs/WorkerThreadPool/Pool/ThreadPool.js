@@ -2,7 +2,6 @@
   WorkerThreadPool:
     线程池通过维护一系列工作线程的创建、调用和销毁，最大化地提升多线程的工作效率。同时其自带的任务调度系统支持任务排队、繁忙等待、自动重试、任务拒绝等功能。
     线程池隔离线程的调度和任务的调度，具有高可用性和稳定性。
-      - execContent - 工作线程的执行文件路径或执行代码字符串，使用 `module.exports = () => {...}` 进行任务导出。
       - lazyLoad - 是否延迟创建工作线程，默认true，当调用线程池时动态创建，否则线程池初始化后全量创建。
       - maxThreads - 线程池最大线程数，默认50。
       - maxTasks - 线程池任务队列最大长度，默认100，超出限制后抛出错误，可设置为无限大。
@@ -63,6 +62,15 @@ class ThreadPool extends EventEmitter {
       throw new Error(`WorkerThreadPool: param - taskTimer must be an positive integer that no less than ${ThreadPool.minTaskLoopTime}ms.`);
     }
   }
+
+  static paramsCheckForExec(options = {}) {
+    const { execPath, execString } = options;
+
+    if (!execPath && !execString) {
+      throw new Error(`WorkerThreadPool: param - execPath/execString is required!`);
+    }
+  }
+
 
   /**
    * @param {Object} options [options to create pool]
@@ -264,6 +272,8 @@ class ThreadPool extends EventEmitter {
    *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
    *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
    *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
    *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
    * @return {Promise}
    */
@@ -276,15 +286,18 @@ class ThreadPool extends EventEmitter {
       const isDynamic = options.execFunction || options.execPath || options.execString;
       const execString = isDynamic ? (options.execFunction ? funcStringify(options.execFunction) : options.execString) : this.execString;
       const execPath = isDynamic ? options.execPath : this.execPath;
+      const taskOptions = {
+        execPath,
+        execString,
+        taskRetry: options.taskRetry || poolOptions.taskRetry,
+        transferList: options.transferList || threadOptions.transferList,
+        taskTimeout: options.taskTimeout || poolOptions.taskTimeout
+      };
+      ThreadPool.paramsCheckForExec(taskOptions);
+
       const task = ThreadPool.generateNewTask(
         payload,
-        {
-          execPath,
-          execString,
-          taskRetry: options.taskRetry || poolOptions.taskRetry,
-          transferList: options.transferList || threadOptions.transferList,
-          taskTimeout: options.taskTimeout || poolOptions.taskTimeout
-        },
+        taskOptions,
       );
 
       if (!this.isFull) {
@@ -387,21 +400,24 @@ class ThreadPool extends EventEmitter {
   }
 
   setExecPath(execPath) {
-    this.execContent = execPath;
+    this.execPath = execPath;
+    this.execString = null;
     this.options.type = THREAD_TYPE.EXEC;
 
     return this;
   }
 
   setExecString(execString) {
-    this.execContent = execString;
+    this.execString = execString;
+    this.execPath = null;
     this.options.type = THREAD_TYPE.EVAL;
 
     return this;
   }
 
   setExecFunction(execFunction) {
-    this.execContent = funcStringify(execFunction);
+    this.execString = funcStringify(execFunction);
+    this.execPath = null;
     this.options.type = THREAD_TYPE.EVAL;
 
     return this;
