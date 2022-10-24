@@ -45,6 +45,23 @@ class DynamicThreadPool extends ThreadPool {
   }
 
   /**
+   * @name queue [save a request to queue]
+   * @param {*} payload [request payload data to send]
+   * @param {Object} options [options to create a task]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
+   queue(payload, options={}) {
+    DynamicThreadPool.paramsCheckForExec(Object.assign({}, options, this));
+    return super.queue.call(this, payload, options);
+  }
+
+  /**
    * @name exec [send a request to pool]
    * @param {*} payload [request payload data to send]
    * @param {Object} options [options to create a task]

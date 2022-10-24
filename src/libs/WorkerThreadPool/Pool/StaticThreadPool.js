@@ -51,6 +51,20 @@ class StaticThreadPool extends ThreadPool {
   }
 
   /**
+   * @name queue [save a request to queue]
+   * @param {*} payload [request payload data to send]
+   * @param {Object} options [options to create a task]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
+  queue(payload, options={}) {
+    StaticThreadPool.paramsCheckForExec(options);
+    return super.queue.call(this, payload, options);
+  }
+
+  /**
    * @name exec [send a request to pool]
    * @param {*} payload [request payload data to send]
    * @param {Object} options [options to create a task]

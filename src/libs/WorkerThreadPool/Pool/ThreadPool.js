@@ -134,6 +134,7 @@ class ThreadPool extends EventEmitter {
   }
 
   _initTaskTimer = () => {
+    clearInterval(this.taskTimer);
     this.taskTimer = setInterval(() => {
       this._checkTaskTimeout();
       let task = this.taskQueue.pop();
@@ -265,6 +266,62 @@ class ThreadPool extends EventEmitter {
     return true;
   }
 
+   /**
+   * @name _parseTaskOptions [parse task options]
+   * @param {Object} options [options to create a task]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
+  _parseTaskOptions(options) {
+    const poolOptions = this.options;
+    const threadOptions = this.threadOptions;
+    const isDynamic = options.execFunction || options.execPath || options.execString;
+    const execString = isDynamic ? (options.execFunction ? funcStringify(options.execFunction) : options.execString) : this.execString;
+    const execPath = isDynamic ? options.execPath : this.execPath;
+    const taskOptions = {
+      execPath,
+      execString,
+      taskRetry: options.taskRetry || poolOptions.taskRetry,
+      transferList: options.transferList || threadOptions.transferList,
+      taskTimeout: options.taskTimeout || poolOptions.taskTimeout
+    };
+
+    return taskOptions;
+  }
+
+  /**
+   * @name queue [save a request to queue]
+   * @param {*} payload [request payload data to send]
+   * @param {Object} options [options to create a task]
+   *  - @param {Function} execFunction [execution function, conflict with option - execPath/execString]
+   *  - @param {String} execPath [execution file Path or execution file content, conflict with option - execString/execFunction]
+   *  - @param {String} execString [execution file content, conflict with option - execPath/execFunction]
+   *  - @param {Number} taskTimeout [task timeout in milliseconds]
+   *  - @param {Number} taskRetry [task retry count]
+   *  - @param {Array} transferList [a list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.]
+   * @return {Promise}
+   */
+  queue(payload, options={}) {
+    const taskOptions = this._parseTaskOptions(options);
+    ThreadPool.paramsCheckForExec(taskOptions);
+
+    const task = ThreadPool.generateNewTask(
+      payload,
+      taskOptions,
+    );
+
+    if (!this.taskQueue.isFull) {
+      this.taskQueue.push(task);
+    } else {
+      throw new Error('WorkerThreadPool: task queue is full.');
+    }
+  }
+
   /**
    * @name exec [send a request to pool]
    * @param {*} payload [request payload data to send]
@@ -281,18 +338,8 @@ class ThreadPool extends EventEmitter {
     ThreadPool.paramsCheck(options);
 
     return new Promise((resolve, reject) => {
-      const poolOptions = this.options;
-      const threadOptions = this.threadOptions;
-      const isDynamic = options.execFunction || options.execPath || options.execString;
-      const execString = isDynamic ? (options.execFunction ? funcStringify(options.execFunction) : options.execString) : this.execString;
-      const execPath = isDynamic ? options.execPath : this.execPath;
-      const taskOptions = {
-        execPath,
-        execString,
-        taskRetry: options.taskRetry || poolOptions.taskRetry,
-        transferList: options.transferList || threadOptions.transferList,
-        taskTimeout: options.taskTimeout || poolOptions.taskTimeout
-      };
+      const taskOptions = this._parseTaskOptions(options);
+      const { execString, execPath } = taskOptions;
       ThreadPool.paramsCheckForExec(taskOptions);
 
       const task = ThreadPool.generateNewTask(
@@ -374,6 +421,7 @@ class ThreadPool extends EventEmitter {
   setTaskLoopTime(taskLoopTime) {
     ThreadPool.paramsCheck({ taskLoopTime });
     this.options.taskLoopTime = taskLoopTime;
+    this._initTaskTimer();
 
     return this;
   }

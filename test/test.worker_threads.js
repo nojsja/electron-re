@@ -37,6 +37,48 @@ const staticWorkerThreadPool = () => {
       });
     });
 
+    it('execPath/execString/execFunction is requied when create StaticThreadPool', (callback) => {
+      try {
+        new StaticThreadPool({});
+        callback('test failed');
+      } catch (error) {
+        callback();
+      }
+    });
+
+    it('setExecPath()/setExecString()/setExecFunction() is not allowed in StaticThreadPool', (callback) => {
+      new Promise((resolve, reject) => {
+        try {
+          threadPool.setExecPath('/path/to/exec.js');
+          reject('setExecPath is not allowed in StaticThreadPool');
+        } catch (error) {
+          resolve();
+        }
+      })
+      .then(() => {
+        try {
+          threadPool.setExecString(`module.exports = () => {};`);
+          return Promise.reject('setExecPath is not allowed in StaticThreadPool');
+        } catch (error) {
+          return Promise.resolve();
+        }
+      })
+      .then(() => {
+        try {
+          threadPool.setExecFunction(() => {});
+          return Promise.reject('setExecFunction is not allowed in StaticThreadPool');
+        } catch (error) {
+          return Promise.resolve();
+        }
+      })
+      .then(() => {
+        callback();
+      })
+      .catch((e) => {
+        callback(e);
+      })
+    });
+
     it('fill pool with idle threads', (callback) => {
       threadPool.fillPoolWithIdleThreads();
       if (threadPool.threadLength === CONF_MAX_THREADS) {
@@ -147,6 +189,15 @@ const staticWorkerThreadPool = () => {
           callback(err.toString());
         });
     });
+
+    it('wipe threads pool and get thread count', (callback) => {
+      threadPool.wipeThreadPool();
+      if (threadPool.threadLength === 0) {
+        callback();
+      } else {
+        callback('test failed');
+      }
+    });
   });
 
 };
@@ -198,6 +249,26 @@ const dynamicWorkerThreadPool = () => {
       }).catch((err) => {
         callback(err.toString());
       });
+    });
+
+    it('execPath/execString/execFunction is not allowed when create DynamicThreadPool', (callback) => {
+      try {
+        new DynamicThreadPool({
+          execPath: path.join(__dirname, './worker_threads/worker-static.js'),
+        });
+        callback('test failed');
+      } catch (error) {
+        callback();
+      }
+    });
+
+    it('function - fillPoolWithIdleThreads() is not allowed in DynamicThreadPool', (callback) => {
+      try {
+        threadPool.fillPoolWithIdleThreads();
+        callback('test failed');
+      } catch (error) {
+        callback();
+      }
     });
 
     it('run a task with pool and get correct result', (callback) => {

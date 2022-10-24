@@ -10,6 +10,7 @@ const test = require('./test/');
 const entryHtml = path.join(__dirname, 'test/index.html');
 const entryService = path.join(__dirname, 'test/services/app.service.js');
 const otherService = path.join(__dirname, 'test/services/other.service.js');
+const argv = require('minimist')(process.argv.slice(2));
 
 // allow require native modules in renderer process
 app.allowRendererProcessReuse = false;
@@ -56,6 +57,6 @@ describe('app ready => ', function() {
     });
   });
 
-  test.run();
+  test.run(argv);
 
 });

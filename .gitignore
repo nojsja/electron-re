@@ -3,3 +3,4 @@ yarn.lock
 .vscode
 package-lock.json
 coverage/.nyc_output/
+.DS_Store
