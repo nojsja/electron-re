@@ -7,6 +7,14 @@ class StaticExecutor extends Executor {
     this.type = 'static';
   }
 
+  queue(payload) {
+    return this.parentPool.queue(payload, {
+      taskTimeout: this.taskTimeout,
+      transferList: this.transferList,
+      taskRetry: this.taskRetry,
+    });
+  }
+
   exec(payload) {
     return this.parentPool.exec(payload, {
       taskTimeout: this.taskTimeout,

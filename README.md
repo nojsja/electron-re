@@ -580,7 +580,13 @@ const staticPool = new StaticThreadPool(
 3. Methods of a StaticThreadPool instance
 
 - `fillPoolWithIdleThreads()`: fill pool with idle threads, this is effective when pool is not full.
-- `exec(payload, options)`: Send a task request to pool.
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `exec(payload, options)`: Send a task request to pool, will throw an error when there is no idle thread and the task queue is full.
   - @param {_Any_} `payload` __*__: The request payload data.
   - @param {_Object_} `options`: Options to create a task:
     - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
@@ -594,15 +600,15 @@ const staticPool = new StaticThreadPool(
 - `wipeTaskQueue()`: Wipe all tasks in queue.
 - `wipeThreadPool()`: Wipe all threads in pool.
 - `setMaxThreads(maxThreads)`: Set max thread count of pool.
-    - @param {_Number_} `maxThreads`：max thread count.
+  - @param {_Number_} `maxThreads`：max thread count.
 - `setMaxTasks(maxTasks)`: Set max task count of pool.
-    - @param {_Number_} `maxTasks`：max task count.
+  - @param {_Number_} `maxTasks`：max task count.
 - `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
-    - @param {_Number_} `taskLoopTime`：task loop time.
+  - @param {_Number_} `taskLoopTime`：task loop time.
 - `setTaskRetry(taskRetry)`: Set count of task retries.
-    - @param {_Number_} `taskRetry`：Number of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
 - `setTransferList(transferList)`: Set transfer-list data of task.
-    - @param {_Array_} `transferList`：transfer-list data.
+  - @param {_Array_} `transferList`：transfer-list data.
 
 ```js
 staticPool
@@ -636,14 +642,16 @@ const staticExecutor = staticPool.createExecutor({
 
 2. Methods of a StaticThreadPool Executor
 
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
 - `exec(payload)`: Send a task request to pool from excutor.
   - @param {_Any_} `payload` __*__: The request payload data.
 - `setTaskRetry(taskRetry)`: Set count of task retries.
-    - @param {_Number_} `taskRetry`：Number of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
 - `setTransferList(transferList)`: Set transfer-list data of task.
-    - @param {_Array_} `transferList`：transfer-list data.
+  - @param {_Array_} `transferList`：transfer-list data.
 - `setTaskTimeout(taskTimeout)`: Set timeout time of task.
-    - @param {_Number_} `taskTimeout`：timeout time.
+  - @param {_Number_} `taskTimeout`：timeout time.
 
 ```js
 staticExecutor
@@ -686,7 +694,17 @@ const dynamicPool = new DynamicThreadPool({
 
 3. Methods of a DynamicThreadPool instance
 
-- `exec(payload, options)`: Send a task request to pool.
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - One of follow params is optional and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `exec(payload, options)`: Send a task request to pool, will throw an error when there is no idle thread and the task queue is full.
   - @param {_Any_} `payload` __*__: The request payload data.
   - @param {_Object_} `options`: Options to create a task:
     - One of follow params is optional and unique:
@@ -708,21 +726,21 @@ const dynamicPool = new DynamicThreadPool({
 - `wipeTaskQueue()`: Wipe all tasks in queue.
 - `wipeThreadPool()`: Wipe all threads in pool.
 - `setMaxThreads(maxThreads)`: Set max thread count of pool.
-    - @param {_Number_} `maxThreads`：max thread count.
+  - @param {_Number_} `maxThreads`：max thread count.
 - `setMaxTasks(maxTasks)`: Set max task count of pool.
-    - @param {_Number_} `maxTasks`：max task count.
+  - @param {_Number_} `maxTasks`：max task count.
 - `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
-    - @param {_Number_} `taskLoopTime`：task loop time.
+  - @param {_Number_} `taskLoopTime`：task loop time.
 - `setTaskRetry(taskRetry)`: Set count of task retries.
-    - @param {_Number_} `taskRetry`：Number of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
 - `setTransferList(transferList)`: Set transfer-list data of task.
-    - @param {_Array_} `transferList`：transfer-list data.
+  - @param {_Array_} `transferList`：transfer-list data.
 - `setExecPath(execPath)`: Set path of an executable commonjs module file.
-    - @param {_String_} `execPath`：path to an executable commonjs module file.
+  - @param {_String_} `execPath`：path to an executable commonjs module file.
 - `setExecString(execString)`: Set executable code string.
-    - @param {_String_} `execString`：executable code string.
+  - @param {_String_} `execString`：executable code string.
 - `setExecFunction(execFunction)`: Set js function.
-    - @param {_Function_} `execFunction`：js function.
+  - @param {_Function_} `execFunction`：js function.
 
 ```js
 dynamicPool
@@ -770,6 +788,8 @@ const dynamicExecutor = dynamicPool.createExecutor({
     - @param {_String_} `execString`：executable code string.
 - `setExecFunction(execFunction)`: Set js function.
     - @param {_Function_} `execFunction`：js function.
+- `queue(payload)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
 - `exec(payload)`: Send a task request to pool from excutor.
   - @param {_Any_} `payload` __*__: The request payload data.
 - `setTaskRetry(taskRetry)`: Set count of task retries.

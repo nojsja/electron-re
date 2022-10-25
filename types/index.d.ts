@@ -36,7 +36,7 @@ declare module electronReModule {
           internal?: number // default loop interval 30 seconds
         }
       }
-    ): void
+    )
     send: (taskName: string, params?: unknown, givenId?: number) => Promise<any>
     sendToAll: (taskName: string, params?: unknown) => void
     kill: (id?: number) => void
@@ -73,13 +73,9 @@ declare module electronReModule {
     static openWindow: (env: 'prod' | 'dev' | void) => void
   }
 
-  export class Task {
-    
-  }
+  export class Task {}
 
-  export class Thread {
-
-  }
+  export class Thread {}
 
   export interface ThreadPoolOptions {
     execFunction?: Function;
@@ -138,12 +134,20 @@ declare module electronReModule {
     constructor(
       options: ThreadPoolOptions,
       threadOptions: WorkerOptions
-    ): void
+    )
 
     isFull: Boolean
     threadLength: Number
     taskLength: Number
     private idleThread: Thread
+    protected queue: (payload: any, options: {
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
     protected exec: (payload: any, options: {
       execFunction?: Function;
       execString?: String;
@@ -177,7 +181,7 @@ declare module electronReModule {
       taskTimeout: Number;
       transferList: Transferable[];
       taskRetry: Number;
-    }): void
+    })
 
     public setTaskRetry: (taskRetry: Number) => Excutor;
     public setTransferList: (transferList: Transferable[]) => Excutor;
@@ -207,6 +211,11 @@ declare module electronReModule {
 
     public fillPoolWithIdleThreads: () => ThreadPool
     public createExecutor: (options: StaticExcutorOptions) => StaticExcutor
+    public queue: (payload: any, options: {
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
     public exec: (payload: any, options: {
       taskRetry?: Number;
       transferList?: Transferable[];
@@ -218,12 +227,20 @@ declare module electronReModule {
     constructor(
       options?: Omit<ThreadPoolOptions, 'execFunction' | 'execPath' | 'execString'>,
       threadOptions?: WorkerOptions
-    ): void
+    )
 
     public createExecutor: (options: DynamicExcutorOptions) => DynamicExcutor
     public setExecPath: (execPath: String) => ThreadPool
     public setExecString: (execString: String) => ThreadPool
     public setExecFunction: (execFunction: Function) => ThreadPool
+    public queue: (payload: any, options: {
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
     public exec: (payload: any, options: {
       taskRetry?: Number;
       transferList?: Transferable[];

@@ -40,6 +40,18 @@ class DynamicExecutor extends Executor {
     return this;
   }
 
+  queue(payload) {
+    DynamicExecutor.paramsCheck(this);
+    return this.parentPool.queue(payload, {
+      taskTimeout: this.taskTimeout,
+      transferList: this.transferList,
+      taskRetry: this.taskRetry,
+      execPath: this.execPath,
+      execString: this.execString,
+      execFunction: this.execFunction,
+    });
+  }
+
   exec(payload) {
     DynamicExecutor.paramsCheck(this);
     return this.parentPool.exec(payload, {
