@@ -59,6 +59,11 @@ parentPort.on('message', (task) => {
       });
     })
     .catch((error) => {
-      parentPort.postMessage({ code: CODE.FAILED, data: null, error, taskId: task.taskId });
+      parentPort.postMessage({
+        code: CODE.FAILED,
+        data: null,
+        error,
+        taskId: task.taskId,
+      });
     });
 });

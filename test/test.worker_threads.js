@@ -198,6 +198,24 @@ const staticWorkerThreadPool = () => {
         callback('test failed');
       }
     });
+
+    it('put a task into queue and get correct task count', (callback) => {
+      threadPool.wipeTaskQueue();
+      threadPool.setTaskLoopTime(.5e3);
+      threadPool.queue(1);
+
+      setTimeout(() => {
+        console.log(threadPool.taskQueue.queue[0]);
+        if (threadPool.taskLength === 0) {
+          callback();
+        } else {
+          callback('test failed1');
+        }
+      }, 2e3);
+      if (threadPool.taskLength !== 1) {
+        callback('test failed2');
+      }
+    });
   });
 
 };
