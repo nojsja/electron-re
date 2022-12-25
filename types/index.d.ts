@@ -111,7 +111,7 @@ declare module electronReModule {
     execString?: String;
   }
 
-  export class ThreadPool {
+  class ThreadPool {
     static defaultOptions: {
       lazyLoad?: Boolean;
       maxThreads?: Number;
@@ -140,7 +140,7 @@ declare module electronReModule {
     threadLength: Number
     taskLength: Number
     private idleThread: Thread
-    protected queue: (payload: any, options: {
+    protected queue: (payload: any, options?: {
       execFunction?: Function;
       execString?: String;
       execPath?: String;
@@ -148,7 +148,7 @@ declare module electronReModule {
       transferList?: Transferable[];
       taskTimeout?: Number;
     }) => void
-    protected exec: (payload: any, options: {
+    protected exec: (payload: any, options?: {
       execFunction?: Function;
       execString?: String;
       execPath?: String;
@@ -169,7 +169,7 @@ declare module electronReModule {
     public setTransferList: (transferList: Transferable) => ThreadPool
   }
 
-  export class Excutor {
+  class Excutor {
     static paramsCheck: (options: { taskRetry: Number; taskTimeout: Number; }) => void
     static defaultOptions:  {
       taskRetry: Number;
@@ -188,13 +188,13 @@ declare module electronReModule {
     public setTaskTimeout: (taskTimeout: Number) => Excutor;
   }
 
-  export class StaticExcutor extends Excutor {
+  class StaticExcutor extends Excutor {
     constructor(parentPool: StaticThreadPool, options: StaticExcutorOptions): void
 
     public exec: (payload: any) => Promise<{ data: any; error: null | Error }>
   }
 
-  export class DynamicExcutor extends Excutor {
+  class DynamicExcutor extends Excutor {
     constructor(parentPool: DynamicThreadPool, options: DynamicExcutorOptions): void
 
     public setExecPath: (execPath: String) => DynamicExcutor
@@ -207,16 +207,16 @@ declare module electronReModule {
     constructor(
       options: ThreadPoolOptions,
       threadOptions?: WorkerOptions
-    ): void
+    )
 
     public fillPoolWithIdleThreads: () => ThreadPool
-    public createExecutor: (options: StaticExcutorOptions) => StaticExcutor
-    public queue: (payload: any, options: {
+    public createExecutor: (options?: StaticExcutorOptions) => StaticExcutor
+    public queue: (payload: any, options?: {
       taskRetry?: Number;
       transferList?: Transferable[];
       taskTimeout?: Number;
     }) => void
-    public exec: (payload: any, options: {
+    public exec: (payload: any, options?: {
       taskRetry?: Number;
       transferList?: Transferable[];
       taskTimeout?: Number;
@@ -229,11 +229,11 @@ declare module electronReModule {
       threadOptions?: WorkerOptions
     )
 
-    public createExecutor: (options: DynamicExcutorOptions) => DynamicExcutor
+    public createExecutor: (options?: DynamicExcutorOptions) => DynamicExcutor
     public setExecPath: (execPath: String) => ThreadPool
     public setExecString: (execString: String) => ThreadPool
     public setExecFunction: (execFunction: Function) => ThreadPool
-    public queue: (payload: any, options: {
+    public queue: (payload: any, options?: {
       execFunction?: Function;
       execString?: String;
       execPath?: String;
@@ -241,7 +241,7 @@ declare module electronReModule {
       transferList?: Transferable[];
       taskTimeout?: Number;
     }) => void
-    public exec: (payload: any, options: {
+    public exec: (payload: any, options?: {
       taskRetry?: Number;
       transferList?: Transferable[];
       taskTimeout?: Number;
