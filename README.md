@@ -44,6 +44,12 @@
 │   ├── Working with ChildProcessPool
 │   └── Unregistry a task with unique name
 │
+├── * Instruction6: WorkerThreadPool
+│   ├── Create a static WorkerThreadPool pool
+│   ├── Create a static WorkerThreadPool excutor
+│   ├── Create a dynamic WorkerThreadPool pool
+│   └── Create a dynamic WorkerThreadPool excutor
+│
 ├── Examples
 ```
 
@@ -529,11 +535,347 @@ ProcessHost
   ...
 ```
 
-### VIII. Examples
+### VIII. WorkerThreadPool
+-----
+
+Multi Processes help to make full use of cpu, Multi Threads improve task parallelism ability of Node.js.
+
+In Node.js, there is only one main process which has single main thread, the main thread run event loops and executes macro/micro tasks. In theory, macro/micro task should be short and quick, if we use main thread for some cpu-sensitive heavy tasks, this will block event loop on main thread.
+
+So, try to put your heavy tasks into worker threads will be better in Node.js. The worker thread pool is effective for creating and managing threads, besides, it provides a task queue. When pool has no idle thread, more coming tasks are placed in queue and be taken out from queue after while to be excuted by new idle thread.
+
+#### Create a static WorkerThreadPool pool
+
+1. Options of StaticThreadPool:
+
+- `constructor(options, threadOptions)`
+- @param {_Object_} `opitons`: the options to create a static thread pool:
+  - One of follow params is required and unique:
+    - `execPath` {_String_}: path to an executable commonjs module file.
+    - `execString` {_String_}: executable code string.
+    - `execFunction` {_Function_}: js function.
+  - `lazyLoad` {_Boolean_}: if diabled, all threads will be created when init pool.
+  - `maxThreads` {_Number_}: max thread count of pool.
+  - `maxTasks` {_Number_}: max task count of pool.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskLoopTime` {_Number_}: time of task loop.
+  - `taskTimeout` {_Number_}: timeout time.
+- @param {_Object_} `threadOpitions`: Some origin options for node.js worker_threads.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+const staticPool = new StaticThreadPool(
+  {
+    // execPath: 'path/to/executable.js',
+    execString: 'module.exports = (payload) => `res:${payload}`',
+    // execFunction: (payload) => payload,
+    lazyLoad: true,
+    maxThreads: 24,
+    maxTasks: 48,
+    taskRetry: 1,
+    taskLoopTime: 1e3,
+    taskTimeout: 5e3,
+  },
+  {
+    transferList: [uint8Array.buffer]
+  }
+);
+```
+
+2. Attributes of a StaticThreadPool instance
+
+- `isFull` {_Boolean_}: whether the pool is full of threads, related to this param - maxThreads.
+- `threadLength` {_Number_}: current thread count of pool.
+- `taskLength` {_Number_}: current task count of pool.
+
+3. Methods of a StaticThreadPool instance
+
+- `fillPoolWithIdleThreads()`: fill pool with idle threads, this is effective when pool is not full.
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `exec(payload, options)`: Send a task request to pool, will throw an error when there is no idle thread and the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `createExecutor(options={})`: Create an static executor to execute tasks.
+  - @param {_Object_} `options`: Options to create a executor:
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `wipeTaskQueue()`: Wipe all tasks in queue.
+- `wipeThreadPool()`: Wipe all threads in pool.
+- `setMaxThreads(maxThreads)`: Set max thread count of pool.
+  - @param {_Number_} `maxThreads`：max thread count.
+- `setMaxTasks(maxTasks)`: Set max task count of pool.
+  - @param {_Number_} `maxTasks`：max task count.
+- `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
+  - @param {_Number_} `taskLoopTime`：task loop time.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+  - @param {_Array_} `transferList`：transfer-list data.
+
+```js
+staticPool
+  .setTaskRetry(1)
+  .exec('payload-data', {
+    taskTimeout: 5e3,
+    taskRetry: 1,
+  })
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
+
+#### Create a static WorkerThreadPool excutor
+
+1. Options of StaticThreadPool Executor
+
+- @params {_Object_} options
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskTimeout` {_Number_}: timeout time.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+const staticExecutor = staticPool.createExecutor({
+  taskRetry: 2,
+  taskTimeout: 2e3,
+  transferList: [unit8Array.buffer]
+});
+```
+
+2. Methods of a StaticThreadPool Executor
+
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `exec(payload)`: Send a task request to pool from excutor.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+  - @param {_Array_} `transferList`：transfer-list data.
+- `setTaskTimeout(taskTimeout)`: Set timeout time of task.
+  - @param {_Number_} `taskTimeout`：timeout time.
+
+```js
+staticExecutor
+  .setTaskRetry(2)
+  .exec('test')
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
+
+#### Create a dynamic WorkerThreadPool pool
+
+1. Options of DynamicThreadPool:
+
+- `constructor(options, threadOptions)`
+- @param {_Object_} `opitions`: the options to create a static thread pool:
+  - `maxThreads` {_Number_}: max thread count of pool.
+  - `maxTasks` {_Number_}: max task count of pool.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskLoopTime` {_Number_}: time of task loop.
+  - `taskTimeout` {_Number_}: timeout time.
+- @param {_Object_} `threadOptions`: Some origin options for node.js worker_threads.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const dynamicPool = new DynamicThreadPool({
+  maxThreads: 24,
+  maxTasks: 48,
+  taskRetry: 1,
+  taskLoopTime: 1e3,
+  taskTimeout: 5e3,
+});
+```
+
+2. Attributes of a DynamicThreadPool instance
+
+- `isFull` {_Boolean_}: whether the pool is full of threads, related to this param - maxThreads.
+- `threadLength` {_Number_}: current thread count of pool.
+- `taskLength` {_Number_}: current task count of pool.
+
+3. Methods of a DynamicThreadPool instance
+
+- `queue(payload, options)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - One of follow params is optional and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - @param {_Number_} `taskTimeout`：The task timeout in milliseconds
+    - @param {_Number_} `taskRetry`：Number of task retries.
+    - @param {_Array_} `transferList`: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `exec(payload, options)`: Send a task request to pool, will throw an error when there is no idle thread and the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+  - @param {_Object_} `options`: Options to create a task:
+    - One of follow params is optional and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - `taskTimeout` {_Number_}：The task timeout in milliseconds
+    - `taskRetry` {_Number_}：Number of task retries.
+    - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `createExecutor(options={})`: Create a dynamic executor to execute tasks.
+  - @param {_Object_} `options`: Options to create a executor:
+    - One of follow params is optional and unique:
+      - `execPath` {_String_}: path to an executable commonjs module file.
+      - `execString` {_String_}: executable code string.
+      - `execFunction` {_Function_}: js function.
+    - `taskTimeout` {_Number_}：The task timeout in milliseconds
+    - `taskRetry` {_Number_}：Number of task retries.
+    - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+- `wipeTaskQueue()`: Wipe all tasks in queue.
+- `wipeThreadPool()`: Wipe all threads in pool.
+- `setMaxThreads(maxThreads)`: Set max thread count of pool.
+  - @param {_Number_} `maxThreads`：max thread count.
+- `setMaxTasks(maxTasks)`: Set max task count of pool.
+  - @param {_Number_} `maxTasks`：max task count.
+- `setTaskLoopTime(taskLoopTime)`: Set time of task loop.
+  - @param {_Number_} `taskLoopTime`：task loop time.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+  - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+  - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+  - @param {_String_} `execPath`：path to an executable commonjs module file.
+- `setExecString(execString)`: Set executable code string.
+  - @param {_String_} `execString`：executable code string.
+- `setExecFunction(execFunction)`: Set js function.
+  - @param {_Function_} `execFunction`：js function.
+
+```js
+dynamicPool
+  .setExecString(`module.exports = (payload) => console.log(payload);`)
+  .setTaskRetry(1)
+  .exec('payload-data', {
+    taskTimeout: 5e3,
+    taskRetry: 1,
+  })
+  .then((rsp) => {
+    console.log(rsp);
+  });
+```
+
+#### Create a dynamic WorkerThreadPool excutor
+
+1. Options of DynamicThreadPool Executor
+
+- @params {_Object_} options
+  - One of follow params is optional and unique:
+    - `execPath` {_String_}: path to an executable commonjs module file.
+    - `execString` {_String_}: executable code string.
+    - `execFunction` {_Function_}: js function.
+  - `taskRetry` {_Number_}: number of task retries.
+  - `taskTimeout` {_Number_}: timeout time.
+  - `transferList` {_Array_}: A list of ArrayBuffer, MessagePort and FileHandle objects. After transferring, they will not be usable on the sending side.
+
+```js
+const uint8Array = new Uint8Array([ 1, 2, 3, 4 ]);
+const dynamicExecutor = dynamicPool.createExecutor({
+  execString: `module.exports = (payload) => payload`,
+  // execFunction: (payload) => payload,
+  // execPath: 'path/to/executable.js',
+  taskRetry: 2,
+  taskTimeout: 2e3,
+  transferList: [unit8Array.buffer]
+});
+```
+
+2. Methods of a DynamicThreadPool Executor
+
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+    - @param {_String_} `execPath`：path to an executable commonjs module file.
+- `setExecString(execString)`: Set executable code string.
+    - @param {_String_} `execString`：executable code string.
+- `setExecFunction(execFunction)`: Set js function.
+    - @param {_Function_} `execFunction`：js function.
+- `queue(payload)`: Save a task request to task queue, will throw an error when the task queue is full.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `exec(payload)`: Send a task request to pool from excutor.
+  - @param {_Any_} `payload` __*__: The request payload data.
+- `setTaskRetry(taskRetry)`: Set count of task retries.
+    - @param {_Number_} `taskRetry`：Number of task retries.
+- `setTransferList(transferList)`: Set transfer-list data of task.
+    - @param {_Array_} `transferList`：transfer-list data.
+- `setExecPath(execPath)`: Set path of an executable commonjs module file.
+
+### IX. Examples
 -----
 
 1. [electronux](https://github.com/nojsja/electronux) - A project of mine that uses `BroserService` and `MessageChannel` of electron-re.
 
 2. [file-slice-upload](https://github.com/nojsja/javascript-learning/tree/master/file-slice-upload) - A demo about parallel upload of multiple files, it uses `ChildProcessPool` and `ProcessHost` of electron-re, based on Electron@9.3.5.
 
-3. Also you can check the `index.dev.js` and `test` dir in root, there are some cases for a full usage.
+3. Also you can check the `index.dev.js` and `test` dir in root, there are some useful cases.
+
+### X. Test Coverage
+
+```bash
+------------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+File                                | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                           
+------------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+All files                           |   75.27 |    55.73 |   68.15 |   79.29 |                                                                                             
+ lib                                |   96.42 |    66.66 |     100 |   96.42 |                                                                                             
+  index.js                          |   96.42 |    66.66 |     100 |   96.42 | 23                                                                                          
+ lib/libs                           |   66.83 |    44.61 |   59.12 |   72.59 |                                                                                             
+  BrowserService.class.js           |   76.99 |    55.26 |   55.17 |   77.22 | 61-64,69-92,106-108,172,184-185,191,209-210,231,235                                         
+  EventCenter.class.js              |      80 |    58.33 |   83.33 |     100 | 15-35                                                                                       
+  FileWatcher.class.js              |      60 |    41.66 |   42.85 |   66.66 | 29-49                                                                                       
+  MessageChannel.class.js           |   52.11 |    32.35 |    46.8 |   58.49 | 60-61,75-256,292-297,312-313,394-409,540-547                                                
+  ProcessHost.class.js              |   70.73 |    35.71 |    62.5 |   76.31 | 27,51-59,80,92-108                                                                          
+  ProcessLifeCycle.class.js         |   88.46 |    67.64 |   94.11 |   98.36 | 95                                                                                          
+  consts.js                         |     100 |      100 |     100 |     100 |                                                                                             
+  utils.js                          |   65.16 |    45.83 |      60 |   68.67 | 75-93,107-114,120-131,180,188                                                               
+ lib/libs/ChildProcessPool          |   84.84 |       62 |      80 |   89.91 |                                                                                             
+  ForkedProcess.js                  |   78.33 |       50 |   72.72 |   82.45 | 22,64-75,97,103-105                                                                         
+  index.js                          |   86.76 |    65.78 |   82.35 |   92.39 | 119,141,219-223,231-233,287,306-315                                                         
+ lib/libs/LoadBalancer              |   80.29 |       50 |   84.37 |   80.91 |                                                                                             
+  consts.js                         |     100 |      100 |     100 |     100 |                                                                                             
+  index.js                          |   77.58 |       50 |   82.14 |   78.18 | 63-69,83,97,103,113,126,153,158-162,178-193,203                                             
+  scheduler.js                      |      95 |       50 |     100 |      95 | 28                                                                                          
+ lib/libs/LoadBalancer/algorithm    |   94.79 |     67.3 |     100 |     100 |                                                                                             
+  MINIMUM_CONNECTION.js             |    92.3 |    64.28 |     100 |     100 | 5-6,19                                                                                      
+  POLLING.js                        |   85.71 |       50 |     100 |     100 | 5-9                                                                                         
+  RANDOM.js                         |     100 |       50 |     100 |     100 | 7                                                                                           
+  SPECIFY.js                        |     100 |       75 |     100 |     100 | 14                                                                                          
+  WEIGHTS.js                        |   92.85 |    66.66 |     100 |     100 | 5-11                                                                                        
+  WEIGHTS_MINIMUM_CONNECTION.js     |   94.11 |       80 |     100 |     100 | 5,15                                                                                        
+  WEIGHTS_POLLING.js                |    92.3 |    66.66 |     100 |     100 | 5-10                                                                                        
+  WEIGHTS_RANDOM.js                 |     100 |    66.66 |     100 |     100 | 9,17                                                                                        
+  index.js                          |     100 |      100 |     100 |     100 |                                                                                             
+ lib/libs/ProcessManager            |   51.08 |       25 |   38.46 |   51.77 |                                                                                             
+  index.js                          |   57.21 |    31.39 |      48 |    58.6 | 66,71,76,81,110,123,132,143,150-169,175-224,228-230,236-245,285-287,295-298,303-306,311-336 
+  ui.js                             |   32.35 |        0 |    6.66 |   32.83 | 34-122,130-137                                                                              
+ lib/libs/WorkerThreadPool          |   81.52 |     57.5 |      78 |   84.72 |                                                                                             
+  Task.js                           |   85.36 |    83.33 |   61.53 |   85.36 | 44-45,77-92                                                                                 
+  TaskQueue.js                      |   66.19 |    39.28 |   86.66 |   69.23 | 78-79,98-139                                                                                
+  Thread.js                         |      85 |     64.7 |      80 |   91.78 | 61-63,150-156,165                                                                           
+  consts.js                         |     100 |      100 |     100 |     100 |                                                                                             
+  index.js                          |     100 |      100 |     100 |     100 |                                                                                             
+  utils.js                          |   91.66 |       50 |     100 |   91.66 | 23                                                                                          
+ lib/libs/WorkerThreadPool/Executor |   81.53 |     67.5 |   80.76 |   89.79 |                                                                                             
+  DynamicExecutor.js                |   76.66 |    71.42 |      75 |   84.09 | 50-53,66-67,97                                                                              
+  Executor.js                       |   93.75 |    66.66 |     100 |   93.75 | 70,74                                                                                       
+  StaticExecutor.js                 |   78.94 |       60 |      75 |   95.45 | 39                                                                                          
+ lib/libs/WorkerThreadPool/Pool     |   83.37 |    72.41 |   81.01 |   87.95 |                                                                                             
+  DynamicThreadPool.js              |    82.5 |    66.12 |   76.47 |   90.56 | 87-89,129,141                                                                               
+  StaticThreadPool.js               |   87.69 |    70.83 |   92.85 |   97.95 | 144                                                                                         
+  ThreadPool.js                     |   82.57 |    75.49 |   79.16 |   85.21 | 116-118,144-145,165,213-214,224,256-258,356,494-533,564,568,572,576,587                     
+ lib/libs/WorkerThreadPool/Worker   |   77.35 |       60 |    62.5 |   81.01 |                                                                                             
+  index.js                          |   84.28 |    67.85 |   76.47 |   95.34 | 49,73                                                                                       
+  worker-runner.js                  |   63.88 |    41.66 |   28.57 |   63.88 | 19-22,32,36-42,54-59,65,76                                                                  
+ lib/tasks                          |   83.33 |       50 |     100 |   88.23 |                                                                                             
+  app.init.js                       |   83.33 |       50 |     100 |   88.23 | 33-39                                                                                       
+------------------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------
+```

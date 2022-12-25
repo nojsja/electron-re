@@ -36,7 +36,7 @@ declare module electronReModule {
           internal?: number // default loop interval 30 seconds
         }
       }
-    ): void
+    )
     send: (taskName: string, params?: unknown, givenId?: number) => Promise<any>
     sendToAll: (taskName: string, params?: unknown) => void
     kill: (id?: number) => void
@@ -71,6 +71,184 @@ declare module electronReModule {
     static killProcess: (pid: number) => void
     static setIntervalTime: (time: number) => void
     static openWindow: (env: 'prod' | 'dev' | void) => void
+  }
+
+  export class Task {}
+
+  export class Thread {}
+
+  export interface ThreadPoolOptions {
+    execFunction?: Function;
+    execPath?: String;
+    execString?: String;
+    lazyLoad?: Boolean;
+    maxThreads?: Number;
+    maxTasks?: Number;
+    taskRetry?: Number;
+    taskTimeout?: Number;
+    taskLoopTime?: Number;
+  }
+
+  export interface ExecArgs {
+    execString?: string;
+    execPath?: string;
+  }
+
+  export interface WorkerOptions {
+    transferList?: Transferable[];
+  }
+
+  export interface ExcutorOptions {
+    taskTimeout?: Number;
+    transferList?: Transferable[];
+    taskRetry?: Number;
+  }
+
+  export interface StaticExcutorOptions extends ExcutorOptions {}
+  export interface DynamicExcutorOptions extends ExcutorOptions {
+    execFunction?: Function;
+    execPath?: String;
+    execString?: String;
+  }
+
+  class ThreadPool {
+    static defaultOptions: {
+      lazyLoad?: Boolean;
+      maxThreads?: Number;
+      maxTasks?: Number;
+      taskRetry?: Number;
+      taskLoopTime?: Number;
+      taskTimeout?: Number;
+    }
+    static maxTaskRetry: Number
+    static minTaskLoopTime: Number
+    static generateNewThread: (options:  WorkerOptions & ExecArgs) => Thread
+    static generateNewTask: (payload: any, options: {
+      execPath?: String;
+      execString?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => Task
+
+    constructor(
+      options: ThreadPoolOptions,
+      threadOptions: WorkerOptions
+    )
+
+    isFull: Boolean
+    threadLength: Number
+    taskLength: Number
+    private idleThread: Thread
+    protected queue: (payload: any, options?: {
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
+    protected exec: (payload: any, options?: {
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => Promise<{ data: any; error: null | Error }>
+    protected setExecPath: (execPath: String) => ThreadPool
+    protected setExecString: (execString: String) => ThreadPool
+    protected setExecFunction: (execFunction: Function) => ThreadPool
+    protected fillPoolWithIdleThreads: () => ThreadPool
+    public wipeTaskQueue: () => ThreadPool
+    public wipeThreadPool: () => ThreadPool
+    public setMaxThreads: (maxThreads: Number) => ThreadPool
+    public setMaxTasks: (maxTasks: Number) => ThreadPool
+    public setTaskLoopTime: (taskLoopTime: Number) => ThreadPool
+    public setTaskRetry: (taskRetry: Number) => ThreadPool
+    public setTransferList: (transferList: Transferable) => ThreadPool
+  }
+
+  class Excutor {
+    static paramsCheck: (options: { taskRetry: Number; taskTimeout: Number; }) => void
+    static defaultOptions:  {
+      taskRetry: Number;
+      taskTimeout: Number;
+    }
+    static maxTaskRetry: Number;
+
+    constructor(options: {
+      taskTimeout: Number;
+      transferList: Transferable[];
+      taskRetry: Number;
+    })
+
+    public setTaskRetry: (taskRetry: Number) => Excutor;
+    public setTransferList: (transferList: Transferable[]) => Excutor;
+    public setTaskTimeout: (taskTimeout: Number) => Excutor;
+  }
+
+  class StaticExcutor extends Excutor {
+    constructor(parentPool: StaticThreadPool, options: StaticExcutorOptions): void
+
+    public exec: (payload: any) => Promise<{ data: any; error: null | Error }>
+  }
+
+  class DynamicExcutor extends Excutor {
+    constructor(parentPool: DynamicThreadPool, options: DynamicExcutorOptions): void
+
+    public setExecPath: (execPath: String) => DynamicExcutor
+    public setExecString: (execString: String) => DynamicExcutor
+    public setExecFunction: (execFunction: Function) => DynamicExcutor
+    public exec: (payload: any) => Promise<{ data: any; error: null | Error }>
+  }
+
+  export class StaticThreadPool extends ThreadPool {
+    constructor(
+      options: ThreadPoolOptions,
+      threadOptions?: WorkerOptions
+    )
+
+    public fillPoolWithIdleThreads: () => ThreadPool
+    public createExecutor: (options?: StaticExcutorOptions) => StaticExcutor
+    public queue: (payload: any, options?: {
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
+    public exec: (payload: any, options?: {
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => Promise<{ data: any; error: null | Error }>
+  }
+
+  export class DynamicThreadPool extends ThreadPool {
+    constructor(
+      options?: Omit<ThreadPoolOptions, 'execFunction' | 'execPath' | 'execString'>,
+      threadOptions?: WorkerOptions
+    )
+
+    public createExecutor: (options?: DynamicExcutorOptions) => DynamicExcutor
+    public setExecPath: (execPath: String) => ThreadPool
+    public setExecString: (execString: String) => ThreadPool
+    public setExecFunction: (execFunction: Function) => ThreadPool
+    public queue: (payload: any, options?: {
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+    }) => void
+    public exec: (payload: any, options?: {
+      taskRetry?: Number;
+      transferList?: Transferable[];
+      taskTimeout?: Number;
+      execFunction?: Function;
+      execString?: String;
+      execPath?: String;
+    }) => Promise<{ data: any; error: null | Error }>
   }
 }
 

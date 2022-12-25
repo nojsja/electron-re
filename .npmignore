@@ -10,5 +10,7 @@ build.utils.js
 .vscode/
 
 # keep test code out
+.nycrc.json
 index.test.js
 test/
+coverage/
