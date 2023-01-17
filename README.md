@@ -61,14 +61,16 @@
 ### I. What can be used for?
 -----
 
-- 1）__BrowserServcie / MessageChannel__
+- __BrowserServcie / MessageChannel__
   - Using `BrowserServcie` to generate some service processes without UI and put your heavy tasks into them.
   - `MessageChannel` make it be possible to communicate with each other between `main process`,`render process` and `service`.
-- 2）__ProcessManager__
+- __ProcessManager__
   - `ProcessManager` provides a user interface for managing / monitoring processes, includes `BrowserServcie` / `ChildProcess` / `renderer process` / `main process`.
-- 3）__ChildProcessPool / ProcessHost__
-  - `ChildProcessPool` with load-balance support may helps when you need to create and manage several processes on nodejs runtime of electron.
+- __ChildProcessPool / ProcessHost__
+  - `ChildProcessPool` with load-balancing support may helps when you need to create and manage several processes on nodejs runtime of electron.
   - `ProcessHost` let us be focused on the core sub-process logic rather than various async event.
+- __WorkerThreadPool__
+  - `WorkerThreadPool` is effective for creating and managing threads.
 
 ### II. Install
 -----
@@ -381,7 +383,7 @@ The another way to solve this problem is to set `asar` to false in the electron-
 * path [string] __*__ - the absolute path to a js file.
 * max [number] __*__ - the max count of instance created by pool.
 * env [object] - env variable object.
-* strategy [enum] - load balance strategy, default is `POLLING`.
+* strategy [enum] - load balancing strategy, default is `POLLING`.
   * __POLLING__: pick process one by one.
   * __WEIGHTS__: pick process by process weight.
   * __RANDOM__: pick by random.
@@ -410,7 +412,7 @@ global.ipcUploadProcess = new ChildProcessPool({
 * 3）id [any] - the unique id bound to a process instance.
   * The unique id bound to a process instance(id will be automatically bound after call `send()`). 
   * Sometime you send request to a process with special data, then expect to get callback data from that process. You can provide an unique id in `send` function, each time pool will send a request to the process bound with this id.
-  * If you give an empty/undefined/null id, pool will select a process by load-balance strategy.
+  * If you give an empty/undefined/null id, pool will select a process by load-balancing strategy.
 
 ```js
 global.ipcUploadProcess.send(
