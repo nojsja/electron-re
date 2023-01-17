@@ -52,8 +52,13 @@ class ProcessManagerUI {
 
   /* send data to webContents */
   sendToWeb = (action, data) => {
-    if (this.win && !this.win.isDestroyed())
-      this.win.webContents.send(action, data);
+    try {
+      if (this.win && !this.win.isDestroyed()) {
+        this.win.webContents.send(action, data);
+      }
+    } catch (error) {
+      console.error(err)
+    }
   }
 
   onReadyToShow = () => {
