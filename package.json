@@ -19,7 +19,8 @@
     "test:src:no-sandbox": "cross-env NODE_ENV=test:src ./node_modules/electron-mocha/bin/electron-mocha index.test.js --disable-gpu-sandbox",
     "coverage": "nyc npm run test",
     "coverage:no-sandbox": "nyc npm run test:no-sandbox",
-    "performance": "node ./performance/index.js"
+    "performance": "node ./performance/index.js",
+    "publish": "npm publish --registry=https://registry.npmjs.org"
   },
   "keywords": [
     "electron",
