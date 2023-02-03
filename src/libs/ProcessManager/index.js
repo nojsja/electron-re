@@ -149,7 +149,7 @@ class ProcessManager extends EventEmitter {
     if (!this.callSymbol) {
       this.callSymbol = true;
       setTimeout(() => {
-        this.ui.sendToWeb(LOG_SIGNAL, this.logs)
+        this.ui && this.ui.sendToWeb(LOG_SIGNAL, this.logs)
         this.logs = [];
         this.callSymbol = false;
       }, this.time);
