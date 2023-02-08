@@ -241,10 +241,10 @@ MessageChannel.invoke('service-name', channel, params);
   recommend to use it when you want to send data from main/service to a renderer window
 */
 MessageChannel.sendTo('windowId/webContentsId', channel, params);
-/* listen a channel, same as ipcMain.on/ipcRenderer.on */
-MessageChannel.on(channel, func);
-/* listen a channel once, same as ipcMain.once/ipcRenderer.once */
-MessageChannel.once(channel, func);
+/* listen a channel and return unlisten function, probably same as ipcMain.on/ipcRenderer.on */
+const removeOnListener = MessageChannel.on(channel, func);
+/* listen a channel once and return unlisten function, probably same as ipcMain.once/ipcRenderer.once */
+const removeOnceListener = MessageChannel.once(channel, func);
 
 ```
 
