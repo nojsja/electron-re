@@ -159,9 +159,10 @@ class MessageChannelRender extends MessageChannel {
     * on [在渲染进程中(service/window)监听来自其它进程(service/window/main)的请求]
     * @param  {[String]} channel [服务监听的信号名]
     * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
+    * @return {[Function]} [返回一个函数，调用此函数可以取消监听]
     */
   on(channel, func) {
-    ipcRenderer.on(channel, (event, ...args) => {
+    const listener = (event, ...args) => {
       ipcRenderer.send('process:catch-signal', {
         type: `ipcRenderer.on.${'(none)'}.${channel}`,
         origin: 'ipcRenderer',
@@ -171,16 +172,23 @@ class MessageChannelRender extends MessageChannel {
         data: args
       });
       func(event, ...args);
-    });
+    };
+
+    ipcRenderer.on(channel, listener);
+
+    return () => {
+      ipcRenderer.off(channel, listener);
+    };
   }
 
   /**
     * on [在渲染进程中(service/window)监听一次来自其它进程(service/window/main)的请求]
     * @param  {[String]} channel [服务监听的信号名]
-    * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
+    * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.once]
+    * @return {[Function]} [返回一个函数，调用此函数可以取消监听]
     */
   once(channel, func) {
-    ipcRenderer.once(channel, (event, ...args) => {
+    const listener = (event, ...args) => {
       ipcRenderer.send('process:catch-signal', {
         type: `ipcRenderer.once.${'(none)'}.${channel}`,
         origin: 'ipcRenderer',
@@ -190,7 +198,13 @@ class MessageChannelRender extends MessageChannel {
         data: args
       });
       func(event, ...args);
-    });
+    };
+
+    ipcRenderer.once(channel, listener);
+
+    return () => {
+      ipcRenderer.off(channel, listener);
+    };
   }
 
   /**
@@ -366,10 +380,11 @@ class MessageChannelMain extends MessageChannel {
     * on [在主进程中(main)监听来自其它渲染进程(service/window)的请求]
     * @param  {[String]} channel [服务监听的信号名]
     * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
+    * @return {[Function]} [返回一个函数，调用此函数可以取消监听]
     */
   on(channel, func) {
     if (!func instanceof Function) throw new Error('MessageChannel: func must be a function!');
-    ipcMain.on(channel, (event, ...args) => {
+    const listener = (event, ...args) => {
       ipcMain.emit('process:catch-signal', {
         type: `ipcMain.on.${'(none)'}.${channel}`,
         origin: 'ipcMain',
@@ -379,17 +394,23 @@ class MessageChannelMain extends MessageChannel {
         data: args
       });
       func(event, ...args);
-    });
+    };
+    ipcMain.on(channel, listener);
+
+    return () => {
+      ipcMain.off(channel, listener);
+    };
   }
 
   /**
     * once [在主进程中(main)监听一次来自其它渲染进程(service/window)的请求]
     * @param  {[String]} channel [服务监听的信号名]
     * @param  {[Function]} func [消息到达后，此函数会被触发，同于原生ipcRenderer.on]
+    * @return {[Function]} [返回一个函数，调用此函数可以取消监听]
     */
-   once(channel, func) {
+  once(channel, func) {
     if (!func instanceof Function) throw new Error('MessageChannel: func must be a function!');
-    ipcMain.once(channel, (event, ...args) => {
+    const listener = (event, ...args) => {
       ipcMain.emit('process:catch-signal', {
         type: `ipcMain.once.${'(none)'}.${channel}`,
         origin: 'ipcMain',
@@ -399,9 +420,14 @@ class MessageChannelMain extends MessageChannel {
         data: args
       });
       func(event, ...args);
-    });
+    };
+    ipcMain.once(channel, listener);
+
+    return () => {
+      ipcMain.off(channel, listener);
+    };
   }
-  
+
   /**
      * registry [注册BrowserWindow和BrowserService]
      * @param  {[String]} name [唯一的名字]

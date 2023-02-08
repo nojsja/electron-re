@@ -193,11 +193,10 @@ class ProcessManager extends EventEmitter {
 
   /* openDevTools */
   openDevTools = (pid) => {
-    BrowserWindow.getAllWindows().forEach(win => {
-      if (win.webContents.getOSProcessId() === Number(pid)) {
-        win.webContents.openDevTools({ mode: 'undocked' });
-      }
+    const win = (BrowserWindow.getAllWindows() || []).find((win) => {
+      return win.webContents.getOSProcessId() === Number(pid);
     });
+    win && win.webContents.openDevTools({ mode: 'undocked' });
   }
 
   /* kill */

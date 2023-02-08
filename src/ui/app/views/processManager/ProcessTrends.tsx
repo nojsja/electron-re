@@ -84,7 +84,6 @@ export class ProcessTrends extends React.PureComponent<Props, State> {
   }
 
   resizeDebouncer = () => {
-    console.log('debouncer');
     debouncer(this.resize, 1000, false, null);
   }
 

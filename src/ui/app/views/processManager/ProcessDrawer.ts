@@ -71,7 +71,6 @@ export class Data_Drawer extends Drawer {
 
   draw(cpu: number[], memory: number[]) {
     if (!this.ctx) return console.error(new Error('Failed to get context(2d) of canvas!'));
-    console.log('draw data');
     const G = 1024 * 1024 * 1024;
     this.clear();
     this.drawWork(cpu, 'rgb(116, 227, 255)');
@@ -140,11 +139,8 @@ export class UI_Drawer extends Drawer {
     if (!this.ctx) return console.error(new Error('Failed to get context(2d) of canvas!'));
     const { width, height } = this.getRect();
 
-    console.log(width, height, 'ui', this.initialized);
-
     if (!this.initialized) {
       if (width && height) {
-        console.log('draw ui');
         this.clear();
         this.drawWork();
         this.initialized = true;

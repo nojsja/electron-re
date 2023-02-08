@@ -12,7 +12,6 @@ interface Props {
 }
 
 const getDataString = (data: any): string => {
-  console.log(data);
   return (typeof data === 'object') ? JSON.stringify(data) : data
 };
 

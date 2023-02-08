@@ -7,7 +7,7 @@ declare module electronReModule {
       options?: Electron.BrowserWindowConstructorOptions & {
         dev: boolean
       }
-    ): void
+    )
     openDevTools: () => void
     connected: (callback?: () => void) => void
   }
@@ -17,8 +17,8 @@ declare module electronReModule {
     static handle: (channel: string, promiseFunc: (event, args: { action: string, params: any }) => Promise<unknown>) => void
     static send: (name: string, channel: string, args: unknown) => void
     static sendTo: (id: number, channel: string, args: unknown) => void
-    static on: (channel: string, func: () => void)  => void
-    static once: (channel: string, func: () => void)  => void
+    static on: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void)  => () => void
+    static once: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void)  => () => void
     static registry: (name: string, id: number, pid: number)  => void
   }
 
@@ -189,13 +189,13 @@ declare module electronReModule {
   }
 
   class StaticExcutor extends Excutor {
-    constructor(parentPool: StaticThreadPool, options: StaticExcutorOptions): void
+    constructor(parentPool: StaticThreadPool, options: StaticExcutorOptions)
 
     public exec: (payload: any) => Promise<{ data: any; error: null | Error }>
   }
 
   class DynamicExcutor extends Excutor {
-    constructor(parentPool: DynamicThreadPool, options: DynamicExcutorOptions): void
+    constructor(parentPool: DynamicThreadPool, options: DynamicExcutorOptions)
 
     public setExecPath: (execPath: String) => DynamicExcutor
     public setExecString: (execString: String) => DynamicExcutor

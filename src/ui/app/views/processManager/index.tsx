@@ -41,7 +41,6 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
 
   componentDidMount() {
     ipcRenderer.on('process:update-list', (event, { records, types }) => {
-      console.log('update:list');
       const { history } = this.state;
       for (let pid in records as record) {
         history[pid] = history[pid] || { memory: [], cpu: [] };
@@ -59,7 +58,6 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
     });
 
     ipcRenderer.on('process:stdout', (event, dataArray: stdData[]) => {
-      console.log('process:stdout');
       const { logs } = this.state;
       dataArray.forEach(({ pid, data })=> {
         logs[pid] = logs[pid] || [];
@@ -72,7 +70,6 @@ export class ProcessManager extends React.Component<{}, ProcessManagerState> {
     });
     
     ipcRenderer.on('process:catch-signal', (event, result: signal) => {
-      console.log('process:catch-signal');
       let { signals } = this.state;
       signals.unshift({...result, key: getRandomString()});
       signals = signals.slice(0, 1000);
