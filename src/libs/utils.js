@@ -4,38 +4,15 @@ const url = require('url');
 const conf = require('../conf/global.json');
 
 /**
-  * loadView [生成可以供直接读取显示到BrowserWindow的html content]
-  * @author nojsja
-  * @param  {[String]} title [标题]
-  * @param  {[String]} script [脚本内容]
-  * @return {[String]}
-  */
- exports.loadView = ({ webSecurity, src, title, script, base = '.' }) => {
-
-    /* webview internal func1 */
-
-   const compareVersion = `function compareVersion(version1, version2) {
-    const v1s = String(version1).split('.');
-    const v2s = String(version2).split('.');
-  
-    while (v1s.length || v2s.length) {
-      let tmp1 = +(v1s.shift() || 0);
-      let tmp2 = +(v2s.shift() || 0);
-      if (tmp1 > tmp2) {
-        return 1;
-      }
-      if (tmp1 < tmp2) {
-        return -1;
-      }
-    }
-  
-    return 0;
-  }`
-
-   const internalFunc = `function() {
+ * loadView [生成可以供直接读取显示到BrowserWindow的html content]
+ * @author nojsja
+ * @param  {[String]} title [标题]
+ * @param  {[String]} script [脚本内容]
+ * @return {[String]}
+ */
+exports.loadView = ({ webSecurity, src, title, script, base = '.' }) => {
+  const rewriteRequire = `function() {
     const baseUrl = document.querySelector('base').getAttribute('href');
-    const needPolyfill = compareVersion(process.versions.electron, '14') >= 0;
-    global._depends = [];
     global.$require = require;
 
     global.require = require = (function(require) {
@@ -62,9 +39,9 @@ const conf = require('../conf/global.json');
     })(require);
    }`;
 
-   /* webview internal func2 */
+  /* hot load modules */
 
-   const internalFunc2 = `function() {
+  const intergrateHotReload = `function() {
      const fs = require('fs');
      const { ipcRenderer }= require('electron');
      ipcRenderer.once('get-watching-files', (event, { pid }) => {
@@ -86,18 +63,15 @@ const conf = require('../conf/global.json');
    }`;
 
   /* script content  */
-  const scriptContent =
-    webSecurity ?
-      `<script> ${ script } </script>` :
-      `<script src='${
-        url.format({
-          pathname: (path.posix.join(...(src).split(path.sep))),
-          protocol: conf.protocolName+':',
-          slashes: true
-        })
-      }'></script>`;
+  const scriptContent = webSecurity
+    ? `<script> ${script} </script>`
+    : `<script src='${url.format({
+        pathname: path.posix.join(...src.split(path.sep)),
+        protocol: conf.protocolName + ':',
+        slashes: true,
+      })}'></script>`;
 
-  const htmlContent = (`
+  const htmlContent = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -107,53 +81,43 @@ const conf = require('../conf/global.json');
       </head>
       <body>
         <script>
-          ${compareVersion}
-        </script>
-        <script>
-          (${internalFunc})();
+          (${rewriteRequire})();
         </script>
         ${scriptContent}
         <script>
-          (${internalFunc2})();
+          (${intergrateHotReload})();
         </script>
       </body>
     </html>
-  `);
-  
+  `;
+
   return 'data:text/html;charset=UTF-8,' + encodeURIComponent(htmlContent);
 };
 
 /* 开发环境 */
-exports.isEnvDev = (
+exports.isEnvDev =
   global.nodeEnv === 'development' ||
   global.nodeEnv === 'dev' ||
   process.env.NODE_ENV === 'development' ||
-  process.env.NODE_ENV === 'dev'
-);
+  process.env.NODE_ENV === 'dev';
 
 /* render process check */
-exports.isRenderer = (
-  typeof process === 'undefined' ||
-  !process ||
-  process.type === 'renderer'
-);
+exports.isRenderer =
+  typeof process === 'undefined' || !process || process.type === 'renderer';
 
 /* render process check */
-exports.isMain = (
-  typeof process !== 'undefined' &&
-  process.type === 'browser'
-);
+exports.isMain = typeof process !== 'undefined' && process.type === 'browser';
 
 /* child process check */
 exports.isForkedChild = Number(process.env.ELECTRON_RUN_AS_NODE) === 1;
 
 /**
-   * @param  {Function} fn         [回调函数]
-   * @param  {[Time]}   delayTime  [延迟时间(ms)]
-   * @param  {Boolean}  isImediate [是否需要立即调用]
-   * @param  {[type]}   args       [回调函数传入参数]
-  */
- exports.fnDebounce = function() {
+ * @param  {Function} fn         [回调函数]
+ * @param  {[Time]}   delayTime  [延迟时间(ms)]
+ * @param  {Boolean}  isImediate [是否需要立即调用]
+ * @param  {[type]}   args       [回调函数传入参数]
+ */
+exports.fnDebounce = function () {
   const fnObject = {};
   let timer;
 
@@ -177,7 +141,7 @@ exports.isForkedChild = Number(process.env.ELECTRON_RUN_AS_NODE) === 1;
       setTimer(fn, delayTime, args);
     }
   };
-}
+};
 
 /* random string */
 exports.getRandomString = () => Math.random().toString(36).substr(2);
@@ -191,8 +155,7 @@ exports.getRequiredFilePath = (p) => {
   if (fs.existsSync(`${p}.js`)) return `${p}.js`;
   if (fs.existsSync(`${p}.json`)) return `${p}.json`;
   if (fs.existsSync(`${p}.node`)) return `${p}.node`;
-}
-
+};
 
 /* getModuleFilePath */
 exports.getModuleFilePath = function (_module) {
@@ -211,11 +174,11 @@ exports.getModuleFilePath = function (_module) {
 };
 
 /* remove a forked process from pool */
-exports.removeForkedFromPool = function(forks, pid, pidMap) {
+exports.removeForkedFromPool = function (forks, pid, pidMap) {
   for (let i = 0; i < forks.length; i++) {
     if (forks[i].pid === pid) {
       forks.splice(i, 1);
-      ([...pidMap.entries()]).map(([key, value]) => {
+      [...pidMap.entries()].map(([key, value]) => {
         if (value === pid) {
           pidMap.delete(key);
         }
@@ -223,23 +186,19 @@ exports.removeForkedFromPool = function(forks, pid, pidMap) {
       break;
     }
   }
-}
+};
 
 /* convert forked process array to map */
-exports.convertForkedToMap = function(arr) {
+exports.convertForkedToMap = function (arr) {
   return arr.reduce((total, cur) => {
     total[cur.pid] = cur;
     return total;
   }, {});
-}
+};
 
 /* tree value */
-exports.isValidValue = function(value) {
-  return (
-    value !== undefined &&
-    value !== null &&
-    value !== ''
-  );
+exports.isValidValue = function (value) {
+  return value !== undefined && value !== null && value !== '';
 };
 
 /* compare versions */

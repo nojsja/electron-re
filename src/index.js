@@ -21,10 +21,7 @@ if (isRenderer) {
 
 if (isMain && !isForkedChild) {
   const { app } = require('electron');
-  const {
-    registryProtocolForService,
-    polyfillRemote,
-  } = require('./tasks/app.init');
+  const { registryProtocolForService } = require('./tasks/app.init');
 
   exports.BrowserService = require('./libs/BrowserService.class')
   exports.MessageChannel = require('./libs/MessageChannel.class');
@@ -32,7 +29,4 @@ if (isMain && !isForkedChild) {
 
   /* registry protocol */
   registryProtocolForService(app, exports);
-
-  /* polyfill - remote */
-  polyfillRemote(app, exports);
 }

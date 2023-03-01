@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">41.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>5/12</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">16.66% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">50% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>3/6</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">41.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>5/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -88,22 +88,22 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -113,17 +113,17 @@
 &nbsp;
 var NativeModule = require('module');
 &nbsp;
-exports.evalModuleCode = function (context, code) {
-  var filename = arguments.length &gt; 2 &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >arguments[2] !== undefined </span>? <span class="branch-0 cbranch-no" title="branch not covered" >arguments[2] </span>: 'eval';
+exports.evalModuleCode = <span class="fstat-no" title="function not covered" >fu</span>nction (context, code) {
+  var filename = <span class="cstat-no" title="statement not covered" >arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : 'eval';</span>
 &nbsp;
-  var _module = new NativeModule(filename, context);
+  var _module = <span class="cstat-no" title="statement not covered" >new NativeModule(filename, context);</span>
 &nbsp;
-  _module.paths = NativeModule._nodeModulePaths(context);
-  _module.filename = filename;
+<span class="cstat-no" title="statement not covered" >  _module.paths = NativeModule._nodeModulePaths(context);</span>
+<span class="cstat-no" title="statement not covered" >  _module.filename = filename;</span>
 &nbsp;
-  _module._compile(code, filename);
+<span class="cstat-no" title="statement not covered" >  _module._compile(code, filename);</span>
 &nbsp;
-  return _module.exports;
+<span class="cstat-no" title="statement not covered" >  return _module.exports;</span>
 };
 &nbsp;
 exports.funcStringify = function (func) {
@@ -139,7 +139,7 @@ exports.funcStringify = function (func) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-12-25T14:59:31.326Z
+                at 2023-03-01T02:55:28.373Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

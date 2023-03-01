@@ -1,7 +1,7 @@
 const path = require('path');
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const base = (process.env.NODE_ENV === 'dev') ? 'src' : 'lib'; // base dir
-const { 
+const {
   MessageChannel, /* must required in index.js even if you don't use it */
   BrowserService,
   ChildProcessPool
@@ -23,7 +23,6 @@ async function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
-      enableRemoteModule: true
     },
   });
 

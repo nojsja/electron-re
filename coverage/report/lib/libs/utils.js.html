@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65.16% </span>
+                <span class="strong">55.68% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>58/89</span>
+                <span class='fraction'>49/88</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.83% </span>
+                <span class="strong">35.41% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>22/48</span>
+                <span class='fraction'>17/48</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">53.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/15</span>
+                <span class='fraction'>8/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.67% </span>
+                <span class="strong">58.53% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>57/83</span>
+                <span class='fraction'>48/82</span>
             </div>
         
             
@@ -248,10 +248,7 @@
 <a name='L183'></a><a href='#L183'>183</a>
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
-<a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a>
-<a name='L188'></a><a href='#L188'>188</a>
-<a name='L189'></a><a href='#L189'>189</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L186'></a><a href='#L186'>186</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -283,9 +280,6 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -422,19 +416,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -455,12 +449,12 @@ var url = require('url');
 &nbsp;
 var conf = require('../conf/global.json');
 /**
-  * loadView [生成可以供直接读取显示到BrowserWindow的html content]
-  * @author nojsja
-  * @param  {[String]} title [标题]
-  * @param  {[String]} script [脚本内容]
-  * @return {[String]}
-  */
+ * loadView [生成可以供直接读取显示到BrowserWindow的html content]
+ * @author nojsja
+ * @param  {[String]} title [标题]
+ * @param  {[String]} script [脚本内容]
+ * @return {[String]}
+ */
 &nbsp;
 &nbsp;
 exports.loadView = function (_ref) {
@@ -472,13 +466,10 @@ exports.loadView = function (_ref) {
       script = _ref.script,
       _ref$base = _ref.base,
       base = _ref$base === void 0 ? <span class="branch-0 cbranch-no" title="branch not covered" >'.' </span>: _ref$base;
+  var rewriteRequire = "function() {\n    const baseUrl = document.querySelector('base').getAttribute('href');\n    global.$require = require;\n\n    global.require = require = (function(require) {\n      const _require = require;\n\n      return function(_path) {\n        let result;\n        const path = _require('path');\n\n        try {\n          result = _require(_path);\n        } catch(error) {\n          const dir = path.dirname(baseUrl.replace('file:///', ''));\n          const isWin = dir[0] !== '/';\n          const pathStrs = [path.sep, ...dir.split(path.sep), _path];\n          if (isWin) {\n            pathStrs.shift();\n          }\n          result =\n            _require((path.posix.join(...pathStrs)));\n        }\n        return result;\n      }\n    })(require);\n   }";
+  /* hot load modules */
 &nbsp;
-  /* webview internal func1 */
-  var compareVersion = "function compareVersion(version1, version2) {\n    const v1s = String(version1).split('.');\n    const v2s = String(version2).split('.');\n  \n    while (v1s.length || v2s.length) {\n      let tmp1 = +(v1s.shift() || 0);\n      let tmp2 = +(v2s.shift() || 0);\n      if (tmp1 &gt; tmp2) {\n        return 1;\n      }\n      if (tmp1 &lt; tmp2) {\n        return -1;\n      }\n    }\n  \n    return 0;\n  }";
-  var internalFunc = "function() {\n    const baseUrl = document.querySelector('base').getAttribute('href');\n    const needPolyfill = compareVersion(process.versions.electron, '14') &gt;= 0;\n    global._depends = [];\n    global.$require = require;\n\n    global.require = require = (function(require) {\n      const _require = require;\n\n      return function(_path) {\n        let result;\n        const path = _require('path');\n\n        try {\n          result = _require(_path);\n        } catch(error) {\n          const dir = path.dirname(baseUrl.replace('file:///', ''));\n          const isWin = dir[0] !== '/';\n          const pathStrs = [path.sep, ...dir.split(path.sep), _path];\n          if (isWin) {\n            pathStrs.shift();\n          }\n          result =\n            _require((path.posix.join(...pathStrs)));\n        }\n        return result;\n      }\n    })(require);\n   }";
-  /* webview internal func2 */
-&nbsp;
-  var internalFunc2 = "function() {\n     const fs = require('fs');\n     const { ipcRenderer }= require('electron');\n     ipcRenderer.once('get-watching-files', (event, { pid }) =&gt; {\n       ipcRenderer.send(pid, {\n         depends: (function(_module) {\n           const paths = [];\n           const getPaths = (modu) =&gt; {\n             fs.exists(modu.filename, (exists) =&gt; {\n               if (exists &amp;&amp; !paths.includes(modu.filename)) {\n                 paths.push(modu.filename);\n               }\n             });\n             modu.children.forEach(getPaths);\n           };\n           getPaths(_module);\n           return paths;\n         })(module) });\n     });\n   }";
+  var intergrateHotReload = "function() {\n     const fs = require('fs');\n     const { ipcRenderer }= require('electron');\n     ipcRenderer.once('get-watching-files', (event, { pid }) =&gt; {\n       ipcRenderer.send(pid, {\n         depends: (function(_module) {\n           const paths = [];\n           const getPaths = (modu) =&gt; {\n             fs.exists(modu.filename, (exists) =&gt; {\n               if (exists &amp;&amp; !paths.includes(modu.filename)) {\n                 paths.push(modu.filename);\n               }\n             });\n             modu.children.forEach(getPaths);\n           };\n           getPaths(_module);\n           return paths;\n         })(module) });\n     });\n   }";
   /* script content  */
 &nbsp;
   var scriptContent = webSecurity ? <span class="branch-0 cbranch-no" title="branch not covered" >"&lt;script&gt; ".concat(script, " &lt;/script&gt;") </span>: "&lt;script src='".concat(url.format({
@@ -486,7 +477,7 @@ exports.loadView = function (_ref) {
     protocol: conf.protocolName + ':',
     slashes: true
   }), "'&gt;&lt;/script&gt;");
-  var htmlContent = "\n    &lt;!DOCTYPE html&gt;\n    &lt;html&gt;\n      &lt;head&gt;\n        &lt;title&gt;".concat(title, "&lt;/title&gt;\n        &lt;base href=\"").concat(base, "\"&gt;\n        &lt;meta charset=\"UTF-8\"&gt;\n      &lt;/head&gt;\n      &lt;body&gt;\n        &lt;script&gt;\n          ").concat(compareVersion, "\n        &lt;/script&gt;\n        &lt;script&gt;\n          (").concat(internalFunc, ")();\n        &lt;/script&gt;\n        ").concat(scriptContent, "\n        &lt;script&gt;\n          (").concat(internalFunc2, ")();\n        &lt;/script&gt;\n      &lt;/body&gt;\n    &lt;/html&gt;\n  ");
+  var htmlContent = "\n    &lt;!DOCTYPE html&gt;\n    &lt;html&gt;\n      &lt;head&gt;\n        &lt;title&gt;".concat(title, "&lt;/title&gt;\n        &lt;base href=\"").concat(base, "\"&gt;\n        &lt;meta charset=\"UTF-8\"&gt;\n      &lt;/head&gt;\n      &lt;body&gt;\n        &lt;script&gt;\n          (").concat(rewriteRequire, ")();\n        &lt;/script&gt;\n        ").concat(scriptContent, "\n        &lt;script&gt;\n          (").concat(intergrateHotReload, ")();\n        &lt;/script&gt;\n      &lt;/body&gt;\n    &lt;/html&gt;\n  ");
   return 'data:text/html;charset=UTF-8,' + encodeURIComponent(htmlContent);
 };
 /* 开发环境 */
@@ -503,11 +494,11 @@ exports.isMain = typeof process !== 'undefined' &amp;&amp; process.type === 'bro
 &nbsp;
 exports.isForkedChild = Number(process.env.ELECTRON_RUN_AS_NODE) === 1;
 /**
-   * @param  {Function} fn         [回调函数]
-   * @param  {[Time]}   delayTime  [延迟时间(ms)]
-   * @param  {Boolean}  isImediate [是否需要立即调用]
-   * @param  {[type]}   args       [回调函数传入参数]
-  */
+ * @param  {Function} fn         [回调函数]
+ * @param  {[Time]}   delayTime  [延迟时间(ms)]
+ * @param  {Boolean}  isImediate [是否需要立即调用]
+ * @param  {[type]}   args       [回调函数传入参数]
+ */
 &nbsp;
 exports.fnDebounce = function () {
   var fnObject = {};
@@ -609,20 +600,20 @@ exports.isValidValue = function (value) {
 /* compare versions */
 &nbsp;
 &nbsp;
-exports.compareVersion = function compareVersion(version1, version2) {
-  var v1s = String(version1).split('.');
-  var v2s = String(version2).split('.');
+exports.compareVersion = function <span class="fstat-no" title="function not covered" >compareVersion(</span>version1, version2) {
+  var v1s = <span class="cstat-no" title="statement not covered" >String(version1).split('.');</span>
+  var v2s = <span class="cstat-no" title="statement not covered" >String(version2).split('.');</span>
 &nbsp;
-  while (v1s.length || <span class="branch-1 cbranch-no" title="branch not covered" >v2s.length)</span> {
-    var tmp1 = +(v1s.shift() || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>;
-    var tmp2 = +(v2s.shift() || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>;
+<span class="cstat-no" title="statement not covered" >  while (v1s.length || v2s.length) {</span>
+    var tmp1 = <span class="cstat-no" title="statement not covered" >+(v1s.shift() || 0);</span>
+    var tmp2 = <span class="cstat-no" title="statement not covered" >+(v2s.shift() || 0);</span>
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (tmp1 &gt; tmp2) {
+<span class="cstat-no" title="statement not covered" >    if (tmp1 &gt; tmp2) {</span>
 <span class="cstat-no" title="statement not covered" >      return 1;</span>
     }
 &nbsp;
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (tmp1 &lt; tmp2) {
-      return -1;
+<span class="cstat-no" title="statement not covered" >    if (tmp1 &lt; tmp2) {</span>
+<span class="cstat-no" title="statement not covered" >      return -1;</span>
     }
   }
 &nbsp;
@@ -634,7 +625,7 @@ exports.compareVersion = function compareVersion(version1, version2) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-12-25T14:59:31.326Z
+                at 2023-03-01T02:55:28.373Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">31.39% </span>
+                <span class="strong">30% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>27/86</span>
+                <span class='fraction'>27/90</span>
             </div>
         
             
@@ -435,9 +435,7 @@
 <a name='L370'></a><a href='#L370'>370</a>
 <a name='L371'></a><a href='#L371'>371</a>
 <a name='L372'></a><a href='#L372'>372</a>
-<a name='L373'></a><a href='#L373'>373</a>
-<a name='L374'></a><a href='#L374'>374</a>
-<a name='L375'></a><a href='#L375'>375</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L373'></a><a href='#L373'>373</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -535,7 +533,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -556,7 +554,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">86x</span>
+<span class="cline-any cline-yes">91x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -572,8 +570,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">26x</span>
-<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-yes">69x</span>
 <span class="cline-any cline-yes">69x</span>
@@ -670,13 +668,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">128x</span>
+<span class="cline-any cline-yes">133x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -723,9 +720,8 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1049,8 +1045,7 @@ var ProcessManager = /*#__PURE__*/function (_EventEmitter) {
 <span class="cstat-no" title="statement not covered" >      if (!_this.callSymbol) {</span>
 <span class="cstat-no" title="statement not covered" >        _this.callSymbol = true;</span>
 <span class="cstat-no" title="statement not covered" >        setTimeout(<span class="fstat-no" title="function not covered" >fu</span>nction () {</span>
-<span class="cstat-no" title="statement not covered" >          _this.ui.sendToWeb(LOG_SIGNAL, _this.logs);</span>
-&nbsp;
+<span class="cstat-no" title="statement not covered" >          _this.ui &amp;&amp; _this.ui.sendToWeb(LOG_SIGNAL, _this.logs);</span>
 <span class="cstat-no" title="statement not covered" >          _this.logs = [];</span>
 <span class="cstat-no" title="statement not covered" >          _this.callSymbol = false;</span>
         }, _this.time);
@@ -1095,12 +1090,11 @@ var ProcessManager = /*#__PURE__*/function (_EventEmitter) {
     };
 &nbsp;
     _this.openDevTools = <span class="fstat-no" title="function not covered" >fu</span>nction (pid) {
-<span class="cstat-no" title="statement not covered" >      BrowserWindow.getAllWindows().forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (win) {</span>
-<span class="cstat-no" title="statement not covered" >        if (win.webContents.getOSProcessId() === Number(pid)) {</span>
-<span class="cstat-no" title="statement not covered" >          win.webContents.openDevTools({</span>
-            mode: 'undocked'
-          });
-        }
+      var win = <span class="cstat-no" title="statement not covered" >(BrowserWindow.getAllWindows() || []).find(<span class="fstat-no" title="function not covered" >fu</span>nction (win) {</span>
+<span class="cstat-no" title="statement not covered" >        return win.webContents.getOSProcessId() === Number(pid);</span>
+      });
+<span class="cstat-no" title="statement not covered" >      win &amp;&amp; win.webContents.openDevTools({</span>
+        mode: 'undocked'
       });
     };
 &nbsp;
@@ -1192,7 +1186,7 @@ module.exports = global['electronre:$processManager'];</pre></td></tr></table></
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-12-25T14:59:31.326Z
+                at 2023-03-01T02:55:28.373Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
